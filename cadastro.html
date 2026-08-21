@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestão Acadêmica — Cadastro de Produções</title>
+  <style>
+    :root {
+      --primary: #004B78;
+      --primary-hover: #003657;
+      --docente-color: #4fa8d4;
+      --discente-color: #00887E;
+      --externo-color: #858688;
+      --bg: #f4f7fa;
+      --card-bg: #ffffff;
+      --border: #d0dce8;
+      --text: #1a2a3a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 40px; }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header h1 { font-size: 16px; font-weight: 600; }
+    header .nav-links a { color: #a8d0e8; text-decoration: none; font-size: 13px; margin-left: 15px; }
+    header .nav-links a:hover { color: #fff; }
+
+    .container {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 850px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #334; }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      font-size: 13px;
+      outline: none;
+      background: #fff;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); ring: 1px solid var(--primary); }
+
+    .coauthors-section {
+      border: 1px dashed var(--border);
+      padding: 12px;
+      border-radius: 6px;
+      background: #fafcff;
+      margin-bottom: 14px;
+    }
+    .coauthor-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .coauthor-input-row input { flex: 2; }
+    .coauthor-input-row select { flex: 1; }
+    .coauthor-input-row button {
+      padding: 0 14px;
+      background: #e4eef7;
+      color: var(--primary);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; min-height: 28px; }
+    .badge-author {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-docente { background: var(--docente-color); }
+    .badge-discente { background: var(--discente-color); }
+    .badge-externo { background: var(--externo-color); }
+    .badge-author span.remove { cursor: pointer; font-weight: bold; }
+
+    .actions { display: flex; gap: 10px; margin-top: 18px; }
+    .btn {
+      padding: 9px 16px;
+      border-radius: 5px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e4eef7; color: var(--primary); border: 1px solid var(--border); }
+    .btn-danger { background: #fee2e2; color: #b91c1c; }
+
+    /* Lista de Produções */
+    .search-box { margin-bottom: 12px; }
+    .list-wrapper { max-height: 520px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .prod-item {
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .prod-item:hover { border-color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+    .prod-item h4 { font-size: 13px; color: var(--primary); margin-bottom: 4px; }
+    .prod-item p { font-size: 11px; color: #667; }
+
+    .json-export-bar {
+      margin-top: 15px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Sistema de Gestão Acadêmica — GTA</h1>
+    <nav class="nav-links">
+      <a href="index.html">📊 Dashboard</a>
+      <a href="Grafico_Dinamico_Rede_Colaboracao.html">🕸 Rede de Colaboração</a>
+      <a href="cadastro.html" style="color: #fff; font-weight: bold;">📝 Cadastro</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <!-- Painel do Formulário -->
+    <div class="card">
+      <div class="card-title">
+        <span id="form-title">Novo Registro de Produção</span>
+        <button class="btn btn-secondary" onclick="resetForm()" style="font-size: 11px; padding: 3px 8px;">Limpar</button>
+      </div>
+
+      <input type="hidden" id="item-id">
+
+      <div class="form-group">
+        <label>Título da Produção *</label>
+        <input type="text" id="titulo" placeholder="Ex: Governança algorítmica e responsabilidade..." required>
+      </div>
+
+      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+          <label>Tipo de Produção *</label>
+          <select id="tipo">
+            <option value="Artigo para periódicos">Artigo para Periódicos</option>
+            <option value="Artigo para eventos">Artigo para Eventos / Anais</option>
+            <option value="Capítulo de livros">Capítulo de Livro</option>
+            <option value="PTTs">Produto Técnico / Tecnológico (PTT)</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div>
+          <label>Ano</label>
+          <input type="number" id="ano" value="2025" min="2010" max="2030">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Detalhes / Veículo / ISBN / DOI</label>
+        <input type="text" id="veiculo" placeholder="Ex: Revista X, Qualis A2, ISBN 978-...">
+      </div>
+
+      <!-- Seção de Coautores -->
+      <div class="coauthors-section">
+        <label>Adicionar Autores / Coautores</label>
+        <div class="coauthor-input-row">
+          <input type="text" id="author-name" placeholder="Nome do autor...">
+          <select id="author-type">
+            <option value="discente">Discente</option>
+            <option value="docente">Docente</option>
+            <option value="externo">Externo</option>
+          </select>
+          <button type="button" onclick="addAuthorTag()">+ Inserir</button>
+        </div>
+        <div class="tag-list" id="authors-tags"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" onclick="saveProduction()">Salvar Produção</button>
+        <button class="btn btn-danger" id="btn-delete" style="display: none;" onclick="deleteProduction()">Excluir</button>
+      </div>
+    </div>
+
+    <!-- Painel de Registros Existentes -->
+    <div class="card">
+      <div class="card-title">
+        <span>Produções Cadastradas (<span id="total-count">0</span>)</span>
+      </div>
+      
+      <div class="search-box">
+        <input type="text" id="search" placeholder="🔍 Filtrar por título ou autor..." oninput="renderList()">
+      </div>
+
+      <div class="list-wrapper" id="productions-list">
+        <!-- Itens inseridos via JS -->
+      </div>
+
+      <div class="json-export-bar">
+        <button class="btn btn-secondary" onclick="exportJSON()">📥 Baixar JSON para o GitHub</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">📤 Importar JSON</button>
+        <input type="file" id="import-file" style="display:none" accept=".json" onchange="importJSON(event)">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Armazenamento inicial no LocalStorage ou memória
+    let productions = JSON.parse(localStorage.getItem('gta_productions')) || [];
+    let currentAuthors = [];
+
+    function saveToStorage() {
+      localStorage.setItem('gta_productions', JSON.stringify(productions));
+      renderList();
+    }
+
+    function addAuthorTag(name = null, type = null) {
+      const inputName = document.getElementById('author-name');
+      const inputType = document.getElementById('author-type');
+      
+      const authorName = name || inputName.value.trim();
+      const authorType = type || inputType.value;
+
+      if (!authorName) return;
+      if (currentAuthors.some(a => a.name.toLowerCase() === authorName.toLowerCase())) return;
+
+      currentAuthors.push({ name: authorName, type: authorType });
+      if (!name) inputName.value = '';
+      renderAuthorTags();
+    }
+
+    function removeAuthorTag(name) {
+      currentAuthors = currentAuthors.filter(a => a.name !== name);
+      renderAuthorTags();
+    }
+
+    function renderAuthorTags() {
+      const container = document.getElementById('authors-tags');
+      container.innerHTML = currentAuthors.map(a => `
+        <span class="badge-author badge-${a.type}">
+          ${a.name} (${a.type})
+          <span class="remove" onclick="removeAuthorTag('${a.name}')">✕</span>
+        </span>
+      `).join('');
+    }
+
+    function saveProduction() {
+      const id = document.getElementById('item-id').value;
+      const titulo = document.getElementById('titulo').value.trim();
+      const tipo = document.getElementById('tipo').value;
+      const ano = document.getElementById('ano').value;
+      const veiculo = document.getElementById('veiculo').value.trim();
+
+      if (!titulo) {
+        alert('Por favor, informe o título da produção.');
+        return;
+      }
+      if (currentAuthors.length === 0) {
+        alert('Adicione pelo menos um autor/coautor.');
+        return;
+      }
+
+      if (id) {
+        // Atualizar
+        const idx = productions.findIndex(p => p.id === id);
+        if (idx !== -1) {
+          productions[idx] = { id, titulo, tipo, ano, veiculo, autores: [...currentAuthors] };
+        }
+      } else {
+        // Criar Novo
+        const newProd = {
+          id: 'prod_' + Date.now(),
+          titulo,
+          tipo,
+          ano,
+          veiculo,
+          autores: [...currentAuthors]
+        };
+        productions.unshift(newProd);
+      }
+
+      saveToStorage();
+      resetForm();
+    }
+
+    function editProduction(id) {
+      const p = productions.find(x => x.id === id);
+      if (!p) return;
+
+      document.getElementById('form-title').textContent = 'Editar Produção';
+      document.getElementById('item-id').value = p.id;
+      document.getElementById('titulo').value = p.titulo;
+      document.getElementById('tipo').value = p.tipo;
+      document.getElementById('ano').value = p.ano;
+      document.getElementById('veiculo').value = p.veiculo || '';
+
+      currentAuthors = [...p.autores];
+      renderAuthorTags();
+
+      document.getElementById('btn-delete').style.display = 'block';
+    }
+
+    function deleteProduction() {
+      const id = document.getElementById('item-id').value;
+      if (!id || !confirm('Deseja realmente excluir esta produção?')) return;
+
+      productions = productions.filter(p => p.id !== id);
+      saveToStorage();
+      resetForm();
+    }
+
+    function resetForm() {
+      document.getElementById('form-title').textContent = 'Novo Registro de Produção';
+      document.getElementById('item-id').value = '';
+      document.getElementById('titulo').value = '';
+      document.getElementById('veiculo').value = '';
+      document.getElementById('btn-delete').style.display = 'none';
+      currentAuthors = [];
+      renderAuthorTags();
+    }
+
+    function renderList() {
+      const query = document.getElementById('search').value.toLowerCase();
+      const listEl = document.getElementById('productions-list');
+      
+      const filtered = productions.filter(p => 
+        p.titulo.toLowerCase().includes(query) ||
+        p.autores.some(a => a.name.toLowerCase().includes(query))
+      );
+
+      document.getElementById('total-count').textContent = productions.length;
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '<p style="font-size:12px; color:#888; text-align:center; padding: 20px;">Nenhuma produção encontrada.</p>';
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(p => `
+        <div class="prod-item" onclick="editProduction('${p.id}')">
+          <h4>${p.titulo}</h4>
+          <p><strong>${p.tipo} (${p.ano})</strong></p>
+          <p style="margin-top:4px;">👥 ${p.autores.map(a => a.name).join(', ')}</p>
+        </div>
+      `).join('');
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(productions, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'producoes.json';
+      a.click();
+    }
+
+    function importJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          productions = JSON.parse(evt.target.result);
+          saveToStorage();
+          alert('Dados importados com sucesso!');
+        } catch(err) {
+          alert('Arquivo JSON inválido.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Inicialização
+    renderList();
+  </script>
+</body>
+</html>
