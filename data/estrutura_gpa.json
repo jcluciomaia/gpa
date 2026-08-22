@@ -1,24 +1,38 @@
 {
-  "turma": "PPGGTD 2023/2024",
+  "programas": [
+    { "id": "PPGGTD", "nome": "Programa de Pós-Graduação em Governança e Transformação Digital", "instituicao": "UFT" }
+  ],
+  "turmas": [
+    { "id": "TURMA_PPGGTD_2023_TRE", "nome": "Turma 2023/2024 — Convênio TRE-GO", "programa_id": "PPGGTD", "nivel": "Mestrado Profissional", "ano_inicio": 2023, "ano_fim": 2025 },
+    { "id": "TURMA_PPGGTD_2026_MEST", "nome": "Turma 2026/2027 — Mestrado", "programa_id": "PPGGTD", "nivel": "Mestrado", "ano_inicio": 2026, "ano_fim": 2028 },
+    { "id": "TURMA_PPGGTD_2026_DOUT", "nome": "Turma 2026/2030 — Doutorado", "programa_id": "PPGGTD", "nivel": "Doutorado", "ano_inicio": 2026, "ano_fim": 2030 }
+  ],
   "docentes": [
-    { "id": "DOC_FLAVIO", "nome": "Flávio" },
-    { "id": "DOC_GENTIL", "nome": "Gentil" },
-    { "id": "DOC_GEORGE", "nome": "George" },
-    { "id": "DOC_HUMBERTO", "nome": "Humberto" },
-    { "id": "DOC_MARCELO", "nome": "Marcelo" },
-    { "id": "DOC_PATRICK", "nome": "Patrick" },
-    { "id": "DOC_RAFAEL", "nome": "Rafael" },
-    { "id": "DOC_SUZANA", "nome": "Suzana" }
+    { "id": "DOC_FLAVIO", "nome": "Prof. Dr. Flávio Roldão de Carvalho Lelis" },
+    { "id": "DOC_GENTIL", "nome": "Prof. Dr. Gentil Veloso Barbosa" },
+    { "id": "DOC_GEORGE", "nome": "Prof. Dr. George Lauro Ribeiro de Brito" },
+    { "id": "DOC_HUMBERTO", "nome": "Prof. Dr. Humberto Xavier de Araújo" },
+    { "id": "DOC_MARCELO", "nome": "Prof. Dr. Marcelo Lisboa Rocha" },
+    { "id": "DOC_PATRICK", "nome": "Prof. Dr. Patrick Letouzè Moreira" },
+    { "id": "DOC_RAFAEL", "nome": "Prof. Dr. Rafael Lima de Carvalho" },
+    { "id": "DOC_SUZANA", "nome": "Prof.ª Dr.ª Suzana Gilioli da Costa Nunes" }
   ],
   "discentes": [
-    { "id": "DISC_01", "nome": "Aluno Um", "orientador_id": "DOC_FLAVIO" },
-    { "id": "DISC_02", "nome": "Aluno Dois", "orientador_id": "DOC_GENTIL" },
-    { "id": "DISC_03", "nome": "Aluno Três", "orientador_id": "DOC_GEORGE" },
-    { "id": "DISC_04", "nome": "Aluno Quatro", "orientador_id": "DOC_HUMBERTO" },
-    { "id": "DISC_05", "nome": "Aluno Cinco", "orientador_id": "DOC_MARCELO" },
-    { "id": "DISC_06", "nome": "Aluno Seis", "orientador_id": "DOC_PATRICK" },
-    { "id": "DISC_07", "nome": "Aluno Sete", "orientador_id": "DOC_RAFAEL" },
-    { "id": "DISC_08", "nome": "Aluno Oito", "orientador_id": "DOC_SUZANA" }
+    { "id": "DISC_01", "nome": "Aluno Um", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_FLAVIO" },
+    { "id": "DISC_02", "nome": "Aluno Dois", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_FLAVIO" },
+    { "id": "DISC_03", "nome": "Aluno Três", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_GENTIL" },
+    { "id": "DISC_04", "nome": "Aluno Quatro", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_GENTIL" },
+    { "id": "DISC_05", "nome": "Aluno Cinco", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_GEORGE" },
+    { "id": "DISC_06", "nome": "Aluno Seis", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_GEORGE" },
+    { "id": "DISC_07", "nome": "Aluno Sete", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_HUMBERTO" },
+    { "id": "DISC_08", "nome": "Aluno Oito", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_HUMBERTO" },
+    { "id": "DISC_09", "nome": "Aluno Nove", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_MARCELO" },
+    { "id": "DISC_10", "nome": "Aluno Dez", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_MARCELO" },
+    { "id": "DISC_11", "nome": "Aluno Onze", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_PATRICK" },
+    { "id": "DISC_12", "nome": "Aluno Doze", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_PATRICK" },
+    { "id": "DISC_13", "nome": "Aluno Treze", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_RAFAEL" },
+    { "id": "DISC_14", "nome": "Aluno Quatorze", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_RAFAEL" },
+    { "id": "DISC_15", "nome": "Aluno Quinze", "turma_id": "TURMA_PPGGTD_2023_TRE", "orientador_id": "DOC_SUZANA" }
   ],
   "disciplinas": [
     { "id": "DISCIP_01", "nome": "Metodologia Científica" },

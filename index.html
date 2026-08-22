@@ -182,11 +182,27 @@
 
     <div class="card">
       <div class="card-title">
-        <span>Produções Recentes</span>
+        <span>Filtros e Produções Recentes</span>
       </div>
 
       <div class="filters">
+        <select id="filter-turma" onchange="filterTable()">
+          <option value="">Filtrar por Turma/Convênio</option>
+        </select>
+
+        <select id="filter-nivel" onchange="filterTable()">
+          <option value="">Filtrar por Nível (Todos)</option>
+          <option value="Mestrado">Mestrado</option>
+          <option value="Mestrado Profissional">Mestrado Profissional</option>
+          <option value="Doutorado">Doutorado</option>
+        </select>
+
+        <select id="filter-docente" onchange="filterTable()">
+          <option value="">Filtrar por Docente/Orientador</option>
+        </select>
+
         <input type="text" id="search-author" placeholder="Buscar por autor..." oninput="filterTable()">
+
         <select id="filter-type" onchange="filterTable()">
           <option value="">Todos os tipos</option>
           <option value="Artigo para periódicos">Artigo para Periódicos</option>
@@ -217,21 +233,29 @@
 
   <script>
     let productionsData = [];
+    let estruturaData = { turmas: [], docentes: [], discentes: [] };
 
     async function loadData() {
       try {
+        // Carrega estrutura GPA
+        const estruturaRes = await fetch('data/estrutura_gpa.json');
+        if (estruturaRes.ok) {
+          estruturaData = await estruturaRes.json();
+          populateFilters();
+        }
+
         // Tenta carregar do localStorage primeiro, depois do JSON
         const localData = localStorage.getItem('gta_productions');
         if (localData) {
             productionsData = JSON.parse(localData);
-            updateDashboard();
+            updateDashboard(productionsData);
             return;
         }
 
         const response = await fetch('data/producoes.json');
         if (response.ok) {
           productionsData = await response.json();
-          updateDashboard();
+          updateDashboard(productionsData);
         } else {
             console.error('Failed to load producoes.json');
         }
@@ -240,13 +264,25 @@
       }
     }
 
-    function updateDashboard() {
-      updateStats();
-      renderTable(productionsData);
+    function populateFilters() {
+      const turmaSelect = document.getElementById('filter-turma');
+      estruturaData.turmas.forEach(t => {
+        turmaSelect.innerHTML += `<option value="${t.id}">${t.nome}</option>`;
+      });
+
+      const docenteSelect = document.getElementById('filter-docente');
+      estruturaData.docentes.forEach(d => {
+        docenteSelect.innerHTML += `<option value="${d.id}">${d.nome}</option>`;
+      });
     }
 
-    function updateStats() {
-      document.getElementById('stat-total').textContent = productionsData.length;
+    function updateDashboard(dataToRender) {
+      updateStats(dataToRender);
+      renderTable(dataToRender);
+    }
+
+    function updateStats(dataToRender) {
+      document.getElementById('stat-total').textContent = dataToRender.length;
 
       const counts = {
         'Artigo para periódicos': 0,
@@ -255,7 +291,7 @@
         'PTTs': 0
       };
 
-      productionsData.forEach(p => {
+      dataToRender.forEach(p => {
         if (counts[p.tipo] !== undefined) {
           counts[p.tipo]++;
         }
@@ -305,14 +341,77 @@
     function filterTable() {
       const authorQuery = document.getElementById('search-author').value.toLowerCase();
       const typeQuery = document.getElementById('filter-type').value;
+      const turmaQuery = document.getElementById('filter-turma').value;
+      const nivelQuery = document.getElementById('filter-nivel').value;
+      const docenteQuery = document.getElementById('filter-docente').value;
 
       const filtered = productionsData.filter(p => {
         const matchType = typeQuery === '' || p.tipo === typeQuery;
-        const matchAuthor = authorQuery === '' || (p.autores && p.autores.some(a => a.nome.toLowerCase().includes(authorQuery)));
-        return matchType && matchAuthor;
+        const matchAuthorText = authorQuery === '' || (p.autores && p.autores.some(a => a.nome.toLowerCase().includes(authorQuery)));
+
+        let matchTurma = true;
+        let matchNivel = true;
+        let matchDocente = true;
+
+        if (turmaQuery || nivelQuery || docenteQuery) {
+           // We need to check if any author in this production satisfies the filters
+           let hasMatchingAuthor = false;
+
+           if(p.autores) {
+               p.autores.forEach(a => {
+                   let aTurma = true;
+                   let aNivel = true;
+                   let aDocente = true;
+
+                   // If it's a student, check turma and level
+                   if (a.categoria === 'discente' || a.type === 'discente') {
+                       const discenteInfo = estruturaData.discentes.find(d => d.id === a.id);
+                       if (discenteInfo) {
+                           if (turmaQuery && discenteInfo.turma_id !== turmaQuery) aTurma = false;
+                           if (docenteQuery && discenteInfo.orientador_id !== docenteQuery) aDocente = false;
+
+                           if (nivelQuery) {
+                               const turmaInfo = estruturaData.turmas.find(t => t.id === discenteInfo.turma_id);
+                               if (!turmaInfo || turmaInfo.nivel !== nivelQuery) aNivel = false;
+                           }
+                       } else {
+                           if(turmaQuery) aTurma = false;
+                           if(docenteQuery) aDocente = false;
+                           if(nivelQuery) aNivel = false;
+                       }
+                   } else if (a.categoria === 'docente' || a.type === 'docente') {
+                       if (docenteQuery && a.id !== docenteQuery) aDocente = false;
+                       if (turmaQuery) aTurma = false; // Docentes don't have turmas directly
+                       if (nivelQuery) aNivel = false;
+                   } else {
+                       if (turmaQuery || nivelQuery || docenteQuery) {
+                           aTurma = false;
+                           aNivel = false;
+                           aDocente = false;
+                       }
+                   }
+
+                   // Se esse autor passou em TODOS os filtros que estavam preenchidos
+                   let authorPassed = true;
+                   if (turmaQuery && !aTurma) authorPassed = false;
+                   if (nivelQuery && !aNivel) authorPassed = false;
+                   if (docenteQuery && !aDocente) authorPassed = false;
+
+                   if (authorPassed) {
+                       hasMatchingAuthor = true;
+                   }
+               });
+           }
+
+           if (!hasMatchingAuthor) {
+               matchTurma = false;
+           }
+        }
+
+        return matchType && matchAuthorText && matchTurma;
       });
 
-      renderTable(filtered);
+      updateDashboard(filtered);
     }
 
     // Inicializar
