@@ -329,6 +329,12 @@
       reader.readAsText(file);
     }
 
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'gta_estrutura') {
+            loadEstrutura();
+        }
+    });
+
     document.addEventListener('DOMContentLoaded', loadEstrutura);
   </script>
 </body>

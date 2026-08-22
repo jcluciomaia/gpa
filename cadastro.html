@@ -490,6 +490,16 @@
       reader.readAsText(file);
     }
 
+    // Sincronização entre abas
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'gta_productions') {
+            productions = JSON.parse(e.newValue || '[]');
+            renderList();
+        } else if (e.key === 'gta_estrutura') {
+            loadEstrutura();
+        }
+    });
+
     // Inicialização
     loadEstrutura();
     renderList();

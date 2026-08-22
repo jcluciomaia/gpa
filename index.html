@@ -415,6 +415,13 @@
       updateDashboard(filtered);
     }
 
+    // Sync across tabs
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'gta_productions' || e.key === 'gta_estrutura') {
+            loadData();
+        }
+    });
+
     // Inicializar
     document.addEventListener('DOMContentLoaded', loadData);
   </script>

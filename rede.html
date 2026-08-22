@@ -97,10 +97,17 @@
       padding: 20px;
       overflow-y: auto;
       box-shadow: -2px 0 5px rgba(0,0,0,0.05);
-      display: none;
+      display: flex;
       flex-direction: column;
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      transform: translateX(100%);
+      transition: transform 0.3s ease-in-out;
+      z-index: 5;
     }
-    .side-panel.active { display: flex; }
+    .side-panel.active { transform: translateX(0); }
 
     .panel-header {
       display: flex;
@@ -154,19 +161,20 @@
   </header>
 
   <div class="toolbar">
-    <select id="filter-type" onchange="applyFilters()">
-      <option value="">Todos os Vínculos</option>
-      <option value="docente">Somente Docentes</option>
-      <option value="discente">Somente Discentes</option>
-      <option value="externo">Somente Externos</option>
-    </select>
-    <input type="text" id="search-author" placeholder="Buscar autor..." oninput="applyFilters()">
-    <button onclick="resetView()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Resetar Visualização</button>
+    <div class="quick-filters" style="display: flex; gap: 8px;">
+        <button id="btn-filter-docente" onclick="toggleFilter('docente')" style="background: var(--docente-color); color: white; border: none; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 11px; opacity: 1;">Docentes</button>
+        <button id="btn-filter-discente" onclick="toggleFilter('discente')" style="background: var(--discente-color); color: white; border: none; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 11px; opacity: 1;">Discentes</button>
+        <button id="btn-filter-externo" onclick="toggleFilter('externo')" style="background: var(--externo-color); color: white; border: none; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 11px; opacity: 1;">Externos</button>
+    </div>
 
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background: var(--docente-color)"></div> Docente</div>
-      <div class="legend-item"><div class="legend-dot" style="background: var(--discente-color)"></div> Discente</div>
-      <div class="legend-item"><div class="legend-dot" style="background: var(--externo-color)"></div> Externo</div>
+    <input type="text" id="search-author" placeholder="Buscar autor..." oninput="applyFilters()">
+
+    <div class="controls" style="display: flex; gap: 5px;">
+        <button onclick="zoomIn()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Zoom +</button>
+        <button onclick="zoomOut()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Zoom -</button>
+        <button onclick="resetView()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Resetar</button>
+        <button onclick="toggleFixNodes()" id="btn-fix-nodes" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Fixar Nós</button>
+        <button onclick="exportPNG()" style="padding: 6px 10px; border: 1px solid var(--border); background: var(--primary); color: white; cursor:pointer; border-radius:4px; font-size:12px;">Exportar PNG</button>
     </div>
   </div>
 
@@ -187,6 +195,7 @@
 
   <script>
     let productionsData = [];
+    let estruturaData = { docentes: [], discentes: [] };
     let nodes = [];
     let edges = [];
 
@@ -195,6 +204,15 @@
 
     async function loadData() {
       try {
+        // Carrega estrutura GPA
+        const localEst = localStorage.getItem('gta_estrutura');
+        if (localEst) {
+            estruturaData = JSON.parse(localEst);
+        } else {
+            const estRes = await fetch('data/estrutura_gpa.json');
+            if (estRes.ok) estruturaData = await estRes.json();
+        }
+
         // Tenta carregar do localStorage primeiro
         const localProd = localStorage.getItem('gta_productions');
         if (localProd) {
@@ -213,6 +231,32 @@
     function buildGraphData() {
       const nodeMap = new Map();
       const edgeMap = new Map();
+
+      // Primeiro, popula todos os docentes e discentes da estrutura (mesmo sem produção)
+      (estruturaData.docentes || []).forEach(d => {
+          nodeMap.set(d.id, {
+              id: d.id,
+              nome: d.nome,
+              categoria: 'docente',
+              productions: [],
+              weight: 0
+          });
+      });
+      (estruturaData.discentes || []).forEach(d => {
+          nodeMap.set(d.id, {
+              id: d.id,
+              nome: d.nome,
+              categoria: 'discente',
+              productions: [],
+              weight: 0
+          });
+          // Cria aresta de orientação com o professor (peso base 0, aumentará com produções)
+          if(d.orientador_id) {
+              const source = d.id < d.orientador_id ? d.id : d.orientador_id;
+              const target = d.id < d.orientador_id ? d.orientador_id : d.id;
+              edgeMap.set(`${source}-${target}`, { source, target, weight: 1, orientacao: true });
+          }
+      });
 
       productionsData.forEach(prod => {
         if (!prod.autores || prod.autores.length === 0) return;
@@ -436,17 +480,18 @@
         minimapCtx.strokeRect(vx, vy, vw, vh);
     }
 
+    let zoomBehavior;
     function setupInteractions() {
         const d3Canvas = d3.select(canvas);
 
-        const zoom = d3.zoom()
+        zoomBehavior = d3.zoom()
             .scaleExtent([0.1, 8])
             .on("zoom", (e) => {
                 transform = e.transform;
                 draw();
             });
 
-        d3Canvas.call(zoom);
+        d3Canvas.call(zoomBehavior);
 
         // Dragging
         d3Canvas.call(d3.drag()
@@ -516,12 +561,21 @@
         });
     }
 
+    let activeFilters = { 'docente': true, 'discente': true, 'externo': true };
+    let nodesFixed = false;
+
+    function toggleFilter(type) {
+        activeFilters[type] = !activeFilters[type];
+        const btn = document.getElementById('btn-filter-' + type);
+        btn.style.opacity = activeFilters[type] ? '1' : '0.5';
+        applyFilters();
+    }
+
     function applyFilters() {
-      const typeFilter = document.getElementById('filter-type').value;
       const search = document.getElementById('search-author').value.toLowerCase();
 
       activeNodes = graphData.nodes.filter(n => {
-          if(typeFilter && n.categoria !== typeFilter) return false;
+          if(!activeFilters[n.categoria]) return false;
           if(search && !n.nome.toLowerCase().includes(search)) return false;
           return true;
       });
@@ -538,24 +592,97 @@
     }
 
     function resetView() {
-      document.getElementById('filter-type').value = '';
+      activeFilters = { 'docente': true, 'discente': true, 'externo': true };
+      document.getElementById('btn-filter-docente').style.opacity = '1';
+      document.getElementById('btn-filter-discente').style.opacity = '1';
+      document.getElementById('btn-filter-externo').style.opacity = '1';
       document.getElementById('search-author').value = '';
 
       d3.select(canvas).transition().duration(750).call(
-          d3.zoom().transform, d3.zoomIdentity
+          zoomBehavior.transform, d3.zoomIdentity
       );
 
       applyFilters();
     }
 
-    function egoNetwork(node) {
-        // Center node
-        const scale = 1.5;
-        const tx = width / 2 - node.x * scale;
-        const ty = height / 2 - node.y * scale;
+    function zoomIn() {
+        d3.select(canvas).transition().duration(300).call(zoomBehavior.scaleBy, 1.5);
+    }
 
+    function zoomOut() {
+        d3.select(canvas).transition().duration(300).call(zoomBehavior.scaleBy, 0.66);
+    }
+
+    function toggleFixNodes() {
+        nodesFixed = !nodesFixed;
+        document.getElementById('btn-fix-nodes').textContent = nodesFixed ? 'Liberar Nós' : 'Fixar Nós';
+
+        activeNodes.forEach(n => {
+            if (nodesFixed) {
+                n.fx = n.x;
+                n.fy = n.y;
+            } else {
+                n.fx = null;
+                n.fy = null;
+            }
+        });
+
+        if (!nodesFixed) {
+            simulation.alpha(0.3).restart();
+        }
+    }
+
+    function exportPNG() {
+        // Redraw without hover/selection highlights to make a clean export
+        const tempSelected = selectedNode;
+        const tempHover = hoverNode;
+        selectedNode = null;
+        hoverNode = null;
+        draw();
+
+        const link = document.createElement('a');
+        link.download = 'rede_colaboracao.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        // Restore
+        selectedNode = tempSelected;
+        hoverNode = tempHover;
+        draw();
+    }
+
+    let radialMode = false;
+    function egoNetwork(node) {
+        if (!node) return;
+
+        radialMode = true;
+
+        // Find connected nodes
+        const connectedNodes = new Set();
+        connectedNodes.add(node.id);
+
+        activeEdges.forEach(e => {
+            const sourceId = e.source.id || e.source;
+            const targetId = e.target.id || e.target;
+
+            if (sourceId === node.id) connectedNodes.add(targetId);
+            if (targetId === node.id) connectedNodes.add(sourceId);
+        });
+
+        // Apply forces
+        simulation
+            .force("charge", d3.forceManyBody().strength(-150))
+            .force("radial", d3.forceRadial(d => connectedNodes.has(d.id) && d.id !== node.id ? 150 : 400, width / 2, height / 2).strength(0.8));
+
+        // Fix the center node to the middle of the screen
+        node.fx = width / 2;
+        node.fy = height / 2;
+
+        simulation.alpha(1).restart();
+
+        // Center viewport
         d3.select(canvas).transition().duration(750).call(
-            d3.zoom().transform, d3.zoomIdentity.translate(tx, ty).scale(scale)
+            zoomBehavior.transform, d3.zoomIdentity.translate(0, 0).scale(1)
         );
     }
 
@@ -574,6 +701,7 @@
         document.getElementById('author-info').innerHTML = `
             <p><strong>Nome:</strong> ${node.nome}</p>
             <p><strong>Tipo:</strong> <span class="badge-author badge-${node.categoria}">${node.categoria}</span></p>
+            <button onclick="egoNetwork(selectedNode)" style="margin-top: 10px; padding: 6px 12px; background: #e4eef7; color: var(--primary); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 12px; width: 100%;">Centralizar nó (Ego-Rede)</button>
         `;
 
         // Render Productions
@@ -603,6 +731,13 @@
             setTimeout(resizeCanvas, 10);
         }
     }
+
+    // Sync across tabs
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'gta_productions' || e.key === 'gta_estrutura') {
+            loadData();
+        }
+    });
 
     // Initialize
     document.addEventListener('DOMContentLoaded', loadData);

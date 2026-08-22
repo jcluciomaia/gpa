@@ -396,6 +396,12 @@
       document.body.removeChild(link);
     }
 
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'gta_productions' || e.key === 'gta_estrutura') {
+            init();
+        }
+    });
+
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
