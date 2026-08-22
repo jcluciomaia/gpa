@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestão Acadêmica — Rede de Colaboração</title>
+  <!-- D3.js for Force Simulation -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    :root {
+      --primary: #004B78;
+      --docente-color: #4fa8d4;
+      --discente-color: #00887E;
+      --externo-color: #858688;
+      --bg: #f4f7fa;
+      --border: #d0dce8;
+      --text: #1a2a3a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 10;
+    }
+    header h1 { font-size: 16px; font-weight: 600; }
+    header .nav-links a { color: #a8d0e8; text-decoration: none; font-size: 13px; margin-left: 15px; }
+    header .nav-links a:hover { color: #fff; }
+    header .nav-links a.active { color: #fff; font-weight: bold; }
+
+    .toolbar {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      z-index: 9;
+    }
+    .toolbar select, .toolbar input {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      font-size: 12px;
+      margin-left: auto;
+    }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    .main-area {
+      display: flex;
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    canvas {
+      flex: 1;
+      cursor: grab;
+      background: #fafcff;
+    }
+    canvas:active { cursor: grabbing; }
+
+    /* Minimap */
+    #minimap {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      width: 150px;
+      height: 150px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      cursor: crosshair;
+    }
+
+    /* Side Panel */
+    .side-panel {
+      width: 320px;
+      background: white;
+      border-left: 1px solid var(--border);
+      padding: 20px;
+      overflow-y: auto;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+      display: none;
+      flex-direction: column;
+    }
+    .side-panel.active { display: flex; }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .panel-header h2 { font-size: 16px; color: var(--primary); }
+    .close-btn { cursor: pointer; color: #888; font-weight: bold; border: none; background: none; font-size: 16px; }
+
+    .author-info { margin-bottom: 20px; font-size: 13px; }
+    .author-info p { margin-bottom: 5px; }
+
+    .badge-author {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 12px;
+      color: #fff;
+      display: inline-block;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+    .badge-docente { background: var(--docente-color); }
+    .badge-discente { background: var(--discente-color); }
+    .badge-externo { background: var(--externo-color); }
+
+    .prod-list { display: flex; flex-direction: column; gap: 10px; }
+    .prod-card {
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: 6px;
+      background: #f8fafc;
+      font-size: 12px;
+    }
+    .prod-card h4 { color: var(--primary); font-size: 12px; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Sistema de Gestão Acadêmica — GPA</h1>
+    <nav class="nav-links">
+      <a href="index.html">📊 Dashboard</a>
+      <a href="rede.html" class="active">🕸 Rede de Colaboração</a>
+      <a href="cadastro.html">📝 Cadastro</a>
+      <a href="admin.html">⚙️ Administração</a>
+      <a href="relatorios.html">📑 Relatórios</a>
+    </nav>
+  </header>
+
+  <div class="toolbar">
+    <select id="filter-type" onchange="applyFilters()">
+      <option value="">Todos os Vínculos</option>
+      <option value="docente">Somente Docentes</option>
+      <option value="discente">Somente Discentes</option>
+      <option value="externo">Somente Externos</option>
+    </select>
+    <input type="text" id="search-author" placeholder="Buscar autor..." oninput="applyFilters()">
+    <button onclick="resetView()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Resetar Visualização</button>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background: var(--docente-color)"></div> Docente</div>
+      <div class="legend-item"><div class="legend-dot" style="background: var(--discente-color)"></div> Discente</div>
+      <div class="legend-item"><div class="legend-dot" style="background: var(--externo-color)"></div> Externo</div>
+    </div>
+  </div>
+
+  <div class="main-area">
+    <canvas id="network-canvas"></canvas>
+    <canvas id="minimap"></canvas>
+
+    <div class="side-panel" id="side-panel">
+      <div class="panel-header">
+        <h2 id="panel-title">Detalhes do Autor</h2>
+        <button class="close-btn" onclick="closePanel()">✕</button>
+      </div>
+      <div class="author-info" id="author-info"></div>
+      <h3 style="font-size: 13px; color: #475569; margin-bottom: 10px;">Produções (<span id="prod-count">0</span>)</h3>
+      <div class="prod-list" id="prod-list"></div>
+    </div>
+  </div>
+
+  <script>
+    let productionsData = [];
+    let nodes = [];
+    let edges = [];
+
+    // Estrutura de grafos
+    let graphData = { nodes: [], edges: [] };
+
+    async function loadData() {
+      try {
+        // Tenta carregar do localStorage primeiro
+        const localProd = localStorage.getItem('gta_productions');
+        if (localProd) {
+          productionsData = JSON.parse(localProd);
+        } else {
+          const prodRes = await fetch('data/producoes.json');
+          if (prodRes.ok) productionsData = await prodRes.json();
+        }
+
+        buildGraphData();
+      } catch (e) {
+        console.error("Erro ao carregar dados", e);
+      }
+    }
+
+    function buildGraphData() {
+      const nodeMap = new Map();
+      const edgeMap = new Map();
+
+      productionsData.forEach(prod => {
+        if (!prod.autores || prod.autores.length === 0) return;
+
+        // Process Nodes
+        prod.autores.forEach(author => {
+          // Normalize author id or name to use as unique key
+          const nodeKey = author.id || author.nome.toLowerCase();
+
+          if (!nodeMap.has(nodeKey)) {
+            nodeMap.set(nodeKey, {
+              id: nodeKey,
+              nome: author.nome,
+              categoria: author.categoria || author.type || 'externo',
+              productions: [],
+              weight: 0 // Will define node size
+            });
+          }
+
+          const node = nodeMap.get(nodeKey);
+          node.productions.push(prod);
+          node.weight += 1;
+        });
+
+        // Process Edges (Co-authorships)
+        for (let i = 0; i < prod.autores.length; i++) {
+          for (let j = i + 1; j < prod.autores.length; j++) {
+            const keyA = prod.autores[i].id || prod.autores[i].nome.toLowerCase();
+            const keyB = prod.autores[j].id || prod.autores[j].nome.toLowerCase();
+
+            // Ensure consistent edge direction A->B to avoid duplicates
+            const source = keyA < keyB ? keyA : keyB;
+            const target = keyA < keyB ? keyB : keyA;
+            const edgeKey = `${source}-${target}`;
+
+            if (!edgeMap.has(edgeKey)) {
+              edgeMap.set(edgeKey, {
+                source: source,
+                target: target,
+                weight: 0
+              });
+            }
+            edgeMap.get(edgeKey).weight += 1;
+          }
+        }
+      });
+
+      graphData.nodes = Array.from(nodeMap.values());
+      graphData.edges = Array.from(edgeMap.values());
+
+      console.log("Graph Data Built:", graphData.nodes.length, "nodes", graphData.edges.length, "edges");
+
+      initSimulation();
+    }
+
+    // --- Graph Rendering & Physics ---
+
+    let canvas, ctx, minimapCanvas, minimapCtx;
+    let width, height;
+    let simulation;
+    let transform = d3.zoomIdentity;
+    let activeNodes = [];
+    let activeEdges = [];
+    let hoverNode = null;
+    let selectedNode = null;
+
+    function initSimulation() {
+      canvas = document.getElementById('network-canvas');
+      ctx = canvas.getContext('2d');
+      minimapCanvas = document.getElementById('minimap');
+      minimapCtx = minimapCanvas.getContext('2d');
+
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      activeNodes = [...graphData.nodes];
+
+      // Prepare edges (D3 expects source and target to be object references or indices, but handles ids string too if configured)
+      activeEdges = graphData.edges.map(e => ({...e}));
+
+      simulation = d3.forceSimulation(activeNodes)
+        .force("link", d3.forceLink(activeEdges).id(d => d.id).distance(100))
+        .force("charge", d3.forceManyBody().strength(-300))
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("collide", d3.forceCollide().radius(d => getRadius(d) + 2).iterations(2))
+        .on("tick", draw);
+
+      setupInteractions();
+    }
+
+    function resizeCanvas() {
+      const container = canvas.parentElement;
+      width = container.clientWidth;
+      height = container.clientHeight;
+      canvas.width = width;
+      canvas.height = height;
+
+      if(simulation) {
+          simulation.force("center", d3.forceCenter(width / 2, height / 2));
+          simulation.alpha(0.3).restart();
+      }
+    }
+
+    function getRadius(node) {
+      return 5 + (node.weight * 2); // Base size 5, grows with productions
+    }
+
+    function getColor(categoria) {
+      const cat = (categoria || '').toLowerCase();
+      if(cat === 'docente') return '#4fa8d4';
+      if(cat === 'discente') return '#00887E';
+      return '#858688';
+    }
+
+    function draw() {
+      ctx.save();
+      ctx.clearRect(0, 0, width, height);
+      ctx.translate(transform.x, transform.y);
+      ctx.scale(transform.k, transform.k);
+
+      // Draw Edges
+      ctx.beginPath();
+      activeEdges.forEach(d => {
+        ctx.moveTo(d.source.x, d.source.y);
+        ctx.lineTo(d.target.x, d.target.y);
+      });
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Draw Nodes
+      activeNodes.forEach(d => {
+        ctx.beginPath();
+        const r = getRadius(d);
+        ctx.arc(d.x, d.y, r, 0, 2 * Math.PI);
+
+        ctx.fillStyle = getColor(d.categoria);
+
+        if (selectedNode && selectedNode.id === d.id) {
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = "#f59e0b";
+          ctx.stroke();
+        } else if (hoverNode && hoverNode.id === d.id) {
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = "#1e293b";
+          ctx.stroke();
+        } else {
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = "#fff";
+          ctx.stroke();
+        }
+
+        ctx.fill();
+
+        // Draw Text
+        if (transform.k > 0.8 || (hoverNode && hoverNode.id === d.id) || (selectedNode && selectedNode.id === d.id)) {
+            ctx.fillStyle = "#334155";
+            ctx.font = `${Math.max(10, 12 / transform.k)}px sans-serif`;
+            ctx.textAlign = "center";
+            ctx.fillText(d.nome, d.x, d.y + r + (14/transform.k));
+        }
+      });
+
+      ctx.restore();
+      drawMinimap();
+    }
+
+    function drawMinimap() {
+        const mw = minimapCanvas.width;
+        const mh = minimapCanvas.height;
+        minimapCtx.clearRect(0, 0, mw, mh);
+
+        minimapCtx.fillStyle = '#f8fafc';
+        minimapCtx.fillRect(0, 0, mw, mh);
+
+        if (activeNodes.length === 0) return;
+
+        // Find bounds
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        activeNodes.forEach(n => {
+            if(n.x < minX) minX = n.x;
+            if(n.x > maxX) maxX = n.x;
+            if(n.y < minY) minY = n.y;
+            if(n.y > maxY) maxY = n.y;
+        });
+
+        // Add padding
+        const pad = 50;
+        minX -= pad; maxX += pad; minY -= pad; maxY += pad;
+
+        const scaleX = mw / (maxX - minX);
+        const scaleY = mh / (maxY - minY);
+        const scale = Math.min(scaleX, scaleY);
+
+        const ox = (mw - (maxX - minX) * scale) / 2;
+        const oy = (mh - (maxY - minY) * scale) / 2;
+
+        minimapCtx.save();
+        minimapCtx.translate(ox, oy);
+        minimapCtx.scale(scale, scale);
+        minimapCtx.translate(-minX, -minY);
+
+        minimapCtx.beginPath();
+        activeNodes.forEach(d => {
+            minimapCtx.moveTo(d.x, d.y);
+            minimapCtx.arc(d.x, d.y, Math.max(10, getRadius(d)), 0, 2 * Math.PI);
+        });
+        minimapCtx.fillStyle = "#94a3b8";
+        minimapCtx.fill();
+        minimapCtx.restore();
+
+        // Viewport rectangle
+        minimapCtx.strokeStyle = "rgba(0, 75, 120, 0.8)";
+        minimapCtx.lineWidth = 2;
+
+        const vx = ((-transform.x / transform.k) - minX) * scale + ox;
+        const vy = ((-transform.y / transform.k) - minY) * scale + oy;
+        const vw = (width / transform.k) * scale;
+        const vh = (height / transform.k) * scale;
+
+        minimapCtx.strokeRect(vx, vy, vw, vh);
+    }
+
+    function setupInteractions() {
+        const d3Canvas = d3.select(canvas);
+
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 8])
+            .on("zoom", (e) => {
+                transform = e.transform;
+                draw();
+            });
+
+        d3Canvas.call(zoom);
+
+        // Dragging
+        d3Canvas.call(d3.drag()
+            .subject((e) => {
+                const x = transform.invertX(e.x);
+                const y = transform.invertY(e.y);
+                let closest = null;
+                let minDist = Infinity;
+                for (const node of activeNodes) {
+                    const dx = x - node.x;
+                    const dy = y - node.y;
+                    const dist = dx * dx + dy * dy;
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closest = node;
+                    }
+                }
+                const r = closest ? getRadius(closest) : 0;
+                return minDist <= r * r + 100 ? closest : null;
+            })
+            .on("start", (e) => {
+                if (!e.active) simulation.alphaTarget(0.3).restart();
+                e.subject.fx = e.subject.x;
+                e.subject.fy = e.subject.y;
+            })
+            .on("drag", (e) => {
+                e.subject.fx = transform.invertX(e.x);
+                e.subject.fy = transform.invertY(e.y);
+            })
+            .on("end", (e) => {
+                if (!e.active) simulation.alphaTarget(0);
+                e.subject.fx = null;
+                e.subject.fy = null;
+            }));
+
+        // Hover & Click
+        d3Canvas.on("mousemove", (e) => {
+            const x = transform.invertX(e.offsetX);
+            const y = transform.invertY(e.offsetY);
+            let newHover = null;
+            for (const node of activeNodes) {
+                const r = getRadius(node);
+                if ((x - node.x) ** 2 + (y - node.y) ** 2 <= (r + 5) ** 2) {
+                    newHover = node;
+                    break;
+                }
+            }
+            if (hoverNode !== newHover) {
+                hoverNode = newHover;
+                draw();
+            }
+        });
+
+        d3Canvas.on("click", (e) => {
+            if (hoverNode) {
+                selectNode(hoverNode);
+            } else {
+                closePanel();
+            }
+        });
+
+        d3Canvas.on("dblclick.zoom", null); // disable default dblclick zoom
+        d3Canvas.on("dblclick", (e) => {
+            if (hoverNode) {
+                egoNetwork(hoverNode);
+            }
+        });
+    }
+
+    function applyFilters() {
+      const typeFilter = document.getElementById('filter-type').value;
+      const search = document.getElementById('search-author').value.toLowerCase();
+
+      activeNodes = graphData.nodes.filter(n => {
+          if(typeFilter && n.categoria !== typeFilter) return false;
+          if(search && !n.nome.toLowerCase().includes(search)) return false;
+          return true;
+      });
+
+      const activeIds = new Set(activeNodes.map(n => n.id));
+      activeEdges = graphData.edges.filter(e => activeIds.has(e.source.id || e.source) && activeIds.has(e.target.id || e.target));
+
+      // Re-bind to simulation
+      simulation.nodes(activeNodes);
+      simulation.force("link").links(activeEdges);
+      simulation.alpha(0.5).restart();
+
+      closePanel();
+    }
+
+    function resetView() {
+      document.getElementById('filter-type').value = '';
+      document.getElementById('search-author').value = '';
+
+      d3.select(canvas).transition().duration(750).call(
+          d3.zoom().transform, d3.zoomIdentity
+      );
+
+      applyFilters();
+    }
+
+    function egoNetwork(node) {
+        // Center node
+        const scale = 1.5;
+        const tx = width / 2 - node.x * scale;
+        const ty = height / 2 - node.y * scale;
+
+        d3.select(canvas).transition().duration(750).call(
+            d3.zoom().transform, d3.zoomIdentity.translate(tx, ty).scale(scale)
+        );
+    }
+
+    function selectNode(node) {
+        selectedNode = node;
+        draw();
+
+        const panel = document.getElementById('side-panel');
+        if (!panel.classList.contains('active')) {
+            panel.classList.add('active');
+            // Trigger resize to fix canvas aspect ratio when panel opens
+            setTimeout(resizeCanvas, 10);
+        }
+
+        // Render Info
+        document.getElementById('author-info').innerHTML = `
+            <p><strong>Nome:</strong> ${node.nome}</p>
+            <p><strong>Tipo:</strong> <span class="badge-author badge-${node.categoria}">${node.categoria}</span></p>
+        `;
+
+        // Render Productions
+        document.getElementById('prod-count').textContent = node.productions.length;
+
+        const listEl = document.getElementById('prod-list');
+        if(node.productions.length === 0) {
+            listEl.innerHTML = '<p style="color:#888;">Nenhuma produção registrada.</p>';
+        } else {
+            listEl.innerHTML = node.productions.map(p => `
+                <div class="prod-card">
+                    <h4>${p.titulo}</h4>
+                    <p style="margin-bottom:3px;">${p.tipo} (${p.ano})</p>
+                    <p style="color:#667;">👥 ${(p.autores || []).map(a => a.nome).join(', ')}</p>
+                </div>
+            `).join('');
+        }
+    }
+
+    function closePanel() {
+        selectedNode = null;
+        draw();
+        const panel = document.getElementById('side-panel');
+        if (panel.classList.contains('active')) {
+            panel.classList.remove('active');
+            // Trigger resize to fix canvas aspect ratio when panel closes
+            setTimeout(resizeCanvas, 10);
+        }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</body>
+</html>
