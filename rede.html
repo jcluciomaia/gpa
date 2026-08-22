@@ -523,8 +523,10 @@
             })
             .on("end", (e) => {
                 if (!e.active) simulation.alphaTarget(0);
-                e.subject.fx = null;
-                e.subject.fy = null;
+                if (!nodesFixed) {
+                    e.subject.fx = null;
+                    e.subject.fy = null;
+                }
             }));
 
         // Hover & Click
@@ -597,6 +599,15 @@
       document.getElementById('btn-filter-discente').style.opacity = '1';
       document.getElementById('btn-filter-externo').style.opacity = '1';
       document.getElementById('search-author').value = '';
+
+      if (radialMode) {
+          radialMode = false;
+          simulation.force("radial", null);
+          simulation.force("charge", d3.forceManyBody().strength(-300));
+          if(!nodesFixed) {
+              activeNodes.forEach(n => { n.fx = null; n.fy = null; });
+          }
+      }
 
       d3.select(canvas).transition().duration(750).call(
           zoomBehavior.transform, d3.zoomIdentity
