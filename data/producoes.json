@@ -1,11 +1,15 @@
 [
   {
     "id": "PROD_01",
-    "titulo": "Governança algorítmica e responsabilidade",
+    "titulo": "Governança sustentável e contratações públicas responsáveis no TRE-GO",
     "tipo": "Artigo para periódicos",
-    "veiculo": "Revista de Tecnologia e Sociedade",
-    "ano": 2024,
+    "subtipo_ptt": null,
+    "veiculo": "Revista ARACÊ",
+    "ano": 2025,
     "situacao": "Publicado",
+    "instituicao_beneficiada": "TRE-GO",
+    "aplicabilidade": "Aplicado na Prática",
+    "impacto_resumo": "Alinhamento das contratações aos ODS 12 e 16 da Agenda 2030, otimizando compras sustentáveis.",
     "autores": [
       {
         "id": "DOC_FLAVIO",
@@ -31,6 +35,9 @@
     "veiculo": "Congresso Internacional de Educação",
     "ano": 2023,
     "situacao": "Aceito",
+    "instituicao_beneficiada": "UFT",
+    "aplicabilidade": "Estudo Teórico",
+    "impacto_resumo": "Análise teórica dos impactos da IA e propostas pedagógicas gerais.",
     "autores": [
       {
         "id": "DOC_GENTIL",
