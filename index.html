@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestão Acadêmica — Dashboard</title>
+  <style>
+    :root {
+      --primary: #004B78;
+      --primary-hover: #003657;
+      --docente-color: #4fa8d4;
+      --discente-color: #00887E;
+      --externo-color: #858688;
+      --bg: #f4f7fa;
+      --card-bg: #ffffff;
+      --border: #d0dce8;
+      --text: #1a2a3a;
+      --success: #2e7d32;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 40px; }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header h1 { font-size: 16px; font-weight: 600; }
+    header .nav-links a { color: #a8d0e8; text-decoration: none; font-size: 13px; margin-left: 15px; }
+    header .nav-links a:hover { color: #fff; }
+    header .nav-links a.active { color: #fff; font-weight: bold; }
+
+    .container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+
+    .stat-card h3 {
+      font-size: 13px;
+      color: #667;
+      margin-bottom: 8px;
+    }
+
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filters input, .filters select {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      font-size: 13px;
+      outline: none;
+      min-width: 200px;
+    }
+
+    .filters input:focus, .filters select:focus {
+      border-color: var(--primary);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background-color: #f8fafc;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    tr:hover {
+      background-color: #f1f5f9;
+    }
+
+    .badge-author {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 12px;
+      color: #fff;
+      display: inline-block;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+    .badge-docente { background: var(--docente-color); }
+    .badge-discente { background: var(--discente-color); }
+    .badge-externo { background: var(--externo-color); }
+    .badge-default { background: var(--externo-color); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Sistema de Gestão Acadêmica — GPA</h1>
+    <nav class="nav-links">
+      <a href="index.html" class="active">📊 Dashboard</a>
+      <a href="rede.html">🕸 Rede de Colaboração</a>
+      <a href="cadastro.html">📝 Cadastro</a>
+      <a href="admin.html">⚙️ Administração</a>
+      <a href="relatorios.html">📑 Relatórios</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="summary-cards">
+      <div class="stat-card">
+        <h3>Total de Produções</h3>
+        <div class="value" id="stat-total">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Artigos p/ Periódicos</h3>
+        <div class="value" id="stat-periodicos">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Artigos p/ Eventos</h3>
+        <div class="value" id="stat-eventos">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Capítulos de Livros</h3>
+        <div class="value" id="stat-livros">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>PTTs</h3>
+        <div class="value" id="stat-ptts">0</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>Filtros e Produções Recentes</span>
+      </div>
+
+      <div class="filters">
+        <select id="filter-turma" onchange="filterTable()">
+          <option value="">Filtrar por Turma/Convênio</option>
+        </select>
+
+        <select id="filter-nivel" onchange="filterTable()">
+          <option value="">Filtrar por Nível (Todos)</option>
+          <option value="Mestrado">Mestrado</option>
+          <option value="Mestrado Profissional">Mestrado Profissional</option>
+          <option value="Doutorado">Doutorado</option>
+        </select>
+
+        <select id="filter-docente" onchange="filterTable()">
+          <option value="">Filtrar por Docente/Orientador</option>
+        </select>
+
+        <input type="text" id="search-author" placeholder="Buscar por autor..." oninput="filterTable()">
+
+        <select id="filter-type" onchange="filterTable()">
+          <option value="">Todos os tipos</option>
+          <option value="Artigo para periódicos">Artigo para Periódicos</option>
+          <option value="Artigo para eventos">Artigo para Eventos / Anais</option>
+          <option value="Capítulo de livros">Capítulo de Livro</option>
+          <option value="PTTs">Produto Técnico / Tecnológico (PTT)</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table id="productions-table">
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Tipo</th>
+              <th>Ano</th>
+              <th>Autores</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Dados preenchidos via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let productionsData = [];
+    let estruturaData = { turmas: [], docentes: [], discentes: [] };
+
+    async function loadData() {
+      try {
+        // Carrega estrutura GPA
+        const estruturaRes = await fetch('data/estrutura_gpa.json');
+        if (estruturaRes.ok) {
+          estruturaData = await estruturaRes.json();
+          populateFilters();
+        }
+
+        // Tenta carregar do localStorage primeiro, depois do JSON
+        const localData = localStorage.getItem('gta_productions');
+        if (localData) {
+            productionsData = JSON.parse(localData);
+            updateDashboard(productionsData);
+            return;
+        }
+
+        const response = await fetch('data/producoes.json');
+        if (response.ok) {
+          productionsData = await response.json();
+          updateDashboard(productionsData);
+        } else {
+            console.error('Failed to load producoes.json');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar os dados:', error);
+      }
+    }
+
+    function populateFilters() {
+      const turmaSelect = document.getElementById('filter-turma');
+      estruturaData.turmas.forEach(t => {
+        turmaSelect.innerHTML += `<option value="${t.id}">${t.nome}</option>`;
+      });
+
+      const docenteSelect = document.getElementById('filter-docente');
+      estruturaData.docentes.forEach(d => {
+        docenteSelect.innerHTML += `<option value="${d.id}">${d.nome}</option>`;
+      });
+    }
+
+    function updateDashboard(dataToRender) {
+      updateStats(dataToRender);
+      renderTable(dataToRender);
+    }
+
+    function updateStats(dataToRender) {
+      document.getElementById('stat-total').textContent = dataToRender.length;
+
+      const counts = {
+        'Artigo para periódicos': 0,
+        'Artigo para eventos': 0,
+        'Capítulo de livros': 0,
+        'PTTs': 0
+      };
+
+      dataToRender.forEach(p => {
+        if (counts[p.tipo] !== undefined) {
+          counts[p.tipo]++;
+        }
+      });
+
+      document.getElementById('stat-periodicos').textContent = counts['Artigo para periódicos'];
+      document.getElementById('stat-eventos').textContent = counts['Artigo para eventos'];
+      document.getElementById('stat-livros').textContent = counts['Capítulo de livros'];
+      document.getElementById('stat-ptts').textContent = counts['PTTs'];
+    }
+
+    function getBadgeClass(type) {
+        if (!type) return 'badge-default';
+        const t = type.toLowerCase();
+        if (t === 'docente') return 'badge-docente';
+        if (t === 'discente') return 'badge-discente';
+        if (t === 'externo') return 'badge-externo';
+        return 'badge-default';
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888;">Nenhuma produção encontrada.</td></tr>';
+        return;
+      }
+
+      data.forEach(prod => {
+        const tr = document.createElement('tr');
+
+        const authorsHtml = (prod.autores || []).map(a =>
+          `<span class="badge-author ${getBadgeClass(a.categoria || a.type)}">${a.nome}</span>`
+        ).join('');
+
+        tr.innerHTML = `
+          <td><strong>${prod.titulo}</strong><br><small style="color: #667;">${prod.veiculo || ''}</small></td>
+          <td>${prod.tipo}</td>
+          <td>${prod.ano}</td>
+          <td>${authorsHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterTable() {
+      const authorQuery = document.getElementById('search-author').value.toLowerCase();
+      const typeQuery = document.getElementById('filter-type').value;
+      const turmaQuery = document.getElementById('filter-turma').value;
+      const nivelQuery = document.getElementById('filter-nivel').value;
+      const docenteQuery = document.getElementById('filter-docente').value;
+
+      const filtered = productionsData.filter(p => {
+        const matchType = typeQuery === '' || p.tipo === typeQuery;
+        const matchAuthorText = authorQuery === '' || (p.autores && p.autores.some(a => a.nome.toLowerCase().includes(authorQuery)));
+
+        let matchTurma = true;
+        let matchNivel = true;
+        let matchDocente = true;
+
+        if (turmaQuery || nivelQuery || docenteQuery) {
+           // We need to check if any author in this production satisfies the filters
+           let hasMatchingAuthor = false;
+
+           if(p.autores) {
+               p.autores.forEach(a => {
+                   let aTurma = true;
+                   let aNivel = true;
+                   let aDocente = true;
+
+                   // If it's a student, check turma and level
+                   if (a.categoria === 'discente' || a.type === 'discente') {
+                       const discenteInfo = estruturaData.discentes.find(d => d.id === a.id);
+                       if (discenteInfo) {
+                           if (turmaQuery && discenteInfo.turma_id !== turmaQuery) aTurma = false;
+                           if (docenteQuery && discenteInfo.orientador_id !== docenteQuery) aDocente = false;
+
+                           if (nivelQuery) {
+                               const turmaInfo = estruturaData.turmas.find(t => t.id === discenteInfo.turma_id);
+                               if (!turmaInfo || turmaInfo.nivel !== nivelQuery) aNivel = false;
+                           }
+                       } else {
+                           if(turmaQuery) aTurma = false;
+                           if(docenteQuery) aDocente = false;
+                           if(nivelQuery) aNivel = false;
+                       }
+                   } else if (a.categoria === 'docente' || a.type === 'docente') {
+                       if (docenteQuery && a.id !== docenteQuery) aDocente = false;
+                       if (turmaQuery) aTurma = false; // Docentes don't have turmas directly
+                       if (nivelQuery) aNivel = false;
+                   } else {
+                       if (turmaQuery || nivelQuery || docenteQuery) {
+                           aTurma = false;
+                           aNivel = false;
+                           aDocente = false;
+                       }
+                   }
+
+                   // Se esse autor passou em TODOS os filtros que estavam preenchidos
+                   let authorPassed = true;
+                   if (turmaQuery && !aTurma) authorPassed = false;
+                   if (nivelQuery && !aNivel) authorPassed = false;
+                   if (docenteQuery && !aDocente) authorPassed = false;
+
+                   if (authorPassed) {
+                       hasMatchingAuthor = true;
+                   }
+               });
+           }
+
+           if (!hasMatchingAuthor) {
+               matchTurma = false;
+           }
+        }
+
+        return matchType && matchAuthorText && matchTurma;
+      });
+
+      updateDashboard(filtered);
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</body>
+</html>

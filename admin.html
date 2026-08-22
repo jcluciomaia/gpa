@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestão Acadêmica — Administração</title>
+  <style>
+    :root {
+      --primary: #004B78;
+      --primary-hover: #003657;
+      --bg: #f4f7fa;
+      --card-bg: #ffffff;
+      --border: #d0dce8;
+      --text: #1a2a3a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 40px; }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header h1 { font-size: 16px; font-weight: 600; }
+    header .nav-links a { color: #a8d0e8; text-decoration: none; font-size: 13px; margin-left: 15px; }
+    header .nav-links a:hover { color: #fff; }
+    header .nav-links a.active { color: #fff; font-weight: bold; }
+
+    .container {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      padding: 10px 16px;
+      background: none;
+      border: 1px solid transparent;
+      border-bottom: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: #667;
+      border-radius: 6px 6px 0 0;
+    }
+    .tab-btn.active {
+      background: var(--card-bg);
+      border-color: var(--border);
+      color: var(--primary);
+      margin-bottom: -1px;
+    }
+
+    .tab-content {
+      display: none;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0 8px 8px 8px;
+      padding: 24px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+    .tab-content.active { display: block; }
+
+    .content-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th { background-color: #f8fafc; font-weight: 600; color: #475569; }
+    tr:hover { background-color: #f1f5f9; }
+
+    .btn {
+      padding: 8px 12px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: var(--primary);
+      color: white;
+    }
+    .btn:hover { background: var(--primary-hover); }
+
+    .json-export-bar {
+      margin-top: 15px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Sistema de Gestão Acadêmica — GPA</h1>
+    <nav class="nav-links">
+      <a href="index.html">📊 Dashboard</a>
+      <a href="rede.html">🕸 Rede de Colaboração</a>
+      <a href="cadastro.html">📝 Cadastro</a>
+      <a href="admin.html" class="active">⚙️ Administração</a>
+      <a href="relatorios.html">📑 Relatórios</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="openTab(event, 'tab-programas')">Programas & Turmas</button>
+      <button class="tab-btn" onclick="openTab(event, 'tab-docentes')">Docentes</button>
+      <button class="tab-btn" onclick="openTab(event, 'tab-discentes')">Discentes</button>
+      <button class="tab-btn" onclick="openTab(event, 'tab-disciplinas')">Disciplinas</button>
+    </div>
+
+    <!-- Tab Programas/Turmas -->
+    <div id="tab-programas" class="tab-content active">
+      <div class="content-header">
+        <h2>Gestão de Programas e Turmas</h2>
+      </div>
+      <div style="overflow-x: auto;">
+        <table id="table-turmas">
+          <thead>
+            <tr>
+              <th>ID Turma</th>
+              <th>Nome</th>
+              <th>Nível</th>
+              <th>Programa</th>
+              <th>Período</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab Docentes -->
+    <div id="tab-docentes" class="tab-content">
+      <div class="content-header">
+        <h2>Gestão de Docentes</h2>
+      </div>
+      <div style="overflow-x: auto;">
+        <table id="table-docentes">
+          <thead>
+            <tr>
+              <th>ID Docente</th>
+              <th>Nome Completo</th>
+              <th>Lattes (Link)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab Discentes -->
+    <div id="tab-discentes" class="tab-content">
+      <div class="content-header">
+        <h2>Gestão de Discentes</h2>
+      </div>
+      <div style="overflow-x: auto;">
+        <table id="table-discentes">
+          <thead>
+            <tr>
+              <th>ID Discente</th>
+              <th>Nome</th>
+              <th>Turma (Nível)</th>
+              <th>Orientador</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab Disciplinas -->
+    <div id="tab-disciplinas" class="tab-content">
+      <div class="content-header">
+        <h2>Gestão de Disciplinas</h2>
+      </div>
+      <div style="overflow-x: auto;">
+        <table id="table-disciplinas">
+          <thead>
+            <tr>
+              <th>ID Disciplina</th>
+              <th>Nome</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="json-export-bar">
+      <button class="btn" style="background: #e4eef7; color: var(--primary); border: 1px solid var(--border);" onclick="exportEstrutura()">📥 Baixar estrutura_gpa.json</button>
+      <button class="btn" style="background: #e4eef7; color: var(--primary); border: 1px solid var(--border);" onclick="document.getElementById('import-file').click()">📤 Importar estrutura_gpa.json</button>
+      <input type="file" id="import-file" style="display:none" accept=".json" onchange="importEstrutura(event)">
+    </div>
+  </div>
+
+  <script>
+    let estruturaData = { programas: [], turmas: [], docentes: [], discentes: [], disciplinas: [] };
+
+    function openTab(evt, tabId) {
+      const contents = document.querySelectorAll('.tab-content');
+      contents.forEach(c => c.classList.remove('active'));
+
+      const btns = document.querySelectorAll('.tab-btn');
+      btns.forEach(b => b.classList.remove('active'));
+
+      document.getElementById(tabId).classList.add('active');
+      evt.currentTarget.classList.add('active');
+    }
+
+    async function loadEstrutura() {
+      // Tenta LocalStorage
+      const localData = localStorage.getItem('gta_estrutura');
+      if (localData) {
+        estruturaData = JSON.parse(localData);
+        renderTables();
+        return;
+      }
+
+      // Senão carrega do JSON
+      try {
+        const response = await fetch('data/estrutura_gpa.json');
+        if (response.ok) {
+          estruturaData = await response.json();
+          renderTables();
+        }
+      } catch (err) {
+        console.error('Erro ao carregar estrutura_gpa.json', err);
+      }
+    }
+
+    function saveEstrutura() {
+      localStorage.setItem('gta_estrutura', JSON.stringify(estruturaData));
+      renderTables();
+    }
+
+    function renderTables() {
+      // Turmas
+      const tbodyTurmas = document.querySelector('#table-turmas tbody');
+      tbodyTurmas.innerHTML = estruturaData.turmas.map(t => {
+        const p = estruturaData.programas.find(prog => prog.id === t.programa_id);
+        return `<tr>
+          <td>${t.id}</td>
+          <td>${t.nome}</td>
+          <td>${t.nivel}</td>
+          <td>${p ? p.nome : t.programa_id}</td>
+          <td>${t.ano_inicio} - ${t.ano_fim}</td>
+        </tr>`;
+      }).join('');
+
+      // Docentes
+      const tbodyDocentes = document.querySelector('#table-docentes tbody');
+      tbodyDocentes.innerHTML = estruturaData.docentes.map(d => `
+        <tr>
+          <td>${d.id}</td>
+          <td>${d.nome}</td>
+          <td><a href="#" style="color:var(--primary)">[Inserir Lattes]</a></td>
+        </tr>
+      `).join('');
+
+      // Discentes
+      const tbodyDiscentes = document.querySelector('#table-discentes tbody');
+      tbodyDiscentes.innerHTML = estruturaData.discentes.map(d => {
+        const turma = estruturaData.turmas.find(t => t.id === d.turma_id);
+        const orientador = estruturaData.docentes.find(doc => doc.id === d.orientador_id);
+        return `<tr>
+          <td>${d.id}</td>
+          <td>${d.nome}</td>
+          <td>${turma ? turma.nome + ' (' + turma.nivel + ')' : ''}</td>
+          <td>${orientador ? orientador.nome : ''}</td>
+        </tr>`;
+      }).join('');
+
+      // Disciplinas
+      const tbodyDisciplinas = document.querySelector('#table-disciplinas tbody');
+      tbodyDisciplinas.innerHTML = (estruturaData.disciplinas || []).map(d => `
+        <tr>
+          <td>${d.id}</td>
+          <td>${d.nome}</td>
+        </tr>
+      `).join('');
+    }
+
+    function exportEstrutura() {
+      const blob = new Blob([JSON.stringify(estruturaData, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'estrutura_gpa.json';
+      a.click();
+    }
+
+    function importEstrutura(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          estruturaData = JSON.parse(evt.target.result);
+          saveEstrutura();
+          alert('Dados importados com sucesso!');
+        } catch(err) {
+          alert('Arquivo JSON inválido.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    document.addEventListener('DOMContentLoaded', loadEstrutura);
+  </script>
+</body>
+</html>
