@@ -1,0 +1,28 @@
+{
+  "turma": "PPGGTD 2023/2024",
+  "docentes": [
+    { "id": "DOC_FLAVIO", "nome": "Flávio" },
+    { "id": "DOC_GENTIL", "nome": "Gentil" },
+    { "id": "DOC_GEORGE", "nome": "George" },
+    { "id": "DOC_HUMBERTO", "nome": "Humberto" },
+    { "id": "DOC_MARCELO", "nome": "Marcelo" },
+    { "id": "DOC_PATRICK", "nome": "Patrick" },
+    { "id": "DOC_RAFAEL", "nome": "Rafael" },
+    { "id": "DOC_SUZANA", "nome": "Suzana" }
+  ],
+  "discentes": [
+    { "id": "DISC_01", "nome": "Aluno Um", "orientador_id": "DOC_FLAVIO" },
+    { "id": "DISC_02", "nome": "Aluno Dois", "orientador_id": "DOC_GENTIL" },
+    { "id": "DISC_03", "nome": "Aluno Três", "orientador_id": "DOC_GEORGE" },
+    { "id": "DISC_04", "nome": "Aluno Quatro", "orientador_id": "DOC_HUMBERTO" },
+    { "id": "DISC_05", "nome": "Aluno Cinco", "orientador_id": "DOC_MARCELO" },
+    { "id": "DISC_06", "nome": "Aluno Seis", "orientador_id": "DOC_PATRICK" },
+    { "id": "DISC_07", "nome": "Aluno Sete", "orientador_id": "DOC_RAFAEL" },
+    { "id": "DISC_08", "nome": "Aluno Oito", "orientador_id": "DOC_SUZANA" }
+  ],
+  "disciplinas": [
+    { "id": "DISCIP_01", "nome": "Metodologia Científica" },
+    { "id": "DISCIP_02", "nome": "Seminários Avançados" },
+    { "id": "DISCIP_03", "nome": "Gestão e Tecnologia" }
+  ]
+}

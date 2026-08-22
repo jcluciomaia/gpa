@@ -1,0 +1,47 @@
+[
+  {
+    "id": "PROD_01",
+    "titulo": "Governança algorítmica e responsabilidade",
+    "tipo": "Artigo para periódicos",
+    "veiculo": "Revista de Tecnologia e Sociedade",
+    "ano": 2024,
+    "situacao": "Publicado",
+    "autores": [
+      {
+        "id": "DOC_FLAVIO",
+        "nome": "Flávio",
+        "categoria": "docente"
+      },
+      {
+        "id": "DISC_01",
+        "nome": "Aluno Um",
+        "categoria": "discente"
+      },
+      {
+        "id": "EXT_01",
+        "nome": "Pesquisador Externo",
+        "categoria": "externo"
+      }
+    ]
+  },
+  {
+    "id": "PROD_02",
+    "titulo": "Impactos da Inteligência Artificial na Educação",
+    "tipo": "Artigo para eventos",
+    "veiculo": "Congresso Internacional de Educação",
+    "ano": 2023,
+    "situacao": "Aceito",
+    "autores": [
+      {
+        "id": "DOC_GENTIL",
+        "nome": "Gentil",
+        "categoria": "docente"
+      },
+      {
+        "id": "DISC_02",
+        "nome": "Aluno Dois",
+        "categoria": "discente"
+      }
+    ]
+  }
+]
