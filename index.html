@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestão Acadêmica — Dashboard</title>
+  <style>
+    :root {
+      --primary: #004B78;
+      --primary-hover: #003657;
+      --docente-color: #4fa8d4;
+      --discente-color: #00887E;
+      --externo-color: #858688;
+      --bg: #f4f7fa;
+      --card-bg: #ffffff;
+      --border: #d0dce8;
+      --text: #1a2a3a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 40px; }
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header h1 { font-size: 16px; font-weight: 600; }
+    header .nav-links a { color: #a8d0e8; text-decoration: none; font-size: 13px; margin-left: 15px; }
+    header .nav-links a:hover { color: #fff; }
+    header .nav-links a.active { color: #fff; font-weight: bold; }
+    .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+    .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+    .stat-card h3 { font-size: 13px; color: #667; margin-bottom: 8px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; color: var(--primary); }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+    .card-title { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; }
+    .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filters input, .filters select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 5px; font-size: 13px; outline: none; min-width: 200px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background-color: #f8fafc; font-weight: 600; color: #475569; }
+    tr:hover { background-color: #f1f5f9; }
+    .badge-author { font-size: 11px; padding: 2px 6px; border-radius: 12px; color: #fff; display: inline-block; margin-right: 4px; margin-bottom: 4px; }
+    .badge-docente { background: var(--docente-color); }
+    .badge-discente { background: var(--discente-color); }
+    .badge-externo { background: var(--externo-color); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sistema de Gestão Acadêmica — GPA</h1>
+    <nav class="nav-links">
+      <a href="index.html" class="active">📊 Dashboard</a>
+      <a href="rede.html">🕸 Rede de Colaboração</a>
+      <a href="cadastro.html">📝 Cadastro</a>
+      <a href="relatorios.html">📑 Relatórios</a>
+      <a href="admin.html">⚙️ Administração</a>
+    </nav>
+  </header>
+  <div class="container">
+    <div class="summary-cards">
+      <div class="stat-card"><h3>Total de Produções</h3><div class="value" id="stat-total">0</div></div>
+      <div class="stat-card"><h3>Artigos em Periódicos</h3><div class="value" id="stat-periodicos">0</div></div>
+      <div class="stat-card"><h3>Artigos em Eventos</h3><div class="value" id="stat-eventos">0</div></div>
+      <div class="stat-card"><h3>Capítulos de Livros</h3><div class="value" id="stat-livros">0</div></div>
+      <div class="stat-card"><h3>PTTs</h3><div class="value" id="stat-ptts">0</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Produções Acadêmicas</div>
+      <div class="filters">
+        <input type="text" id="search-author" placeholder="Buscar por título ou autor..." oninput="filterTable()">
+        <select id="filter-type" onchange="filterTable()">
+          <option value="">Todos os tipos</option>
+          <option value="Artigo para periódicos">Artigo para Periódicos</option>
+          <option value="Artigo para eventos">Artigo para Eventos</option>
+          <option value="Capítulo de livros">Capítulo de Livro</option>
+          <option value="PTTs">Produto Técnico / Tecnológico (PTT)</option>
+        </select>
+      </div>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Tipo</th>
+              <th>Ano</th>
+              <th>Autores</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    let productionsData = [];
+    async function loadData() {
+      try {
+        const localData = localStorage.getItem('gpa_productions');
+        if (localData) {
+          productionsData = JSON.parse(localData);
+          updateDashboard();
+          return;
+        }
+        const response = await fetch('data/producoes.json');
+        if (response.ok) {
+          productionsData = await response.json();
+          updateDashboard();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    function updateDashboard() {
+      document.getElementById('stat-total').textContent = productionsData.length;
+      document.getElementById('stat-periodicos').textContent = productionsData.filter(p => (p.tipo||'').includes('periódico')).length;
+      document.getElementById('stat-eventos').textContent = productionsData.filter(p => (p.tipo||'').includes('evento')).length;
+      document.getElementById('stat-livros').textContent = productionsData.filter(p => (p.tipo||'').includes('livro')).length;
+      document.getElementById('stat-ptts').textContent = productionsData.filter(p => (p.tipo||'').includes('PTT') || (p.tipo||'').includes('Técnico')).length;
+      renderTable(productionsData);
+    }
+    function renderTable(data) {
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888;">Nenhuma produção cadastrada.</td></tr>';
+        return;
+      }
+      data.forEach(prod => {
+        const tr = document.createElement('tr');
+        const authorsHtml = (prod.autores || []).map(a => {
+          const cat = (a.categoria || a.type || 'externo').toLowerCase();
+          return `<span class="badge-author badge-${cat}">${a.nome}</span>`;
+        }).join('');
+        tr.innerHTML = `
+          <td><strong>${prod.titulo}</strong><br><small style="color: #667;">${prod.veiculo || ''}</small></td>
+          <td>${prod.tipo}</td>
+          <td>${prod.ano}</td>
+          <td>${authorsHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    function filterTable() {
+      const q = document.getElementById('search-author').value.toLowerCase();
+      const type = document.getElementById('filter-type').value;
+      const filtered = productionsData.filter(p => {
+        const matchType = !type || (p.tipo || '').includes(type);
+        const matchQ = !q || (p.titulo || '').toLowerCase().includes(q) || (p.autores && p.autores.some(a => a.nome.toLowerCase().includes(q)));
+        return matchType && matchQ;
+      });
+      renderTable(filtered);
+    }
+    document.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</body>
+</html>
