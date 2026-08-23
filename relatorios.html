@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPA — Relatórios e Prestação de Contas</title>
+  <style>
+    :root {
+      --primary: #004B78;
+      --primary-hover: #003657;
+      --docente-color: #4fa8d4;
+      --discente-color: #00887E;
+      --bg: #f4f7fa;
+      --card-bg: #ffffff;
+      --border: #d0dce8;
+      --text: #1a2a3a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 40px; }
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header h1 { font-size: 16px; font-weight: 600; }
+    header .nav-links a { color: #a8d0e8; text-decoration: none; font-size: 13px; margin-left: 15px; }
+    header .nav-links a:hover { color: #fff; }
+    header .nav-links a.active { color: #fff; font-weight: bold; }
+    .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 24px; }
+    .card-title { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .filters select, .filters input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 5px; font-size: 13px; width: 100%; outline: none; }
+    .btn-group { display: flex; gap: 10px; }
+    .btn { padding: 8px 16px; border: none; border-radius: 5px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn:hover { opacity: 0.9; }
+    .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .kpi-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 14px; text-align: center; }
+    .kpi-card .num { font-size: 22px; font-weight: 700; color: var(--primary); }
+    .kpi-card .label { font-size: 12px; color: #64748b; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background-color: #f8fafc; font-weight: 600; color: #475569; }
+    @media print {
+      header, .filters, .btn-group { display: none !important; }
+      body { background: white; padding: 0; }
+      .card { border: none; box-shadow: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sistema de Gestão Acadêmica — GPA</h1>
+    <nav class="nav-links">
+      <a href="index.html">📊 Dashboard</a>
+      <a href="rede.html">🕸 Rede de Colaboração</a>
+      <a href="cadastro.html">📝 Cadastro</a>
+      <a href="relatorios.html" class="active">📑 Relatórios</a>
+      <a href="admin.html">⚙️ Administração</a>
+    </nav>
+  </header>
+  <div class="container">
+    <div class="card">
+      <div class="card-title">
+        <span>📑 Emissão de Relatórios & Prestação de Contas</span>
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="exportCSV()">Exportar CSV</button>
+          <button class="btn btn-primary" onclick="window.print()">Imprimir / PDF</button>
+        </div>
+      </div>
+      <div class="filters">
+        <select id="filter-inst" onchange="applyFilters()">
+          <option value="">Todas as Instituições</option>
+          <option value="TRE-GO">Convênio TRE-GO</option>
+          <option value="UFT">Institucional UFT</option>
+        </select>
+        <select id="filter-tipo" onchange="applyFilters()">
+          <option value="">Todos os Tipos</option>
+          <option value="periódico">Artigos em Periódicos</option>
+          <option value="evento">Artigos em Eventos</option>
+          <option value="livro">Capítulos de Livros</option>
+          <option value="PTT">Produtos Técnicos (PTTs)</option>
+        </select>
+        <select id="filter-aplic" onchange="applyFilters()">
+          <option value="">Todas as Aplicações</option>
+          <option value="Aplicado">Aplicado na Prática</option>
+          <option value="Estudo">Estudo / Análise Teórica</option>
+        </select>
+        <input type="text" id="search-box" placeholder="Filtrar por autor ou título..." oninput="applyFilters()">
+      </div>
+
+      <div class="kpi-container">
+        <div class="kpi-card"><div class="num" id="kpi-total">0</div><div class="label">Total Selecionado</div></div>
+        <div class="kpi-card"><div class="num" id="kpi-tre">0</div><div class="label">Com Impacto TRE-GO</div></div>
+        <div class="kpi-card"><div class="num" id="kpi-aplicados">0</div><div class="label">Produtos Aplicados</div></div>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Autores</th>
+              <th>Tipo</th>
+              <th>Ano</th>
+              <th>Instituição</th>
+              <th>Aplicação</th>
+            </tr>
+          </thead>
+          <tbody id="report-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    let rawData = [];
+    let filteredData = [];
+
+    async function init() {
+      try {
+        const local = localStorage.getItem('gpa_productions');
+        if (local) {
+          rawData = JSON.parse(local);
+        } else {
+          const res = await fetch('data/producoes.json');
+          if (res.ok) rawData = await res.json();
+        }
+        applyFilters();
+      } catch (e) { console.error(e); }
+    }
+
+    function applyFilters() {
+      const inst = document.getElementById('filter-inst').value;
+      const tipo = document.getElementById('filter-tipo').value;
+      const aplic = document.getElementById('filter-aplic').value;
+      const q = document.getElementById('search-box').value.toLowerCase();
+
+      filteredData = rawData.filter(p => {
+        const mInst = !inst || (p.instituicao_beneficiada || '').includes(inst);
+        const mTipo = !tipo || (p.tipo || '').toLowerCase().includes(tipo.toLowerCase());
+        const mAplic = !aplic || (p.aplicabilidade || '').toLowerCase().includes(aplic.toLowerCase());
+        const mQ = !q || (p.titulo || '').toLowerCase().includes(q) || (p.autores && p.autores.some(a => (a.nome || '').toLowerCase().includes(q)));
+        return mInst && mTipo && mAplic && mQ;
+      });
+
+      renderKPIs();
+      renderTable();
+    }
+
+    function renderKPIs() {
+      document.getElementById('kpi-total').textContent = filteredData.length;
+      document.getElementById('kpi-tre').textContent = filteredData.filter(p => (p.instituicao_beneficiada || '').includes('TRE-GO')).length;
+      document.getElementById('kpi-aplicados').textContent = filteredData.filter(p => (p.aplicabilidade || '').includes('Aplicado')).length;
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('report-body');
+      tbody.innerHTML = '';
+      if (!filteredData.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">Nenhum registro encontrado.</td></tr>';
+        return;
+      }
+      filteredData.forEach(p => {
+        const authors = (p.autores || []).map(a => a.nome).join(', ');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${p.titulo}</strong><br><small style="color: #64748b;">${p.veiculo || ''}</small></td>
+          <td style="font-size: 11px;">${authors}</td>
+          <td>${p.tipo}</td>
+          <td>${p.ano}</td>
+          <td><span style="font-weight: 600; color: #004B78;">${p.instituicao_beneficiada || 'Geral'}</span></td>
+          <td><span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0369a1;">${p.aplicabilidade || 'Geral'}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      if (!filteredData.length) return alert('Nenhum dado para exportar.');
+      const headers = ['Título', 'Veículo', 'Tipo', 'Ano', 'Instituição', 'Aplicação', 'Autores'];
+      const rows = filteredData.map(p => [
+        `"${(p.titulo || '').replace(/"/g, '""')}"`,
+        `"${(p.veiculo || '').replace(/"/g, '""')}"`,
+        `"${p.tipo || ''}"`,
+        p.ano || '',
+        `"${p.instituicao_beneficiada || ''}"`,
+        `"${p.aplicabilidade || ''}"`,
+        `"${(p.autores || []).map(a => a.nome).join('; ')}"`
+      ]);
+      const csv = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'relatorio_producao_gpa.csv';
+      link.click();
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
