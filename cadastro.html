@@ -157,8 +157,8 @@
     <h1>Sistema de Gestão Acadêmica — GTA</h1>
     <nav class="nav-links">
       <a href="index.html">📊 Dashboard</a>
-      <a href="Grafico_Dinamico_Rede_Colaboracao.html">🕸 Rede de Colaboração</a>
-      <a href="cadastro.html" style="color: #fff; font-weight: bold;">📝 Cadastro</a>
+      <a href="rede.html">🕸 Rede de Colaboração</a>
+      <a href="cadastro.html" class="active" style="color: #fff; font-weight: bold;">📝 Cadastro</a>
       <a href="admin.html">⚙️ Administração</a>
       <a href="relatorios.html">📑 Relatórios</a>
     </nav>
@@ -204,22 +204,13 @@
       <!-- Seção de Coautores -->
       <div class="coauthors-section">
         <label>Adicionar Autores / Coautores</label>
-
         <div class="coauthor-input-row">
-          <select id="author-type" onchange="toggleAuthorInput()">
-            <option value="docente">Docente (Interno)</option>
-            <option value="discente">Discente (Interno)</option>
-            <option value="externo">Colaborador Externo</option>
+          <input type="text" id="author-name" placeholder="Nome do autor...">
+          <select id="author-type">
+            <option value="discente">Discente</option>
+            <option value="docente">Docente</option>
+            <option value="externo">Externo</option>
           </select>
-
-          <!-- Para docentes e discentes (lista fechada) -->
-          <select id="author-select" style="flex: 2;">
-            <option value="">Carregando...</option>
-          </select>
-
-          <!-- Para colaboradores externos (texto livre) -->
-          <input type="text" id="author-name" placeholder="Nome do colaborador externo..." style="display: none; flex: 2;">
-
           <button type="button" onclick="addAuthorTag()">+ Inserir</button>
         </div>
         <div class="tag-list" id="authors-tags"></div>
@@ -256,98 +247,25 @@
   <script>
     // Armazenamento inicial no LocalStorage ou memória
     let productions = JSON.parse(localStorage.getItem('gta_productions')) || [];
-    let estruturaData = { docentes: [], discentes: [] };
     let currentAuthors = [];
-
-    async function loadEstrutura() {
-      try {
-        const response = await fetch('data/estrutura_gpa.json');
-        if (response.ok) {
-          estruturaData = await response.json();
-          updateAuthorSelect();
-        }
-      } catch (err) {
-        console.error('Erro ao carregar estrutura_gpa.json', err);
-      }
-    }
-
-    function toggleAuthorInput() {
-      const type = document.getElementById('author-type').value;
-      const selectEl = document.getElementById('author-select');
-      const inputEl = document.getElementById('author-name');
-
-      if (type === 'externo') {
-        selectEl.style.display = 'none';
-        inputEl.style.display = 'block';
-        inputEl.value = '';
-      } else {
-        selectEl.style.display = 'block';
-        inputEl.style.display = 'none';
-        updateAuthorSelect();
-      }
-    }
-
-    function updateAuthorSelect() {
-      const type = document.getElementById('author-type').value;
-      const selectEl = document.getElementById('author-select');
-      selectEl.innerHTML = '<option value="">-- Selecione --</option>';
-
-      if (type === 'docente') {
-        estruturaData.docentes.forEach(d => {
-          selectEl.innerHTML += `<option value="${d.id}">${d.nome}</option>`;
-        });
-      } else if (type === 'discente') {
-        estruturaData.discentes.forEach(d => {
-          selectEl.innerHTML += `<option value="${d.id}">${d.nome}</option>`;
-        });
-      }
-    }
 
     function saveToStorage() {
       localStorage.setItem('gta_productions', JSON.stringify(productions));
       renderList();
     }
 
-    function addAuthorTag(name = null, type = null, id = null) {
+    function addAuthorTag(name = null, type = null) {
+      const inputName = document.getElementById('author-name');
       const inputType = document.getElementById('author-type');
+
+      const authorName = name || inputName.value.trim();
       const authorType = type || inputType.value;
-      let authorName = name;
-      let authorId = id;
 
-      if (!authorName) {
-        if (authorType === 'externo') {
-          const inputName = document.getElementById('author-name');
-          authorName = inputName.value.trim();
+      if (!authorName) return;
+      if (currentAuthors.some(a => a.name.toLowerCase() === authorName.toLowerCase())) return;
 
-          // Prevenir duplicidade no frontend (sem case sensitive)
-          if(currentAuthors.some(a => a.name.toLowerCase() === authorName.toLowerCase() && a.type === 'externo')) {
-              alert('Este colaborador externo já foi adicionado.');
-              return;
-          }
-
-          if (authorName) {
-              inputName.value = '';
-          }
-        } else {
-          const selectEl = document.getElementById('author-select');
-          authorId = selectEl.value;
-          if (authorId) {
-            authorName = selectEl.options[selectEl.selectedIndex].text;
-          }
-        }
-      }
-
-      if (!authorName) {
-          alert('Por favor, informe o nome ou selecione o autor.');
-          return;
-      }
-
-      // Evitar que o mesmo autor exato seja inserido duas vezes (mesmo ID ou mesmo Nome caso externo)
-      if (currentAuthors.some(a => (a.id && a.id === authorId) || (a.name === authorName && a.type === authorType))) {
-          return;
-      }
-
-      currentAuthors.push({ id: authorId, name: authorName, type: authorType, categoria: authorType });
+      currentAuthors.push({ name: authorName, type: authorType });
+      if (!name) inputName.value = '';
       renderAuthorTags();
     }
 
@@ -491,7 +409,6 @@
     }
 
     // Inicialização
-    loadEstrutura();
     renderList();
   </script>
 </body>
