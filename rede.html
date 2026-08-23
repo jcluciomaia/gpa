@@ -27,7 +27,7 @@
     header {
       background: var(--primary);
       color: white;
-      padding: 14px 24px;
+      padding: 0 24px 0 0; height: 76px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -154,7 +154,12 @@
 <body>
 
   <header>
-    <div style="display: flex; align-items: center;"><img src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png" alt="UFT" style="height: 38px; vertical-align: middle; margin-right: 12px;"><h1>Gestão da Produção Acadêmica - GPA</h1></div>
+    <div style="display: flex; align-items: center; height: 100%;">
+      <div style="background: white; padding: 14px 24px; display: flex; align-items: center; justify-content: center; height: 100%; box-sizing: border-box;">
+        <img src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png" alt="UFT" style="height: 48px;">
+      </div>
+      <h1 style="font-size: 22px; font-weight: 600; margin: 0; margin-left: 24px;">Gestão da Produção Acadêmica - GPA</h1>
+    </div>
     <nav class="nav-links">
       <a href="index.html">Dashboard</a>
       <a href="rede.html" class="active">Rede de Colaboração</a>
