@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Discentes - GPA</title>
+  <style>
+    :root {
+      --primary: #005484;
+      --primary-hover: #003e62;
+      --secondary: #00897C;
+      --accent: #FDB92E;
+      --gray: #848688;
+      --text: #373435;
+      --docente-color: #005484;
+      --discente-color: #00897C;
+      --externo-color: #848688;
+      --bg: #f4f7fa;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+    }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); }
+    header { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 18px; margin: 0; color: var(--primary); }
+    .nav-links { display: flex; gap: 16px; }
+    .nav-links a { text-decoration: none; color: var(--text); font-size: 14px; font-weight: 500; padding: 6px 12px; border-radius: 4px; transition: 0.2s; }
+    .nav-links a:hover { background: var(--bg); color: var(--primary); }
+    .nav-links a.active { background: var(--primary); color: white; }
+    .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+    .card { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border); padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .card-title { font-size: 16px; font-weight: 600; color: var(--primary); margin-bottom: 16px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; display: inline-block; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+    th { background: #f8fafc; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+    tr:hover td { background: #f8fafc; }
+
+    .btn-lattes { display: inline-flex; align-items: center; justify-content: center; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; padding: 4px 10px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: 600; transition: 0.2s; }
+    .btn-lattes:hover { background: #bae6fd; color: #0369a1; }
+
+    .badge-turma { background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 12px; font-size: 12px; border: 1px solid #cbd5e1; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div style="display: flex; align-items: center;">
+      <img src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png" alt="UFT" style="height: 38px; vertical-align: middle; margin-right: 12px;">
+      <h1>Gestão da Produção Acadêmica - GPA</h1>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">Dashboard</a>
+      <a href="rede.html">Rede de Colaboração</a>
+      <a href="docentes.html">Docentes</a>
+      <a href="discentes.html" class="active">Discentes</a>
+      <a href="cadastro.html">Cadastro</a>
+      <a href="relatorios.html">Relatórios</a>
+      <a href="admin.html">Administração</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-title">Discentes de Mestrado</div>
+      <table id="table-mestrado">
+        <thead>
+          <tr>
+            <th>Nome do Aluno</th>
+            <th>Turma / Convênio</th>
+            <th>Orientador</th>
+            <th style="width: 100px; text-align: center;">Currículo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows will be injected here -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Discentes de Doutorado</div>
+      <table id="table-doutorado">
+        <thead>
+          <tr>
+            <th>Nome do Aluno</th>
+            <th>Turma / Convênio</th>
+            <th>Orientador</th>
+            <th style="width: 100px; text-align: center;">Currículo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows will be injected here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    async function loadData() {
+      try {
+        let estrutura = JSON.parse(localStorage.getItem('gta_estrutura'));
+
+        if (!estrutura) {
+          const res = await fetch('data/estrutura_gpa.json');
+          estrutura = await res.json();
+          localStorage.setItem('gta_estrutura', JSON.stringify(estrutura));
+        }
+
+        // Helper maps
+        const turmasMap = {};
+        (estrutura.turmas || []).forEach(t => turmasMap[t.id] = t);
+
+        const docentesMap = {};
+        (estrutura.docentes || []).forEach(d => docentesMap[d.id] = d);
+
+        const discentesMestrado = [];
+        const discentesDoutorado = [];
+
+        (estrutura.discentes || []).forEach(disc => {
+            const turma = turmasMap[disc.turma_id];
+            if (turma) {
+                if (turma.nivel.toLowerCase().includes('mestrado')) {
+                    discentesMestrado.push(disc);
+                } else if (turma.nivel.toLowerCase().includes('doutorado')) {
+                    discentesDoutorado.push(disc);
+                }
+            }
+        });
+
+        function renderRows(discentes) {
+            if (discentes.length === 0) {
+                return '<tr><td colspan="4" style="text-align:center; color:var(--gray);">Nenhum discente registrado nesta modalidade.</td></tr>';
+            }
+
+            return discentes.map(disc => {
+                const turma = turmasMap[disc.turma_id];
+                const orientador = docentesMap[disc.orientador_id];
+
+                return `
+                <tr>
+                  <td style="font-weight: 500; color: var(--secondary);">${disc.nome}</td>
+                  <td><span class="badge-turma">${turma ? turma.nome : 'N/A'}</span></td>
+                  <td>${orientador ? orientador.nome : 'N/A'}</td>
+                  <td style="text-align: center;">
+                    ${disc.lattes ? `<a href="${disc.lattes}" target="_blank" class="btn-lattes">Lattes</a>` : '<span style="color:#94a3b8; font-size:12px;">N/A</span>'}
+                  </td>
+                </tr>
+              `;
+            }).join('');
+        }
+
+        document.querySelector('#table-mestrado tbody').innerHTML = renderRows(discentesMestrado);
+        document.querySelector('#table-doutorado tbody').innerHTML = renderRows(discentesDoutorado);
+
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadData);
+
+    // Sync if data changes in another tab
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'gta_estrutura') loadData();
+    });
+  </script>
+</body>
+</html>
