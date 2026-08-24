@@ -109,6 +109,7 @@
               <th>Ano</th>
               <th>Inst. Beneficiada</th>
               <th>Autores</th>
+              <th style='width: 100px; text-align: center;'>Ações</th>
             </tr>
           </thead>
           <tbody id="table-body"></tbody>
@@ -117,8 +118,192 @@
     </div>
   </div>
 
+
+  <!-- Modal de Edição -->
+  <div id="modal-edicao" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: white; width: 600px; max-width: 90%; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <h3 style="color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">✏️ Editar Produção</h3>
+      <input type="hidden" id="edit-id">
+
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Título</label>
+        <input type="text" id="edit-titulo" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Veículo</label>
+          <input type="text" id="edit-veiculo" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Tipo</label>
+          <select id="edit-tipo" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+            <option value="Artigo para periódicos">Artigo para Periódicos</option>
+            <option value="Artigo para eventos">Artigo para Eventos</option>
+            <option value="Capítulo de livros">Capítulo de Livro</option>
+            <option value="Livro">Livro</option>
+            <option value="PTTs">Produto Técnico / Tecnológico (PTT)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+        <div>
+          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Ano</label>
+          <input type="number" id="edit-ano" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Situação</label>
+          <select id="edit-situacao" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+            <option value="Publicado">Publicado</option>
+            <option value="Aceito">Aceito</option>
+            <option value="Submetido">Submetido</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Inst. Beneficiada</label>
+          <select id="edit-inst" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+            <option value="Geral">Geral</option>
+            <option value="TRE-GO">TRE-GO</option>
+            <option value="UFT">UFT</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="font-size: 12px; font-weight: bold;">Coautores</label>
+          <button onclick="adicionarCoautorEdicao()" style="background: none; border: 1px dashed var(--secondary); color: var(--secondary); padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">+ Adicionar</button>
+        </div>
+        <div id="edit-autores-list" style="display: flex; flex-direction: column; gap: 8px;">
+          <!-- JS injects authors -->
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border); padding-top: 16px;">
+        <button onclick="fecharModalEdicao()" style="background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px;">Cancelar</button>
+        <button onclick="salvarEdicao()" style="background: var(--secondary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;">Salvar Alterações</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let productionsData = [];
+
+    let estruturaData = { docentes: [], discentes: [] };
+    let editAuthorsCache = [];
+
+    // Tentar carregar estrutura para o select de coautores
+    fetch('data/estrutura_gpa.json').then(r => r.json()).then(d => estruturaData = d).catch(e => console.error(e));
+
+    function excluirProducao(id) {
+      if(confirm("Tem certeza que deseja excluir esta produção?")) {
+        productionsData = productionsData.filter(p => p.id !== id);
+        localStorage.setItem('gpa_productions', JSON.stringify(productionsData));
+        filterTable(); // re-render
+      }
+    }
+
+    function abrirModalEdicao(id) {
+      const prod = productionsData.find(p => p.id === id);
+      if(!prod) return;
+
+      document.getElementById('edit-id').value = prod.id;
+      document.getElementById('edit-titulo').value = prod.titulo || "";
+      document.getElementById('edit-veiculo').value = prod.veiculo || "";
+      document.getElementById('edit-tipo').value = prod.tipo || "Artigo para periódicos";
+      document.getElementById('edit-ano').value = prod.ano || new Date().getFullYear();
+      document.getElementById('edit-situacao').value = prod.situacao || "Publicado";
+      document.getElementById('edit-inst').value = prod.instituicao_beneficiada || "Geral";
+
+      editAuthorsCache = JSON.parse(JSON.stringify(prod.autores || [])); // clone
+      renderEditAuthors();
+
+      document.getElementById('modal-edicao').style.display = 'flex';
+    }
+
+    function fecharModalEdicao() {
+      document.getElementById('modal-edicao').style.display = 'none';
+    }
+
+    function renderEditAuthors() {
+      const list = document.getElementById('edit-autores-list');
+      list.innerHTML = '';
+
+      editAuthorsCache.forEach((a, i) => {
+        const div = document.createElement('div');
+        div.style.display = 'grid';
+        div.style.gridTemplateColumns = '2fr 1fr 1fr auto';
+        div.style.gap = '8px';
+        div.style.alignItems = 'center';
+        div.style.background = '#f8fafc';
+        div.style.padding = '8px';
+        div.style.borderRadius = '4px';
+        div.style.border = '1px solid var(--border)';
+
+        // Combo de vinculo de membros reais
+        let linkSelectHtml = '';
+        if(a.categoria === 'docente') {
+          linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
+            <option value="">Selecione...</option>
+            ${estruturaData.docentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
+          </select>`;
+        } else if (a.categoria === 'discente') {
+          linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
+            <option value="">Selecione...</option>
+            ${estruturaData.discentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
+          </select>`;
+        } else {
+          linkSelectHtml = `<select disabled style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;"><option>Externo</option></select>`;
+        }
+
+        div.innerHTML = `
+          <input type="text" value="${a.nome}" onchange="updateEditAuthorName(${i}, this.value)" placeholder="Nome" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
+          <select onchange="updateEditAuthorCat(${i}, this.value)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
+            <option value="externo" ${a.categoria === 'externo' ? 'selected' : ''}>Externo</option>
+            <option value="docente" ${a.categoria === 'docente' ? 'selected' : ''}>Docente</option>
+            <option value="discente" ${a.categoria === 'discente' ? 'selected' : ''}>Discente</option>
+          </select>
+          ${linkSelectHtml}
+          <button onclick="removerEditAuthor(${i})" style="background: #fee2e2; color: #ef4444; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold;">X</button>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function updateEditAuthorName(idx, val) { editAuthorsCache[idx].nome = val; }
+    function updateEditAuthorLink(idx, val) { editAuthorsCache[idx].id = val; }
+    function updateEditAuthorCat(idx, val) {
+      editAuthorsCache[idx].categoria = val;
+      renderEditAuthors(); // update the third dropdown
+    }
+    function removerEditAuthor(idx) {
+      editAuthorsCache.splice(idx, 1);
+      renderEditAuthors();
+    }
+    function adicionarCoautorEdicao() {
+      editAuthorsCache.push({ id: "EXT_" + Math.floor(Math.random()*1000), nome: "", categoria: "externo" });
+      renderEditAuthors();
+    }
+
+    function salvarEdicao() {
+      const id = document.getElementById('edit-id').value;
+      const index = productionsData.findIndex(p => p.id === id);
+      if(index === -1) return;
+
+      productionsData[index].titulo = document.getElementById('edit-titulo').value;
+      productionsData[index].veiculo = document.getElementById('edit-veiculo').value;
+      productionsData[index].tipo = document.getElementById('edit-tipo').value;
+      productionsData[index].ano = parseInt(document.getElementById('edit-ano').value);
+      productionsData[index].situacao = document.getElementById('edit-situacao').value;
+      productionsData[index].instituicao_beneficiada = document.getElementById('edit-inst').value;
+      productionsData[index].autores = JSON.parse(JSON.stringify(editAuthorsCache));
+
+      localStorage.setItem('gpa_productions', JSON.stringify(productionsData));
+      fecharModalEdicao();
+      filterTable(); // Re-render table
+    }
+
 
     async function loadData() {
       try {
@@ -157,6 +342,10 @@
           <td>${prod.ano}</td>
           <td><span style="background:#e2e8f0; padding: 2px 6px; border-radius: 4px; font-size:11px;">${prod.instituicao_beneficiada || '-'}</span></td>
           <td>${authorsHtml}</td>
+          <td style='text-align: center;'>
+            <button onclick='abrirModalEdicao("${prod.id}")' style='background: none; border: none; cursor: pointer; font-size: 16px; margin-right: 8px;' title='Editar'>✏️</button>
+            <button onclick='excluirProducao("${prod.id}")' style='background: none; border: none; cursor: pointer; font-size: 16px;' title='Excluir'>🗑️</button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
