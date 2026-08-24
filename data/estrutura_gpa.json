@@ -38,56 +38,64 @@
       "nome": "Prof. Dr. Flávio Roldão de Carvalho Lelis",
       "titulacao": "Doutor",
       "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade"
+      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "categoria": "permanente"
     },
     {
       "id": "DOC_GENTIL",
       "nome": "Prof. Dr. Gentil Veloso Barbosa",
       "titulacao": "Doutor",
       "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade"
+      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "categoria": "permanente"
     },
     {
       "id": "DOC_GEORGE",
       "nome": "Prof. Dr. George Lauro Ribeiro de Brito",
       "titulacao": "Doutor",
       "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade"
+      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "categoria": "permanente"
     },
     {
       "id": "DOC_HUMBERTO",
       "nome": "Prof. Dr. Humberto Xavier de Araújo",
       "titulacao": "Doutor",
       "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade"
+      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "categoria": "permanente"
     },
     {
       "id": "DOC_MARCELO",
       "nome": "Prof. Dr. Marcelo Lisboa Rocha",
       "titulacao": "Doutor",
       "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade"
+      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "categoria": "permanente"
     },
     {
       "id": "DOC_PATRICK",
       "nome": "Prof. Dr. Patrick Letouzè Moreira",
       "titulacao": "Doutor",
       "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade"
+      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "categoria": "permanente"
     },
     {
       "id": "DOC_RAFAEL",
       "nome": "Prof. Dr. Rafael Lima de Carvalho",
       "titulacao": "Doutor",
       "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade"
+      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "categoria": "permanente"
     },
     {
       "id": "DOC_SUZANA",
       "nome": "Prof.ª Dr.ª Suzana Gilioli da Costa Nunes",
       "titulacao": "Doutor",
       "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade"
+      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "categoria": "permanente"
     }
   ],
   "discentes": [
@@ -97,7 +105,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_FLAVIO",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_02",
@@ -105,7 +115,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_FLAVIO",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_03",
@@ -113,7 +125,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_GENTIL",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_04",
@@ -121,7 +135,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_GENTIL",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_05",
@@ -129,7 +145,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_GEORGE",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_06",
@@ -137,7 +155,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_GEORGE",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_07",
@@ -145,7 +165,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_HUMBERTO",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_08",
@@ -153,7 +175,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_HUMBERTO",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_09",
@@ -161,7 +185,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_MARCELO",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_10",
@@ -169,7 +195,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_MARCELO",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_11",
@@ -177,7 +205,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_PATRICK",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_12",
@@ -185,7 +215,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_PATRICK",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_13",
@@ -193,7 +225,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_RAFAEL",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_14",
@@ -201,7 +235,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_RAFAEL",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     },
     {
       "id": "DISC_15",
@@ -209,7 +245,9 @@
       "turma_id": "TURMA_PPGGTD_2023_TRE",
       "orientador_id": "DOC_SUZANA",
       "lattes": "http://lattes.cnpq.br/1111111111111111",
-      "titulacao": "Mestrando"
+      "titulacao": "Mestrando",
+      "status": "em_curso",
+      "data_titulacao": "2026-06"
     }
   ],
   "disciplinas": [
