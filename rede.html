@@ -172,14 +172,23 @@
     </nav>
   </header>
 
-  <div class="toolbar">
-    <div class="quick-filters" style="display: flex; gap: 8px;">
+  <div class="toolbar" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 12px 24px; background: white; border-bottom: 1px solid var(--border);">
+    <div class="quick-filters" style="display: flex; gap: 8px; align-items: center;">
         <button id="btn-filter-docente" onclick="toggleFilter('docente')" style="background: var(--docente-color); color: white; border: none; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 11px; opacity: 1;">Docentes</button>
         <button id="btn-filter-discente" onclick="toggleFilter('discente')" style="background: var(--discente-color); color: white; border: none; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 11px; opacity: 1;">Discentes</button>
         <button id="btn-filter-externo" onclick="toggleFilter('externo')" style="background: var(--externo-color); color: white; border: none; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 11px; opacity: 1;">Externos</button>
+
+        <label style="font-size: 12px; margin-left: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+          <input type="checkbox" id="ocultar-externos" onchange="applyFilters()"> Ocultar Autores Externos (Focar PPG)
+        </label>
+
+        <div style="margin-left: 12px; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+          Intensidade mín. colaborações:
+          <input type="number" id="min-degree" value="0" min="0" style="width: 50px; padding: 4px; font-size: 11px; border: 1px solid var(--border); border-radius: 4px;" onchange="applyFilters()">
+        </div>
     </div>
 
-    <input type="text" id="search-author" placeholder="Buscar autor..." oninput="applyFilters()">
+    <input type="text" id="search-author" placeholder="Buscar autor..." oninput="applyFilters()" style="padding: 6px 12px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px;">
 
     <div class="controls" style="display: flex; gap: 5px;">
         <button onclick="zoomIn()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Zoom +</button>
