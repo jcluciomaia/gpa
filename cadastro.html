@@ -197,10 +197,49 @@
     <div class="card tab-content" id="tab-lattes">
       <h3>Importação em Lote via XML (Lattes)</h3>
       <p style="color: var(--gray); font-size: 13px; margin-bottom: 16px;">Faça upload do currículo Lattes em formato XML para extrair automaticamente artigos, eventos, capítulos e PTTs.</p>
+
+      <div style="margin-bottom: 20px; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+        <h4 style="font-size: 14px; margin-bottom: 12px; color: var(--primary);">Filtros de Importação</h4>
+        <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+          <div>
+            <label style="font-size: 13px; font-weight: bold; margin-right: 8px;">A partir do ano:</label>
+            <input type="number" id="lattes-year-filter" value="2023" style="padding: 6px; width: 80px; border: 1px solid var(--border); border-radius: 4px;">
+          </div>
+          <div style="display: flex; gap: 12px; font-size: 13px;">
+            <label><input type="checkbox" id="filter-artigos" checked> Artigos</label>
+            <label><input type="checkbox" id="filter-eventos" checked> Eventos</label>
+            <label><input type="checkbox" id="filter-livros" checked> Livros/Capítulos</label>
+            <label><input type="checkbox" id="filter-ptts" checked> Produção Técnica</label>
+          </div>
+        </div>
+      </div>
+
       <div style="border: 2px dashed var(--border); border-radius: 8px; padding: 40px; text-align: center; background: #f8fafc; cursor: pointer;">
-        <input type="file" id="xml-upload" accept=".xml" style="display: none;" onchange="processXML(this)">
-        <label for="xml-upload" style="cursor: pointer; color: var(--primary); font-weight: bold;">Clique aqui para selecionar o arquivo XML</label>
-        <div style="font-size: 12px; color: var(--gray); margin-top: 8px;">ou arraste e solte o arquivo aqui</div>
+        <input type="file" id="lattes-xml-input" accept=".xml" style="display: none;" onchange="processRealXML(this)">
+        <label for="lattes-xml-input" style="cursor: pointer; color: var(--primary); font-weight: bold; display: block; width: 100%; height: 100%;">Clique aqui para selecionar o arquivo XML</label>
+      </div>
+
+      <div id="lattes-preview-section" style="display: none; margin-top: 24px;">
+        <h4 style="font-size: 14px; color: var(--primary); margin-bottom: 12px;">Pré-visualização das Produções Extraídas</h4>
+        <div style="overflow-x: auto; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 8px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            <thead style="background: #f8fafc;">
+              <tr>
+                <th style="padding: 10px; border-bottom: 1px solid var(--border); width: 40px;"><input type="checkbox" id="select-all-lattes" checked onchange="toggleAllLattes(this)"></th>
+                <th style="padding: 10px; border-bottom: 1px solid var(--border); text-align: left;">Título</th>
+                <th style="padding: 10px; border-bottom: 1px solid var(--border); text-align: left;">Tipo</th>
+                <th style="padding: 10px; border-bottom: 1px solid var(--border); text-align: left;">Ano</th>
+                <th style="padding: 10px; border-bottom: 1px solid var(--border); text-align: left;">Coautores Identificados do PPG</th>
+              </tr>
+            </thead>
+            <tbody id="lattes-preview-body">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+        <div style="text-align: right;">
+          <button onclick="salvarProducoesLattes()" style="background: var(--secondary); color: white; border: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer;">Gravar Produções no Sistema</button>
+        </div>
       </div>
     </div>
 
@@ -329,7 +368,7 @@
       }
     }
 
-    function processXML(input) {
+    function processXML_old(input) {
       if(!input.files.length) return;
       alert("XML do Lattes processado (Mock). Artigos extraídos com sucesso.");
 
@@ -375,7 +414,7 @@
     function renderAuthors() {
       const container = document.getElementById('autores-list');
       container.innerHTML = '';
-      
+
       currentAuthors.forEach((a, i) => {
         let linkSelectHtml = '';
 
@@ -441,6 +480,311 @@
       localStorage.setItem('gpa_productions', JSON.stringify(prodList));
 
       alert("Produção cadastrada e vinculada com sucesso! O Score CAPES será atualizado.");
+      window.location.href = 'producoes.html';
+    }
+
+
+    let parsedLattesProductions = [];
+
+    function processRealXML(input) {
+      if (!input.files || input.files.length === 0) return;
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(text, "text/xml");
+
+        extractLattesData(xmlDoc);
+      };
+
+      reader.readAsText(file, "ISO-8859-1"); // Lattes XML is often in ISO-8859-1
+    }
+
+    function removeAccents(str) {
+      if (!str) return "";
+      return str.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+    }
+
+    function linkAuthors(autoresNomes) {
+      return autoresNomes.map(nome => {
+        const nomeNorm = removeAccents(nome);
+        let id = null;
+        let categoria = "externo";
+        let nomeDisplay = nome;
+
+        // Tenta achar em docentes
+        const docMatch = estruturaData.docentes.find(d => removeAccents(d.nome).includes(nomeNorm) || nomeNorm.includes(removeAccents(d.nome)));
+        if (docMatch) {
+          id = docMatch.id;
+          categoria = "docente";
+          nomeDisplay = docMatch.nome; // Usa o nome formatado do nosso BD
+        } else {
+          // Tenta achar em discentes
+          const discMatch = estruturaData.discentes.find(d => removeAccents(d.nome).includes(nomeNorm) || nomeNorm.includes(removeAccents(d.nome)));
+          if (discMatch) {
+            id = discMatch.id;
+            categoria = "discente";
+            nomeDisplay = discMatch.nome;
+          }
+        }
+
+        return {
+          id: id || ("EXT_" + Math.floor(Math.random()*10000)),
+          nome: nomeDisplay,
+          categoria: categoria,
+          originalLattesName: nome
+        };
+      });
+    }
+
+    function extractLattesData(xmlDoc) {
+      parsedLattesProductions = [];
+      const yearFilter = parseInt(document.getElementById('lattes-year-filter').value) || 0;
+
+      const wantArtigos = document.getElementById('filter-artigos').checked;
+      const wantEventos = document.getElementById('filter-eventos').checked;
+      const wantLivros = document.getElementById('filter-livros').checked;
+      const wantPtts = document.getElementById('filter-ptts').checked;
+
+      // 1. Artigos Publicados
+      if (wantArtigos) {
+        const artigos = xmlDoc.getElementsByTagName("ARTIGO-PUBLICADO");
+        for (let i = 0; i < artigos.length; i++) {
+          const dados = artigos[i].getElementsByTagName("DADOS-BASICOS-DO-ARTIGO")[0];
+          const det = artigos[i].getElementsByTagName("DETALHAMENTO-DO-ARTIGO")[0];
+          if (!dados) continue;
+
+          const ano = parseInt(dados.getAttribute("ANO-DO-ARTIGO"));
+          if (ano < yearFilter) continue;
+
+          const titulo = dados.getAttribute("TITULO-DO-ARTIGO");
+          const doi = dados.getAttribute("DOI");
+          const veiculo = det ? det.getAttribute("TITULO-DO-PERIODICO-OU-REVISTA") : "";
+
+          const autoresNodes = artigos[i].getElementsByTagName("AUTORES");
+          let nomesAutores = [];
+          for (let j = 0; j < autoresNodes.length; j++) {
+            nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
+          }
+
+          parsedLattesProductions.push({
+            titulo: titulo,
+            ano: ano,
+            tipo: "Artigo para periódicos",
+            veiculo: veiculo,
+            doi: doi,
+            autores: linkAuthors(nomesAutores)
+          });
+        }
+      }
+
+      // 2. Trabalhos em Eventos
+      if (wantEventos) {
+        const eventos = xmlDoc.getElementsByTagName("TRABALHO-EM-EVENTOS");
+        for (let i = 0; i < eventos.length; i++) {
+          const dados = eventos[i].getElementsByTagName("DADOS-BASICOS-DO-TRABALHO")[0];
+          const det = eventos[i].getElementsByTagName("DETALHAMENTO-DO-TRABALHO")[0];
+          if (!dados) continue;
+
+          const ano = parseInt(dados.getAttribute("ANO-DO-TRABALHO"));
+          if (ano < yearFilter) continue;
+
+          const titulo = dados.getAttribute("TITULO-DO-TRABALHO");
+          const doi = dados.getAttribute("DOI");
+          const veiculo = det ? det.getAttribute("NOME-DO-EVENTO") : "";
+
+          const autoresNodes = eventos[i].getElementsByTagName("AUTORES");
+          let nomesAutores = [];
+          for (let j = 0; j < autoresNodes.length; j++) {
+            nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
+          }
+
+          parsedLattesProductions.push({
+            titulo: titulo,
+            ano: ano,
+            tipo: "Artigo para eventos",
+            veiculo: veiculo,
+            doi: doi,
+            autores: linkAuthors(nomesAutores)
+          });
+        }
+      }
+
+      // 3. Livros e Capítulos
+      if (wantLivros) {
+        const livros = xmlDoc.getElementsByTagName("LIVRO-PUBLICADO-OU-ORGANIZADO");
+        for (let i = 0; i < livros.length; i++) {
+          const dados = livros[i].getElementsByTagName("DADOS-BASICOS-DO-LIVRO")[0];
+          const det = livros[i].getElementsByTagName("DETALHAMENTO-DO-LIVRO")[0];
+          if (!dados) continue;
+
+          const ano = parseInt(dados.getAttribute("ANO"));
+          if (ano < yearFilter) continue;
+
+          const titulo = dados.getAttribute("TITULO-DO-LIVRO");
+          const doi = dados.getAttribute("DOI");
+          const veiculo = det ? det.getAttribute("NOME-DA-EDITORA") : "";
+
+          const autoresNodes = livros[i].getElementsByTagName("AUTORES");
+          let nomesAutores = [];
+          for (let j = 0; j < autoresNodes.length; j++) {
+            nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
+          }
+
+          parsedLattesProductions.push({
+            titulo: titulo,
+            ano: ano,
+            tipo: "Livro",
+            veiculo: veiculo,
+            doi: doi,
+            autores: linkAuthors(nomesAutores)
+          });
+        }
+
+        const capitulos = xmlDoc.getElementsByTagName("CAPITULO-DE-LIVRO-PUBLICADO");
+        for (let i = 0; i < capitulos.length; i++) {
+          const dados = capitulos[i].getElementsByTagName("DADOS-BASICOS-DO-CAPITULO")[0];
+          const det = capitulos[i].getElementsByTagName("DETALHAMENTO-DO-CAPITULO")[0];
+          if (!dados) continue;
+
+          const ano = parseInt(dados.getAttribute("ANO"));
+          if (ano < yearFilter) continue;
+
+          const titulo = dados.getAttribute("TITULO-DO-CAPITULO-DO-LIVRO");
+          const doi = dados.getAttribute("DOI");
+          const veiculo = det ? det.getAttribute("TITULO-DO-LIVRO") + " (" + det.getAttribute("NOME-DA-EDITORA") + ")" : "";
+
+          const autoresNodes = capitulos[i].getElementsByTagName("AUTORES");
+          let nomesAutores = [];
+          for (let j = 0; j < autoresNodes.length; j++) {
+            nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
+          }
+
+          parsedLattesProductions.push({
+            titulo: titulo,
+            ano: ano,
+            tipo: "Capítulo de livros",
+            veiculo: veiculo,
+            doi: doi,
+            autores: linkAuthors(nomesAutores)
+          });
+        }
+      }
+
+      // 4. Produção Técnica
+      if (wantPtts) {
+        // Includes softwares, patentes, marcas, produtos tecnológicos, etc. We can look at PRODUCAO-TECNICA child nodes generically
+        // The Lattes schema for PTTs varies (SOFTWARE, PRODUTO-TECNOLOGICO, TRABALHO-TECNICO)
+        // Let's do a generic search within PRODUCAO-TECNICA for any node containing DADOS-BASICOS...
+        const ptts = xmlDoc.getElementsByTagName("PRODUCAO-TECNICA")[0];
+        if (ptts) {
+          const children = ptts.children;
+          for (let i = 0; i < children.length; i++) {
+            const node = children[i]; // e.g. SOFTWARE, TRABALHO-TECNICO
+            // usually DADOS-BASICOS-...
+            const dadosNodeName = Array.from(node.children).find(c => c.tagName.startsWith("DADOS-BASICOS"));
+            if (!dadosNodeName) continue;
+
+            const ano = parseInt(dadosNodeName.getAttribute("ANO") || dadosNodeName.getAttribute("ANO-DO-TRABALHO") || dadosNodeName.getAttribute("ANO-DO-SOFTWARE"));
+            if (ano < yearFilter) continue;
+
+            let titulo = dadosNodeName.getAttribute("TITULO") || dadosNodeName.getAttribute("TITULO-DO-TRABALHO") || dadosNodeName.getAttribute("TITULO-DO-SOFTWARE");
+            if(!titulo) titulo = "Produção Técnica Sem Título Específico";
+
+            const autoresNodes = node.getElementsByTagName("AUTORES");
+            let nomesAutores = [];
+            for (let j = 0; j < autoresNodes.length; j++) {
+              nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
+            }
+
+            parsedLattesProductions.push({
+              titulo: titulo,
+              ano: ano,
+              tipo: "PTTs",
+              veiculo: "",
+              doi: "",
+              autores: linkAuthors(nomesAutores)
+            });
+          }
+        }
+      }
+
+      renderLattesPreview();
+    }
+
+    function renderLattesPreview() {
+      const tbody = document.getElementById('lattes-preview-body');
+      tbody.innerHTML = '';
+
+      if (parsedLattesProductions.length === 0) {
+        document.getElementById('lattes-preview-section').style.display = 'block';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--gray);">Nenhuma produção encontrada com os filtros atuais.</td></tr>';
+        return;
+      }
+
+      parsedLattesProductions.forEach((prod, index) => {
+        const tr = document.createElement('tr');
+
+        // Count PPG authors
+        const ppgAuthors = prod.autores.filter(a => a.categoria !== 'externo');
+        const ppgHtml = ppgAuthors.length > 0
+          ? ppgAuthors.map(a => `<span style="background: var(--${a.categoria}-color); color: white; padding: 2px 6px; border-radius: 12px; font-size: 10px; margin-right: 4px;">${a.nome}</span>`).join('')
+          : '<span style="color: var(--gray); font-size: 11px;">Nenhum / Apenas Externos</span>';
+
+        tr.innerHTML = `
+          <td style="padding: 10px; border-bottom: 1px solid var(--border); text-align: center;">
+            <input type="checkbox" class="lattes-checkbox" value="${index}" checked>
+          </td>
+          <td style="padding: 10px; border-bottom: 1px solid var(--border); font-weight: bold;">${prod.titulo}</td>
+          <td style="padding: 10px; border-bottom: 1px solid var(--border);">${prod.tipo}</td>
+          <td style="padding: 10px; border-bottom: 1px solid var(--border);">${prod.ano}</td>
+          <td style="padding: 10px; border-bottom: 1px solid var(--border);">${ppgHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('lattes-preview-section').style.display = 'block';
+    }
+
+    function toggleAllLattes(masterCheckbox) {
+      const checkboxes = document.querySelectorAll('.lattes-checkbox');
+      checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+    }
+
+    function salvarProducoesLattes() {
+      const checkboxes = document.querySelectorAll('.lattes-checkbox:checked');
+      if (checkboxes.length === 0) {
+        return alert("Selecione ao menos uma produção para salvar.");
+      }
+
+      let localProd = localStorage.getItem('gpa_productions');
+      let prodList = localProd ? JSON.parse(localProd) : [];
+      let adicionadas = 0;
+      let duplicadas = 0;
+
+      checkboxes.forEach(cb => {
+        const prod = parsedLattesProductions[cb.value];
+
+        // Verifica duplicidade por DOI ou Titulo
+        const isDuplicate = prodList.some(existing => {
+          const sameDoi = (prod.doi && existing.doi && prod.doi === existing.doi);
+          const sameTitle = (removeAccents(existing.titulo) === removeAccents(prod.titulo));
+          return sameDoi || sameTitle;
+        });
+
+        if (!isDuplicate) {
+          prod.id = "PROD_LATTES_" + Date.now() + "_" + Math.floor(Math.random()*1000);
+          prodList.push(prod);
+          adicionadas++;
+        } else {
+          duplicadas++;
+        }
+      });
+
+      localStorage.setItem('gpa_productions', JSON.stringify(prodList));
+      alert(`Importação concluída!\n\nNovas cadastradas: ${adicionadas}\nIgnoradas (duplicadas): ${duplicadas}`);
       window.location.href = 'producoes.html';
     }
 
