@@ -56,100 +56,75 @@
       <h1 style="font-size: 22px; font-weight: 600; margin: 0; margin-left: 24px;">Gestão da Produção Acadêmica - GPA</h1>
     </div>
     <nav class="nav-links">
-      <a href="index.html">Dashboard</a>
-      <a href="rede.html">Rede de Colaboração</a>
-      <a href="docentes.html">Docentes</a>
-      <a href="discentes.html">Discentes</a>
-      <a href="cadastro.html">Cadastro</a>
-      <a href="relatorios.html">Relatórios</a>
-      <a href="admin.html" class="active">Administração</a>
+      <a href="index.html">📊 Dashboard</a>
+      <a href="producoes.html">📚 Produções</a>
+      <a href="rede.html">🕸 Rede de Colaboração</a>
+      <a href="docentes.html">👨‍🏫 Docentes</a>
+      <a href="discentes.html">🎓 Discentes</a>
+      <a href="cadastro.html">➕ Cadastrar Produção</a>
+      <a href="relatorios.html">📑 Relatórios</a>
+      <a href="admin.html" class="active">⚙️ Administração</a>
     </nav>
   </header>
   <div class="container">
-    <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h2 style="font-size: 16px; color: var(--primary);">Administração de Programas, Turmas e Membros</h2>
-        <button class="btn-export" onclick="exportConfig()">Baixar JSON da Estrutura</button>
+    <h2 style="color: var(--primary); margin-bottom: 24px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; display: inline-block;">Administração do Sistema</h2>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+
+      <!-- Gestão de Turmas -->
+      <div class="card">
+        <div class="card-title" style="font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 16px;">📚 Gestão de Turmas</div>
+        <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px;">Configure as turmas ativas, níveis (Mestrado/Doutorado) e anos de vigência.</p>
+        <button style="background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer;">+ Nova Turma</button>
+        <div style="margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px;">
+          <div style="font-size: 13px; font-weight: bold;">Turma 2023/2024 — Convênio TRE-GO</div>
+          <div style="font-size: 12px; color: var(--gray);">Mestrado Profissional • 15 discentes</div>
+        </div>
       </div>
 
-      <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('tab-turmas', this)">Turmas & Convênios</button>
-        <button class="tab-btn" onclick="switchTab('tab-docentes', this)">Docentes</button>
-        <button class="tab-btn" onclick="switchTab('tab-discentes', this)">Discentes</button>
+      <!-- Cadastro de Membros -->
+      <div class="card">
+        <div class="card-title" style="font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 16px;">👥 Cadastro de Membros</div>
+        <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px;">Gerencie Docentes e Discentes. Lattes e ORCID são obrigatórios para importação.</p>
+        <div style="display: flex; gap: 12px;">
+          <button style="background: var(--docente-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer;">+ Docente</button>
+          <button style="background: var(--discente-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer;">+ Discente</button>
+        </div>
       </div>
 
-      <div id="tab-turmas" class="tab-content active">
-        <table>
-          <thead><tr><th>ID</th><th>Nome da Turma / Convênio</th><th>Nível</th><th>Período</th></tr></thead>
-          <tbody id="turmas-list"></tbody>
-        </table>
+      <!-- Parametrização de Metas -->
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-title" style="font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 16px;">⚙️ Parametrização de Metas (Prazos e CAPES)</div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          <div>
+            <h4 style="font-size: 14px; margin-bottom: 12px;">Metas de Coprodução (Score CAPES)</h4>
+            <div style="margin-bottom: 12px;">
+              <label style="font-size: 13px; display: block; margin-bottom: 4px;">Meta Mínima Docente-Discente (%)</label>
+              <input type="number" value="70" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100px;">
+            </div>
+          </div>
+          <div>
+            <h4 style="font-size: 14px; margin-bottom: 12px;">Prazos Regulamentares (Meses)</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div>
+                <label style="font-size: 13px; display: block; margin-bottom: 4px;">Mestrado - Qualificação</label>
+                <input type="number" value="12" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
+              </div>
+              <div>
+                <label style="font-size: 13px; display: block; margin-bottom: 4px;">Mestrado - Defesa</label>
+                <input type="number" value="24" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; text-align: right;">
+          <button style="background: var(--secondary); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;">Salvar Configurações</button>
+        </div>
       </div>
 
-      <div id="tab-docentes" class="tab-content">
-        <table>
-          <thead><tr><th>ID</th><th>Nome Completo</th><th>Papel</th></tr></thead>
-          <tbody id="docentes-list"></tbody>
-        </table>
-      </div>
-
-      <div id="tab-discentes" class="tab-content">
-        <table>
-          <thead><tr><th>ID</th><th>Nome do Aluno</th><th>Orientador</th></tr></thead>
-          <tbody id="discentes-list"></tbody>
-        </table>
-      </div>
     </div>
   </div>
-  <script>
-    let estrutura = {};
-    async function loadData() {
-      try {
-        const res = await fetch('data/estrutura_gpa.json');
-        if (res.ok) {
-          estrutura = await res.json();
-          renderAdmin();
-        }
-      } catch (e) { console.error(e); }
-    }
-
-    function renderAdmin() {
-      // Turmas
-      const tBody = document.getElementById('turmas-list');
-      tBody.innerHTML = (estrutura.turmas || []).map(t => `
-        <tr><td><code>${t.id}</code></td><td><strong>${t.nome}</strong></td><td>${t.nivel || 'Mestrado'}</td><td>${t.ano_inicio || 2023} - ${t.ano_fim || 2025}</td></tr>
-      `).join('');
-
-      // Docentes
-      const docBody = document.getElementById('docentes-list');
-      docBody.innerHTML = (estrutura.docentes || []).map(d => `
-        <tr><td><code>${d.id}</code></td><td><strong>${d.nome}</strong></td><td>Docente Permanente</td></tr>
-      `).join('');
-
-      // Discentes
-      const discBody = document.getElementById('discentes-list');
-      const docMap = {};
-      (estrutura.docentes || []).forEach(d => docMap[d.id] = d.nome);
-      discBody.innerHTML = (estrutura.discentes || []).map(d => `
-        <tr><td><code>${d.id}</code></td><td><strong>${d.nome}</strong></td><td>${docMap[d.orientador_id] || d.orientador_id}</td></tr>
-      `).join('');
-    }
-
-    function switchTab(id, btn) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById(id).classList.add('active');
-    }
-
-    function exportConfig() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(estrutura, null, 2));
-      const a = document.createElement('a');
-      a.href = dataStr;
-      a.download = 'estrutura_gpa.json';
-      a.click();
-    }
-
-    document.addEventListener('DOMContentLoaded', loadData);
-  </script>
 </body>
 </html>
