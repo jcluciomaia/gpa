@@ -502,27 +502,61 @@
       reader.readAsText(file, "ISO-8859-1"); // Lattes XML is often in ISO-8859-1
     }
 
-    function removeAccents(str) {
+
+    function normalizeString(str) {
       if (!str) return "";
-      return str.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+      return str.normalize("NFD").replace(/[̀-ͯ]/g, "") // remove accents
+                .replace(/[.,;]/g, " ") // remove punctuation
+                .replace(/\s+/g, " ") // collapse multiple spaces
+                .toLowerCase().trim();
+    }
+
+    function checkMatch(nomeBase, nomeLattes) {
+      const normBase = normalizeString(nomeBase);
+      const normLattes = normalizeString(nomeLattes);
+
+      // Direct match
+      if (normBase.includes(normLattes) || normLattes.includes(normBase)) return true;
+
+      // Handle "LASTNAME, FIRSTNAME" format (but normalization already removes the comma)
+      // Actually, let's just do a naive check: if all parts of Lattes name > 1 char are in the base name
+      const baseParts = normBase.split(" ");
+      const lattesParts = normLattes.split(" ");
+
+      // A common citation is LELIS, FLAVIO R. C. -> normalized to "lelis flavio r c"
+      // Or CARVALHO, R. L. -> "carvalho r l"
+      // If the first part of Lattes matches any part of Base, and other parts are initials or match
+      const lattesLastName = lattesParts[0];
+      if (baseParts.includes(lattesLastName)) {
+         let matched = true;
+         for (let i = 1; i < lattesParts.length; i++) {
+            const p = lattesParts[i];
+            if (p.length === 1) {
+               // Initial
+               if (!baseParts.some(bp => bp.startsWith(p))) matched = false;
+            } else {
+               if (!baseParts.includes(p)) matched = false;
+            }
+         }
+         if (matched && lattesParts.length > 1) return true;
+      }
+
+      return false;
     }
 
     function linkAuthors(autoresNomes) {
       return autoresNomes.map(nome => {
-        const nomeNorm = removeAccents(nome);
         let id = null;
         let categoria = "externo";
         let nomeDisplay = nome;
 
-        // Tenta achar em docentes
-        const docMatch = estruturaData.docentes.find(d => removeAccents(d.nome).includes(nomeNorm) || nomeNorm.includes(removeAccents(d.nome)));
+        const docMatch = estruturaData.docentes.find(d => checkMatch(d.nome, nome));
         if (docMatch) {
           id = docMatch.id;
           categoria = "docente";
-          nomeDisplay = docMatch.nome; // Usa o nome formatado do nosso BD
+          nomeDisplay = docMatch.nome;
         } else {
-          // Tenta achar em discentes
-          const discMatch = estruturaData.discentes.find(d => removeAccents(d.nome).includes(nomeNorm) || nomeNorm.includes(removeAccents(d.nome)));
+          const discMatch = estruturaData.discentes.find(d => checkMatch(d.nome, nome));
           if (discMatch) {
             id = discMatch.id;
             categoria = "discente";
@@ -770,7 +804,7 @@
         // Verifica duplicidade por DOI ou Titulo
         const isDuplicate = prodList.some(existing => {
           const sameDoi = (prod.doi && existing.doi && prod.doi === existing.doi);
-          const sameTitle = (removeAccents(existing.titulo) === removeAccents(prod.titulo));
+          const sameTitle = (normalizeString(existing.titulo) === normalizeString(prod.titulo));
           return sameDoi || sameTitle;
         });
 
