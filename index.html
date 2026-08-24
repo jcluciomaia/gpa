@@ -62,115 +62,178 @@
       <h1 style="font-size: 22px; font-weight: 600; margin: 0; margin-left: 24px;">Gestão da Produção Acadêmica - GPA</h1>
     </div>
     <nav class="nav-links">
-      <a href="index.html" class="active">Dashboard</a>
-      <a href="rede.html">Rede de Colaboração</a>
-      <a href="docentes.html">Docentes</a>
-      <a href="discentes.html">Discentes</a>
-      <a href="cadastro.html">Cadastro</a>
-      <a href="relatorios.html">Relatórios</a>
-      <a href="admin.html">Administração</a>
+      <a href="index.html" class="active">📊 Dashboard</a>
+      <a href="producoes.html">📚 Produções</a>
+      <a href="rede.html">🕸 Rede de Colaboração</a>
+      <a href="docentes.html">👨‍🏫 Docentes</a>
+      <a href="discentes.html">🎓 Discentes</a>
+      <a href="cadastro.html">➕ Cadastrar Produção</a>
+      <a href="relatorios.html">📑 Relatórios</a>
+      <a href="admin.html">⚙️ Administração</a>
     </nav>
   </header>
   <div class="container">
 
-  <div style="background: white; border-bottom: 2px solid #FDB92E; padding: 0 24px 0 0; height: 76px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-    <h2 style="font-size: 18px; color: #005484; margin: 0;">PPG em Governança e Transformação Digital</h2>
-    <p style="font-size: 13px; color: #848688; margin: 2px 0 0 0;">Programa de Pós-Graduação Stricto Sensu — Universidade Federal do Tocantins (UFT)</p>
+  <div style="background: white; border-bottom: 2px solid #FDB92E; padding: 16px 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h2 style="font-size: 18px; color: #005484; margin: 0;">PPG em Governança e Transformação Digital</h2>
+      <p style="font-size: 13px; color: #848688; margin: 2px 0 0 0;">Programa de Pós-Graduação Stricto Sensu — Universidade Federal do Tocantins (UFT)</p>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <select id="turma-selector" style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px;" onchange="updateDashboard()">
+        <option value="">Todas as Turmas</option>
+        <option value="TURMA_PPGGTD_2023_TRE">Turma 2023/2024 — Convênio TRE-GO</option>
+        <option value="TURMA_PPGGTD_2026_MEST">Turma 2026/2027 — Mestrado</option>
+        <option value="TURMA_PPGGTD_2026_DOUT">Turma 2026/2030 — Doutorado</option>
+      </select>
+      <label style="font-size: 13px; display: flex; align-items: center; gap: 6px;">
+        <input type="checkbox" id="meus-orientandos" onchange="updateDashboard()"> Meus Orientandos
+      </label>
+    </div>
   </div>
 
     <div class="summary-cards">
-      <div class="stat-card"><h3>Total de Produções</h3><div class="value" id="stat-total">0</div></div>
-      <div class="stat-card"><h3>Artigos em Periódicos</h3><div class="value" id="stat-periodicos">0</div></div>
-      <div class="stat-card"><h3>Artigos em Eventos</h3><div class="value" id="stat-eventos">0</div></div>
-      <div class="stat-card"><h3>Capítulos de Livros</h3><div class="value" id="stat-livros">0</div></div>
-      <div class="stat-card"><h3>PTTs</h3><div class="value" id="stat-ptts">0</div></div>
+      <div class="stat-card"><h3>📚 Total</h3><div class="value" id="stat-total">0</div></div>
+      <div class="stat-card"><h3>📄 Periódicos</h3><div class="value" id="stat-periodicos">0</div></div>
+      <div class="stat-card"><h3>🎤 Eventos</h3><div class="value" id="stat-eventos">0</div></div>
+      <div class="stat-card"><h3>📖 Capítulos</h3><div class="value" id="stat-livros">0</div></div>
+      <div class="stat-card"><h3>🛠️ PTTs</h3><div class="value" id="stat-ptts">0</div></div>
     </div>
-    <div class="card">
-      <div class="card-title">Produções Acadêmicas</div>
-      <div class="filters">
-        <input type="text" id="search-author" placeholder="Buscar por título ou autor..." oninput="filterTable()">
-        <select id="filter-type" onchange="filterTable()">
-          <option value="">Todos os tipos</option>
-          <option value="Artigo para periódicos">Artigo para Periódicos</option>
-          <option value="Artigo para eventos">Artigo para Eventos</option>
-          <option value="Capítulo de livros">Capítulo de Livro</option>
-          <option value="PTTs">Produto Técnico / Tecnológico (PTT)</option>
-        </select>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+      <!-- Score CAPES -->
+      <div class="card">
+        <div class="card-title">Score CAPES de Coprodução</div>
+        <div style="font-size: 13px; color: #667; margin-bottom: 12px;">Percentual de coautoria Docente-Discente (Meta: <input type="number" id="meta-capes" value="70" style="width: 50px; padding: 2px; text-align: center; border: 1px solid var(--border); border-radius: 4px;" onchange="updateDashboard()">%)</div>
+        <div style="background: #e2e8f0; border-radius: 10px; height: 20px; width: 100%; overflow: hidden; margin-bottom: 8px;">
+          <div id="score-bar" style="background: var(--secondary); height: 100%; width: 0%; transition: width 0.5s;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold;">
+          <span id="score-text">0%</span>
+          <span style="color: var(--gray);">Meta: <span id="meta-text">70%</span></span>
+        </div>
       </div>
-      <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>Título</th>
-              <th>Tipo</th>
-              <th>Ano</th>
-              <th>Autores</th>
-            </tr>
-          </thead>
-          <tbody id="table-body"></tbody>
-        </table>
+
+      <!-- Régua da Trajetória Discente -->
+      <div class="card">
+        <div class="card-title">Régua da Trajetória Discente</div>
+        <div style="display: flex; justify-content: space-between; text-align: center; font-size: 12px; margin-top: 10px;">
+          <div style="flex: 1;">
+            <div style="font-size: 20px; font-weight: bold; color: var(--primary);" id="fase-creditos">0</div>
+            <div style="color: #667; margin-top: 4px;">Em Créditos</div>
+          </div>
+          <div style="flex: 1; border-left: 1px solid var(--border);">
+            <div style="font-size: 20px; font-weight: bold; color: var(--primary);" id="fase-projeto">0</div>
+            <div style="color: #667; margin-top: 4px;">Projeto Aprovado</div>
+          </div>
+          <div style="flex: 1; border-left: 1px solid var(--border);">
+            <div style="font-size: 20px; font-weight: bold; color: var(--primary);" id="fase-qualificados">0</div>
+            <div style="color: #667; margin-top: 4px;">Qualificados</div>
+          </div>
+          <div style="flex: 1; border-left: 1px solid var(--border);">
+            <div style="font-size: 20px; font-weight: bold; color: var(--accent);" id="fase-defesa">0</div>
+            <div style="color: #667; margin-top: 4px;">Defesa Agendada</div>
+          </div>
+          <div style="flex: 1; border-left: 1px solid var(--border);">
+            <div style="font-size: 20px; font-weight: bold; color: var(--secondary);" id="fase-titulados">0</div>
+            <div style="color: #667; margin-top: 4px;">Titulados</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
   <script>
     let productionsData = [];
+    let discentesData = [];
+
     async function loadData() {
       try {
-        const localData = localStorage.getItem('gpa_productions');
-        if (localData) {
-          productionsData = JSON.parse(localData);
-          updateDashboard();
-          return;
+        const localProd = localStorage.getItem('gpa_productions');
+        if (localProd) {
+          productionsData = JSON.parse(localProd);
+        } else {
+          const resProd = await fetch('data/producoes.json');
+          if (resProd.ok) productionsData = await resProd.json();
         }
-        const response = await fetch('data/producoes.json');
-        if (response.ok) {
-          productionsData = await response.json();
-          updateDashboard();
+
+        const localDiscentes = localStorage.getItem('gpa_discentes');
+        if (localDiscentes) {
+          discentesData = JSON.parse(localDiscentes);
+        } else {
+          const resEstrutura = await fetch('data/estrutura_gpa.json');
+          if (resEstrutura.ok) {
+            const estrutura = await resEstrutura.json();
+            discentesData = estrutura.discentes || [];
+          }
         }
+        updateDashboard();
       } catch (e) {
         console.error(e);
       }
     }
+
     function updateDashboard() {
-      document.getElementById('stat-total').textContent = productionsData.length;
-      document.getElementById('stat-periodicos').textContent = productionsData.filter(p => (p.tipo||'').includes('periódico')).length;
-      document.getElementById('stat-eventos').textContent = productionsData.filter(p => (p.tipo||'').includes('evento')).length;
-      document.getElementById('stat-livros').textContent = productionsData.filter(p => (p.tipo||'').includes('livro')).length;
-      document.getElementById('stat-ptts').textContent = productionsData.filter(p => (p.tipo||'').includes('PTT') || (p.tipo||'').includes('Técnico')).length;
-      renderTable(productionsData);
-    }
-    function renderTable(data) {
-      const tbody = document.getElementById('table-body');
-      tbody.innerHTML = '';
-      if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888;">Nenhuma produção cadastrada.</td></tr>';
-        return;
+      const turmaId = document.getElementById('turma-selector').value;
+      const meusOrientandos = document.getElementById('meus-orientandos').checked;
+      const loggedInDocente = 'DOC_FLAVIO';
+
+      let filteredDiscentes = discentesData;
+      if (turmaId) {
+        filteredDiscentes = filteredDiscentes.filter(d => d.turma_id === turmaId);
       }
-      data.forEach(prod => {
-        const tr = document.createElement('tr');
-        const authorsHtml = (prod.autores || []).map(a => {
-          const cat = (a.categoria || a.type || 'externo').toLowerCase();
-          return `<span class="badge-author badge-${cat}">${a.nome}</span>`;
-        }).join('');
-        tr.innerHTML = `
-          <td><strong>${prod.titulo}</strong><br><small style="color: #667;">${prod.veiculo || ''}</small></td>
-          <td>${prod.tipo}</td>
-          <td>${prod.ano}</td>
-          <td>${authorsHtml}</td>
-        `;
-        tbody.appendChild(tr);
+      if (meusOrientandos) {
+        filteredDiscentes = filteredDiscentes.filter(d => d.orientador_id === loggedInDocente);
+      }
+
+      const validDiscenteIds = new Set(filteredDiscentes.map(d => d.id));
+
+      let filteredProductions = productionsData;
+      if (turmaId || meusOrientandos) {
+        filteredProductions = productionsData.filter(p => {
+          return (p.autores || []).some(a => validDiscenteIds.has(a.id));
+        });
+      }
+
+      document.getElementById('stat-total').textContent = filteredProductions.length;
+      document.getElementById('stat-periodicos').textContent = filteredProductions.filter(p => (p.tipo||'').toLowerCase().includes('periódico')).length;
+      document.getElementById('stat-eventos').textContent = filteredProductions.filter(p => (p.tipo||'').toLowerCase().includes('evento')).length;
+      document.getElementById('stat-livros').textContent = filteredProductions.filter(p => (p.tipo||'').toLowerCase().includes('livro')).length;
+      document.getElementById('stat-ptts').textContent = filteredProductions.filter(p => (p.tipo||'').toLowerCase().includes('ptt') || (p.tipo||'').toLowerCase().includes('técnico')).length;
+
+      const meta = document.getElementById('meta-capes').value;
+      document.getElementById('meta-text').textContent = meta + '%';
+
+      let coproducoes = 0;
+      filteredProductions.forEach(p => {
+        const hasDocente = (p.autores || []).some(a => a.categoria === 'docente');
+        const hasDiscente = (p.autores || []).some(a => a.categoria === 'discente');
+        if (hasDocente && hasDiscente) coproducoes++;
       });
-    }
-    function filterTable() {
-      const q = document.getElementById('search-author').value.toLowerCase();
-      const type = document.getElementById('filter-type').value;
-      const filtered = productionsData.filter(p => {
-        const matchType = !type || (p.tipo || '').includes(type);
-        const matchQ = !q || (p.titulo || '').toLowerCase().includes(q) || (p.autores && p.autores.some(a => a.nome.toLowerCase().includes(q)));
-        return matchType && matchQ;
+      const score = filteredProductions.length ? Math.round((coproducoes / filteredProductions.length) * 100) : 0;
+
+      const scoreBar = document.getElementById('score-bar');
+      scoreBar.style.width = score + '%';
+      scoreBar.style.backgroundColor = score >= meta ? 'var(--secondary)' : 'var(--accent)';
+      document.getElementById('score-text').textContent = score + '%';
+
+      let fases = { creditos: 0, projeto: 0, qualificados: 0, defesa: 0, titulados: 0 };
+
+      filteredDiscentes.forEach((d, i) => {
+        const fase = d.fase || (i % 5);
+        if (fase === 0) fases.creditos++;
+        else if (fase === 1) fases.projeto++;
+        else if (fase === 2) fases.qualificados++;
+        else if (fase === 3) fases.defesa++;
+        else if (fase === 4) fases.titulados++;
       });
-      renderTable(filtered);
+
+      document.getElementById('fase-creditos').textContent = fases.creditos;
+      document.getElementById('fase-projeto').textContent = fases.projeto;
+      document.getElementById('fase-qualificados').textContent = fases.qualificados;
+      document.getElementById('fase-defesa').textContent = fases.defesa;
+      document.getElementById('fase-titulados').textContent = fases.titulados;
     }
+
     document.addEventListener('DOMContentLoaded', loadData);
   </script>
 </body>

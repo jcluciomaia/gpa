@@ -164,262 +164,287 @@
       <h1 style="font-size: 22px; font-weight: 600; margin: 0; margin-left: 24px;">Gestão da Produção Acadêmica - GPA</h1>
     </div>
     <nav class="nav-links">
-      <a href="index.html">Dashboard</a>
-      <a href="rede.html">Rede de Colaboração</a>
-      <a href="docentes.html">Docentes</a>
-      <a href="discentes.html">Discentes</a>
-      <a href="cadastro.html" class="active">Cadastro</a>
-      <a href="relatorios.html">Relatórios</a>
-      <a href="admin.html">Administração</a>
+      <a href="index.html">📊 Dashboard</a>
+      <a href="producoes.html">📚 Produções</a>
+      <a href="rede.html">🕸 Rede de Colaboração</a>
+      <a href="docentes.html">👨‍🏫 Docentes</a>
+      <a href="discentes.html">🎓 Discentes</a>
+      <a href="cadastro.html" class="active">➕ Cadastrar Produção</a>
+      <a href="relatorios.html">📑 Relatórios</a>
+      <a href="admin.html">⚙️ Administração</a>
     </nav>
   </header>
 
   <div class="container">
-    <!-- Painel do Formulário -->
-    <div class="card">
-      <div class="card-title">
-        <span id="form-title">Novo Registro de Produção</span>
-        <button class="btn btn-secondary" onclick="resetForm()" style="font-size: 11px; padding: 3px 8px;">Limpar</button>
+    <h2 style="color: var(--primary); margin-bottom: 24px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; display: inline-block;">Cadastro de Produção (Hub de Entrada)</h2>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('tab-doi', this)">⚡ Busca Rápida por DOI</div>
+      <div class="tab" onclick="switchTab('tab-lattes', this)">📥 Importar XML Lattes</div>
+      <div class="tab" onclick="switchTab('tab-manual', this)">✍️ Preenchimento Manual</div>
+    </div>
+
+    <div class="card tab-content active" id="tab-doi">
+      <h3>Buscar via DOI (Crossref)</h3>
+      <p style="color: var(--gray); font-size: 13px; margin-bottom: 16px;">Insira o DOI da publicação para autocompletar os metadados e os autores.</p>
+      <div style="display: flex; gap: 12px; max-width: 500px;">
+        <input type="text" id="doi-input" placeholder="Ex: 10.1590/S0102-69922015000100002" style="flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 4px;">
+        <button onclick="fetchDOI()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">Buscar</button>
       </div>
+      <div id="doi-loading" style="display: none; margin-top: 16px; color: var(--primary); font-size: 13px;">Buscando dados no Crossref...</div>
+    </div>
 
-      <input type="hidden" id="item-id">
-
-      <div class="form-group">
-        <label>Título da Produção *</label>
-        <input type="text" id="titulo" placeholder="Ex: Governança algorítmica e responsabilidade..." required>
-      </div>
-
-      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div>
-          <label>Tipo de Produção *</label>
-          <select id="tipo">
-            <option value="Artigo para periódicos">Artigo para Periódicos</option>
-            <option value="Artigo para eventos">Artigo para Eventos / Anais</option>
-            <option value="Capítulo de livros">Capítulo de Livro</option>
-            <option value="PTTs">Produto Técnico / Tecnológico (PTT)</option>
-            <option value="Outro">Outro</option>
-          </select>
-        </div>
-        <div>
-          <label>Ano</label>
-          <input type="number" id="ano" value="2025" min="2010" max="2030">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Detalhes / Veículo / ISBN / DOI</label>
-        <input type="text" id="veiculo" placeholder="Ex: Revista X, Qualis A2, ISBN 978-...">
-      </div>
-
-      <!-- Seção de Coautores -->
-      <div class="coauthors-section">
-        <label>Adicionar Autores / Coautores</label>
-        <div class="coauthor-input-row">
-          <input type="text" id="author-name" placeholder="Nome do autor...">
-          <select id="author-type">
-            <option value="discente">Discente</option>
-            <option value="docente">Docente</option>
-            <option value="externo">Externo</option>
-          </select>
-          <button type="button" onclick="addAuthorTag()">+ Inserir</button>
-        </div>
-        <div class="tag-list" id="authors-tags"></div>
-      </div>
-
-      <div class="actions">
-        <button class="btn btn-primary" onclick="saveProduction()">Salvar Produção</button>
-        <button class="btn btn-danger" id="btn-delete" style="display: none;" onclick="deleteProduction()">Excluir</button>
+    <div class="card tab-content" id="tab-lattes">
+      <h3>Importação em Lote via XML (Lattes)</h3>
+      <p style="color: var(--gray); font-size: 13px; margin-bottom: 16px;">Faça upload do currículo Lattes em formato XML para extrair automaticamente artigos, eventos, capítulos e PTTs.</p>
+      <div style="border: 2px dashed var(--border); border-radius: 8px; padding: 40px; text-align: center; background: #f8fafc; cursor: pointer;">
+        <input type="file" id="xml-upload" accept=".xml" style="display: none;" onchange="processXML(this)">
+        <label for="xml-upload" style="cursor: pointer; color: var(--primary); font-weight: bold;">Clique aqui para selecionar o arquivo XML</label>
+        <div style="font-size: 12px; color: var(--gray); margin-top: 8px;">ou arraste e solte o arquivo aqui</div>
       </div>
     </div>
 
-    <!-- Painel de Registros Existentes -->
-    <div class="card">
-      <div class="card-title">
-        <span>Produções Cadastradas (<span id="total-count">0</span>)</span>
-      </div>
+    <div class="card tab-content" id="tab-manual">
+      <h3 style="margin-bottom: 16px;">Dados da Produção</h3>
+      <form id="prod-form">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px;">Tipo de Produção</label>
+            <select id="prod-tipo" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px;">
+              <option value="Artigo para periódicos">Artigo para Periódicos</option>
+              <option value="Artigo para eventos">Artigo para Eventos</option>
+              <option value="Capítulo de livros">Capítulo de Livro</option>
+              <option value="PTTs">Produto Técnico / Tecnológico (PTT)</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px;">Ano</label>
+            <input type="number" id="prod-ano" value="2025" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px;">
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px;">Título</label>
+          <input type="text" id="prod-titulo" placeholder="Título completo da produção..." style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px;">Veículo de Publicação / Editora</label>
+            <input type="text" id="prod-veiculo" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px;">Instituição Beneficiada</label>
+            <input type="text" id="prod-inst" placeholder="Ex: TRE-GO, UFT, etc." style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px;">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Seção de Confirmação e Vínculo de Coautores -->
+    <div class="card" id="section-autores" style="display: none; margin-top: 24px;">
+      <h3 style="margin-bottom: 12px; color: var(--primary);">Confirmação e Vínculo de Coautores</h3>
+      <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px;">Revise os autores extraídos e vincule-os à base de docentes ou discentes do programa. O vínculo garante a contabilização correta no Score CAPES.</p>
       
-      <div class="search-box">
-        <input type="text" id="search" placeholder="🔍 Filtrar por título ou autor..." oninput="renderList()">
+      <div id="autores-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <!-- Lista de autores injetada via JS -->
       </div>
 
-      <div class="list-wrapper" id="productions-list">
-        <!-- Itens inseridos via JS -->
-      </div>
+      <button onclick="addAuthorManual()" style="background: transparent; color: var(--secondary); border: 1px dashed var(--secondary); padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;">+ Adicionar Autor Manualmente</button>
 
-      <div class="json-export-bar">
-        <button class="btn btn-secondary" onclick="exportJSON()">📥 Baixar JSON para o GitHub</button>
-        <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">📤 Importar JSON</button>
-        <input type="file" id="import-file" style="display:none" accept=".json" onchange="importJSON(event)">
+      <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); text-align: right;">
+        <button onclick="salvarProducao()" style="background: var(--secondary); color: white; border: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; font-size: 15px; cursor: pointer;">Salvar e Computar Produção</button>
       </div>
     </div>
   </div>
 
+  <style>
+    .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+    .tab { padding: 12px 24px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--gray); border-bottom: 3px solid transparent; }
+    .tab:hover { color: var(--primary); }
+    .tab.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .author-row { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 12px; align-items: center; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid var(--border); }
+    .author-row input, .author-row select { padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; width: 100%; }
+    .btn-remove { background: #fee2e2; color: #ef4444; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+  </style>
+
   <script>
-    // Armazenamento inicial no LocalStorage ou memória
-    let productions = JSON.parse(localStorage.getItem('gta_productions')) || [];
     let currentAuthors = [];
+    let estruturaData = { docentes: [], discentes: [] };
 
-    function saveToStorage() {
-      localStorage.setItem('gta_productions', JSON.stringify(productions));
-      renderList();
-    }
-
-    function addAuthorTag(name = null, type = null) {
-      const inputName = document.getElementById('author-name');
-      const inputType = document.getElementById('author-type');
-
-      const authorName = name || inputName.value.trim();
-      const authorType = type || inputType.value;
-
-      if (!authorName) return;
-      if (currentAuthors.some(a => a.name.toLowerCase() === authorName.toLowerCase())) return;
-
-      currentAuthors.push({ name: authorName, type: authorType });
-      if (!name) inputName.value = '';
-      renderAuthorTags();
-    }
-
-    function removeAuthorTag(name) {
-      currentAuthors = currentAuthors.filter(a => a.name !== name);
-      renderAuthorTags();
-    }
-
-    function renderAuthorTags() {
-      const container = document.getElementById('authors-tags');
-      container.innerHTML = currentAuthors.map(a => `
-        <span class="badge-author badge-${a.type}">
-          ${a.name} (${a.type})
-          <span class="remove" onclick="removeAuthorTag('${a.name}')">✕</span>
-        </span>
-      `).join('');
-    }
-
-    function saveProduction() {
-      const id = document.getElementById('item-id').value;
-      const titulo = document.getElementById('titulo').value.trim();
-      const tipo = document.getElementById('tipo').value;
-      const ano = document.getElementById('ano').value;
-      const veiculo = document.getElementById('veiculo').value.trim();
-
-      if (!titulo) {
-        alert('Por favor, informe o título da produção.');
-        return;
-      }
-      if (currentAuthors.length === 0) {
-        alert('Adicione pelo menos um autor/coautor.');
-        return;
-      }
-
-      if (id) {
-        // Atualizar
-        const idx = productions.findIndex(p => p.id === id);
-        if (idx !== -1) {
-          productions[idx] = { id, titulo, tipo, ano, veiculo, autores: [...currentAuthors] };
+    async function loadData() {
+      try {
+        const res = await fetch('data/estrutura_gpa.json');
+        if (res.ok) {
+          estruturaData = await res.json();
         }
-      } else {
-        // Criar Novo
-        const newProd = {
-          id: 'prod_' + Date.now(),
-          titulo,
-          tipo,
-          ano,
-          veiculo,
-          autores: [...currentAuthors]
-        };
-        productions.unshift(newProd);
+      } catch(e) { console.error(e); }
+    }
+
+    function switchTab(tabId, el) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+
+      // If switching to manual, show authors section directly
+      if(tabId === 'tab-manual' && currentAuthors.length === 0) {
+        document.getElementById('section-autores').style.display = 'block';
+        addAuthorManual();
       }
-
-      saveToStorage();
-      resetForm();
     }
 
-    function editProduction(id) {
-      const p = productions.find(x => x.id === id);
-      if (!p) return;
+    async function fetchDOI() {
+      const doi = document.getElementById('doi-input').value.trim();
+      if(!doi) return alert("Insira um DOI válido");
 
-      document.getElementById('form-title').textContent = 'Editar Produção';
-      document.getElementById('item-id').value = p.id;
-      document.getElementById('titulo').value = p.titulo;
-      document.getElementById('tipo').value = p.tipo;
-      document.getElementById('ano').value = p.ano;
-      document.getElementById('veiculo').value = p.veiculo || '';
+      document.getElementById('doi-loading').style.display = 'block';
 
-      currentAuthors = [...p.autores];
-      renderAuthorTags();
+      try {
+        // Mock Crossref fetch
+        setTimeout(() => {
+          document.getElementById('doi-loading').style.display = 'none';
 
-      document.getElementById('btn-delete').style.display = 'block';
+          document.getElementById('prod-titulo').value = "Título Simulado via API Crossref para o DOI " + doi;
+          document.getElementById('prod-veiculo').value = "Revista Exemplo";
+          document.getElementById('prod-ano').value = "2024";
+          document.getElementById('prod-tipo').value = "Artigo para periódicos";
+
+          currentAuthors = [
+            { nome: "Autor Extraído 1", type: "docente" },
+            { nome: "Autor Extraído 2", type: "externo" }
+          ];
+
+          document.getElementById('section-autores').style.display = 'block';
+          renderAuthors();
+
+          // Switch to manual view to show populated fields
+          document.querySelectorAll('.tab')[2].click();
+        }, 800);
+      } catch(e) {
+        document.getElementById('doi-loading').style.display = 'none';
+        alert("Erro ao buscar DOI");
+      }
     }
 
-    function deleteProduction() {
-      const id = document.getElementById('item-id').value;
-      if (!id || !confirm('Deseja realmente excluir esta produção?')) return;
+    function processXML(input) {
+      if(!input.files.length) return;
+      alert("XML do Lattes processado (Mock). Artigos extraídos com sucesso.");
 
-      productions = productions.filter(p => p.id !== id);
-      saveToStorage();
-      resetForm();
+      document.getElementById('prod-titulo').value = "Título Extraído do XML Lattes";
+      document.getElementById('prod-veiculo').value = "Congresso de Inovação";
+      document.getElementById('prod-ano').value = "2023";
+      document.getElementById('prod-tipo').value = "Artigo para eventos";
+
+      currentAuthors = [
+        { nome: "Pesquisador Lattes 1", type: "docente" },
+        { nome: "Aluno Lattes 2", type: "discente" }
+      ];
+
+      document.getElementById('section-autores').style.display = 'block';
+      renderAuthors();
+      document.querySelectorAll('.tab')[2].click();
     }
 
-    function resetForm() {
-      document.getElementById('form-title').textContent = 'Novo Registro de Produção';
-      document.getElementById('item-id').value = '';
-      document.getElementById('titulo').value = '';
-      document.getElementById('veiculo').value = '';
-      document.getElementById('btn-delete').style.display = 'none';
-      currentAuthors = [];
-      renderAuthorTags();
+    function addAuthorManual() {
+      currentAuthors.push({ nome: "", type: "externo" });
+      document.getElementById('section-autores').style.display = 'block';
+      renderAuthors();
     }
 
-    function renderList() {
-      const query = document.getElementById('search').value.toLowerCase();
-      const listEl = document.getElementById('productions-list');
+    function removeAuthor(index) {
+      currentAuthors.splice(index, 1);
+      renderAuthors();
+    }
+
+    function updateAuthorName(index, val) {
+      currentAuthors[index].nome = val;
+    }
+
+    function updateAuthorType(index, val) {
+      currentAuthors[index].type = val;
+      renderAuthors(); // re-render to update the linkage select box
+    }
+
+    function updateAuthorLink(index, val) {
+      currentAuthors[index].id = val;
+    }
+
+    function renderAuthors() {
+      const container = document.getElementById('autores-list');
+      container.innerHTML = '';
       
-      const filtered = productions.filter(p => 
-        p.titulo.toLowerCase().includes(query) ||
-        p.autores.some(a => a.name.toLowerCase().includes(query))
-      );
+      currentAuthors.forEach((a, i) => {
+        let linkSelectHtml = '';
 
-      document.getElementById('total-count').textContent = productions.length;
+        if(a.type === 'docente') {
+          linkSelectHtml = `<select onchange="updateAuthorLink(${i}, this.value)">
+            <option value="">Vincular a Docente...</option>
+            ${estruturaData.docentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
+          </select>`;
+        } else if (a.type === 'discente') {
+          linkSelectHtml = `<select onchange="updateAuthorLink(${i}, this.value)">
+            <option value="">Vincular a Discente...</option>
+            ${estruturaData.discentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
+          </select>`;
+        } else {
+          linkSelectHtml = `<select disabled><option>Externo (Sem Vínculo GPA)</option></select>`;
+        }
 
-      if (filtered.length === 0) {
-        listEl.innerHTML = '<p style="font-size:12px; color:#888; text-align:center; padding: 20px;">Nenhuma produção encontrada.</p>';
-        return;
+        const div = document.createElement('div');
+        div.className = 'author-row';
+        div.innerHTML = `
+          <input type="text" value="${a.nome}" placeholder="Nome do Autor" onchange="updateAuthorName(${i}, this.value)">
+          <select onchange="updateAuthorType(${i}, this.value)">
+            <option value="externo" ${a.type === 'externo' ? 'selected' : ''}>Externo</option>
+            <option value="docente" ${a.type === 'docente' ? 'selected' : ''}>Docente PPG</option>
+            <option value="discente" ${a.type === 'discente' ? 'selected' : ''}>Discente PPG</option>
+          </select>
+          ${linkSelectHtml}
+          <button class="btn-remove" onclick="removeAuthor(${i})">X</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function salvarProducao() {
+      const titulo = document.getElementById('prod-titulo').value;
+      if(!titulo) return alert("O título é obrigatório");
+
+      const newProd = {
+        id: "PROD_" + Date.now(),
+        titulo: titulo,
+        tipo: document.getElementById('prod-tipo').value,
+        ano: parseInt(document.getElementById('prod-ano').value) || new Date().getFullYear(),
+        veiculo: document.getElementById('prod-veiculo').value,
+        instituicao_beneficiada: document.getElementById('prod-inst').value,
+        autores: currentAuthors.map(a => ({
+          id: a.id || ("EXT_" + Math.floor(Math.random()*1000)),
+          nome: a.nome || "Autor Desconhecido",
+          categoria: a.type
+        }))
+      };
+
+      // Retrieve existing, add, save
+      let localProd = localStorage.getItem('gpa_productions');
+      let prodList = [];
+      if(localProd) {
+        prodList = JSON.parse(localProd);
+      } else {
+        // if none in local storage we should ideally fetch data/producoes.json, but for simulation we just create array
+        prodList = [];
       }
 
-      listEl.innerHTML = filtered.map(p => `
-        <div class="prod-item" onclick="editProduction('${p.id}')">
-          <h4>${p.titulo}</h4>
-          <p><strong>${p.tipo} (${p.ano})</strong></p>
-          <p style="margin-top:4px;">👥 ${p.autores.map(a => a.name).join(', ')}</p>
-        </div>
-      `).join('');
+      prodList.push(newProd);
+      localStorage.setItem('gpa_productions', JSON.stringify(prodList));
+
+      alert("Produção cadastrada e vinculada com sucesso! O Score CAPES será atualizado.");
+      window.location.href = 'producoes.html';
     }
 
-    function exportJSON() {
-      const blob = new Blob([JSON.stringify(productions, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'producoes.json';
-      a.click();
-    }
-
-    function importJSON(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          productions = JSON.parse(evt.target.result);
-          saveToStorage();
-          alert('Dados importados com sucesso!');
-        } catch(err) {
-          alert('Arquivo JSON inválido.');
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    // Inicialização
-    renderList();
+    document.addEventListener('DOMContentLoaded', loadData);
   </script>
 </body>
 </html>
