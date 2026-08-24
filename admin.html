@@ -124,7 +124,30 @@
         </div>
       </div>
 
+
+      <!-- Persistência de Dados -->
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-title" style="font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 16px;">💾 Exportação e Persistência de Dados</div>
+        <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px;">Gere o arquivo consolidado de produções e estrutura para commit no repositório.</p>
+        <button onclick="downloadConsolidatedJSON()" style="background: var(--docente-color); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;">Baixar base consolidada (producoes.json)</button>
+      </div>
+
     </div>
+
   </div>
+  <script>
+
+    function downloadConsolidatedJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(productionsData, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "producoes.json");
+      document.body.appendChild(downloadAnchorNode); // required for firefox
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    }
+
+    let productionsData = JSON.parse(localStorage.getItem("gpa_productions") || "[]");
+  </script>
 </body>
 </html>

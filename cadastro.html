@@ -460,7 +460,7 @@
         veiculo: document.getElementById('prod-veiculo').value,
         instituicao_beneficiada: document.getElementById('prod-inst').value,
         autores: currentAuthors.map(a => ({
-          id: a.id || ("EXT_" + Math.floor(Math.random()*1000)),
+          id: a.id || ("EXT_" + formatAuthorName(a.nome || "")),
           nome: a.nome || "Autor Desconhecido",
           categoria: a.type
         }))
@@ -502,6 +502,20 @@
       reader.readAsText(file, "ISO-8859-1"); // Lattes XML is often in ISO-8859-1
     }
 
+
+
+    function formatAuthorName(str) {
+      if(!str) return "";
+      let n = str.trim();
+      // Handle "LASTNAME, FIRSTNAME" format explicitly
+      if (n.includes(",")) {
+        const parts = n.split(",");
+        if (parts.length === 2) {
+          n = parts[1].trim() + " " + parts[0].trim();
+        }
+      }
+      return n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.,;]/g, " ").replace(/\s+/g, "_").toLowerCase();
+    }
 
     function normalizeString(str) {
       if (!str) return "";
@@ -565,7 +579,7 @@
         }
 
         return {
-          id: id || ("EXT_" + Math.floor(Math.random()*10000)),
+          id: id || ("EXT_" + formatAuthorName(nomeDisplay)),
           nome: nomeDisplay,
           categoria: categoria,
           originalLattesName: nome
