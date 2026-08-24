@@ -249,7 +249,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
           <div>
             <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px;">Tipo de Produção</label>
-            <select id="prod-tipo" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px;">
+            <select id="prod-tipo" onchange="togglePTTFields()" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px;">
               <option value="Artigo para periódicos">Artigo para Periódicos</option>
               <option value="Artigo para eventos">Artigo para Eventos</option>
               <option value="Capítulo de livros">Capítulo de Livro</option>
@@ -277,6 +277,65 @@
             <input type="text" id="prod-inst" placeholder="Ex: TRE-GO, UFT, etc." style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px;">
           </div>
         </div>
+
+        <div id="ptt-fields" style="display: none; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px dashed var(--secondary); margin-bottom: 16px;">
+          <h4 style="color: var(--secondary); margin-bottom: 12px; font-size: 14px;">Anexo 5 (CAPES) - Detalhamento PTT</h4>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px;">
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px;">Demanda</label>
+              <select id="ptt-demanda" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                <option value="Espontânea">Espontânea</option>
+                <option value="Contratada">Contratada</option>
+                <option value="Edital/Concorrência">Edital / Concorrência</option>
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px;">Complexidade</label>
+              <select id="ptt-complexidade" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                <option value="Baixa">Baixa</option>
+                <option value="Média">Média</option>
+                <option value="Alta">Alta</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px;">Justificativa de Complexidade (até 50 palavras)</label>
+            <textarea id="ptt-just-comp" rows="2" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;"></textarea>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px;">
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px;">Inovação</label>
+              <select id="ptt-inovacao" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                <option value="Baixa">Baixa</option>
+                <option value="Média">Média</option>
+                <option value="Alta">Alta</option>
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px;">Impacto</label>
+              <select id="ptt-impacto" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+                <option value="Baixo">Baixo</option>
+                <option value="Médio">Médio</option>
+                <option value="Alto">Alto</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px;">Justificativa de Inovação</label>
+              <textarea id="ptt-just-inov" rows="2" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;"></textarea>
+            </div>
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px;">Justificativa de Impacto</label>
+              <textarea id="ptt-just-imp" rows="2" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;"></textarea>
+            </div>
+          </div>
+        </div>
+
       </form>
     </div>
 
@@ -310,7 +369,8 @@
   </style>
 
   <script>
-    let currentAuthors = [];
+    let currentAuthors = [
+            { nome: "Autor Extraído 1", type: "docente", is_first_author: true },];
     let estruturaData = { docentes: [], discentes: [] };
 
     async function loadData() {
@@ -320,6 +380,17 @@
           estruturaData = await res.json();
         }
       } catch(e) { console.error(e); }
+    }
+
+
+    function togglePTTFields() {
+      const tipo = document.getElementById('prod-tipo').value;
+      const pttDiv = document.getElementById('ptt-fields');
+      if (tipo === 'PTTs') {
+        pttDiv.style.display = 'block';
+      } else {
+        pttDiv.style.display = 'none';
+      }
     }
 
     function switchTab(tabId, el) {
@@ -352,6 +423,7 @@
           document.getElementById('prod-tipo').value = "Artigo para periódicos";
 
           currentAuthors = [
+            { nome: "Autor Extraído 1", type: "docente", is_first_author: true },
             { nome: "Autor Extraído 1", type: "docente" },
             { nome: "Autor Extraído 2", type: "externo" }
           ];
@@ -378,6 +450,7 @@
       document.getElementById('prod-tipo').value = "Artigo para eventos";
 
       currentAuthors = [
+            { nome: "Autor Extraído 1", type: "docente", is_first_author: true },
         { nome: "Pesquisador Lattes 1", type: "docente" },
         { nome: "Aluno Lattes 2", type: "discente" }
       ];
@@ -388,9 +461,14 @@
     }
 
     function addAuthorManual() {
-      currentAuthors.push({ nome: "", type: "externo" });
+      const isFirst = currentAuthors.length === 0; currentAuthors.push({ nome: "", type: "externo", is_first_author: isFirst });
       document.getElementById('section-autores').style.display = 'block';
       renderAuthors();
+    }
+
+
+    function updateFirstAuthor(index) {
+      currentAuthors.forEach((a, i) => a.is_first_author = (i === index));
     }
 
     function removeAuthor(index) {
@@ -434,7 +512,11 @@
 
         const div = document.createElement('div');
         div.className = 'author-row';
+        div.style.gridTemplateColumns = 'auto 2fr 1fr 1fr auto';
         div.innerHTML = `
+          <div style="text-align: center;" title="Marcar como 1º Autor">
+             <input type="radio" name="first_author" value="${i}" ${a.is_first_author ? 'checked' : ''} onchange="updateFirstAuthor(${i})">
+          </div>
           <input type="text" value="${a.nome}" placeholder="Nome do Autor" onchange="updateAuthorName(${i}, this.value)">
           <select onchange="updateAuthorType(${i}, this.value)">
             <option value="externo" ${a.type === 'externo' ? 'selected' : ''}>Externo</option>
@@ -452,6 +534,47 @@
       const titulo = document.getElementById('prod-titulo').value;
       if(!titulo) return alert("O título é obrigatório");
 
+      let localProd = localStorage.getItem('gpa_productions');
+      let prodList = localProd ? JSON.parse(localProd) : [];
+
+      const duplicate = prodList.find(p => p.titulo.toLowerCase() === titulo.toLowerCase());
+      if (duplicate) {
+        if (!confirm("Aviso: Uma produção com este título já existe na base. Deseja vinculá-la como coautor na produção existente em vez de criar uma duplicata?")) {
+           return;
+        } else {
+           // Basic merge strategy: just add the new authors to the existing production if they aren't there
+           currentAuthors.forEach(ca => {
+               const exists = duplicate.autores.some(ea => ea.id === ca.id);
+               if(!exists) {
+                   duplicate.autores.push({
+                       id: ca.id || ("EXT_" + formatAuthorName(ca.nome)),
+                       nome: ca.nome,
+                       categoria: ca.type,
+                       is_first_author: ca.is_first_author
+                   });
+               }
+           });
+           localStorage.setItem('gpa_productions', JSON.stringify(prodList));
+           alert("Coautores vinculados à produção existente com sucesso!");
+           window.location.href = 'producoes.html';
+           return;
+        }
+      }
+
+      let anexo5 = null;
+      if (document.getElementById('prod-tipo').value === 'PTTs') {
+          anexo5 = {
+             demanda: document.getElementById('ptt-demanda').value,
+             complexidade: document.getElementById('ptt-complexidade').value,
+             just_complexidade: document.getElementById('ptt-just-comp').value,
+             inovacao: document.getElementById('ptt-inovacao').value,
+             just_inovacao: document.getElementById('ptt-just-inov').value,
+             impacto: document.getElementById('ptt-impacto').value,
+             just_impacto: document.getElementById('ptt-just-imp').value,
+          };
+      }
+
+
       const newProd = {
         id: "PROD_" + Date.now(),
         titulo: titulo,
@@ -459,10 +582,13 @@
         ano: parseInt(document.getElementById('prod-ano').value) || new Date().getFullYear(),
         veiculo: document.getElementById('prod-veiculo').value,
         instituicao_beneficiada: document.getElementById('prod-inst').value,
-        autores: currentAuthors.map(a => ({
+        anexo5: anexo5,
+        autores: currentAuthors.map((a, idx) => ({
           id: a.id || ("EXT_" + formatAuthorName(a.nome || "")),
           nome: a.nome || "Autor Desconhecido",
-          categoria: a.type
+          categoria: a.type,
+          ordem: idx + 1,
+          is_first_author: a.is_first_author || false
         }))
       };
 
@@ -824,10 +950,33 @@
 
         if (!isDuplicate) {
           prod.id = "PROD_LATTES_" + Date.now() + "_" + Math.floor(Math.random()*1000);
+          // Set first author based on order
+          if (prod.autores && prod.autores.length > 0) {
+              prod.autores.forEach((a, i) => {
+                  a.ordem = i + 1;
+                  a.is_first_author = (i === 0);
+              });
+          }
           prodList.push(prod);
           adicionadas++;
         } else {
-          duplicadas++;
+          // Merge authors instead of just ignoring
+          const existing = prodList.find(existing => {
+              const sameDoi = (prod.doi && existing.doi && prod.doi === existing.doi);
+              const sameTitle = (normalizeString(existing.titulo) === normalizeString(prod.titulo));
+              return sameDoi || sameTitle;
+          });
+
+          if(existing) {
+              prod.autores.forEach(pa => {
+                  if(!existing.autores.some(ea => ea.id === pa.id)) {
+                      pa.is_first_author = false; // Never override first author on merge
+                      pa.ordem = existing.autores.length + 1;
+                      existing.autores.push(pa);
+                  }
+              });
+          }
+          duplicadas++; // Actually "Merged"
         }
       });
 

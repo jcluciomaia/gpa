@@ -179,7 +179,7 @@
         return;
       }
       filteredData.forEach(p => {
-        const authors = (p.autores || []).map(a => a.nome).join(', ');
+        const authors = (p.autores || []).map(a => a.nome + (a.is_first_author ? ' ⭐' : '')).join(', ');
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><strong>${p.titulo}</strong><br><small style="color: #64748b;">${p.veiculo || ''}</small></td>
