@@ -1,175 +1,291 @@
 [
   {
-    "id": "PROD_001",
-    "titulo": "Governança sustentável e contratações públicas responsáveis no TRE-GO: alinhamento com os ODS 12 e 16 da Agenda 2030 da ONU",
+    "id": "PROD_REAL_1",
+    "titulo": "Inovação na Gestão de Grupos de Trabalho com BPM e Design Thinking no TRE-GO",
     "tipo": "Artigo para periódicos",
     "veiculo": "Revista ARACÊ",
-    "ano": 2025,
-    "situacao": "Publicado",
-    "instituicao_beneficiada": "TRE-GO",
-    "aplicabilidade": "Aplicado na Prática",
-    "impacto_resumo": "Alinhamento das contratações públicas aos ODS 12 e 16 da ONU",
-    "autores": [
-      { "id": "DIS_ADENIR", "nome": "Adenir José de Sousa", "categoria": "discente" },
-      { "id": "DIS_ILANA", "nome": "Ilana Murici Ayres", "categoria": "discente" },
-      { "id": "DIS_JOSE", "nome": "José Carlos Lucio Maia", "categoria": "discente" },
-      { "id": "DIS_LUCIANA", "nome": "Luciana Mamede da Silva", "categoria": "discente" },
-      { "id": "DIS_RAMON", "nome": "Ramon de Freitas Elias Campos", "categoria": "discente" },
-      { "id": "DIS_ROBERTO", "nome": "Roberto César Rodrigues", "categoria": "discente" },
-      { "id": "DOC_SUZANA", "nome": "Prof.ª Dr.ª Suzana Gilioli da Costa Nunes", "categoria": "docente" },
-      { "id": "DOC_FLAVIO", "nome": "Prof. Dr. Flávio Roldão de Carvalho Lelis", "categoria": "docente" }
-    ]
-  },
-  {
-    "id": "PROD_002",
-    "titulo": "Gestão de Riscos no Processo Eleitoral: Aplicação do Modelo de Três Linhas na Justiça Eleitoral Goiana",
-    "tipo": "Artigo para eventos",
-    "veiculo": "Congresso Internacional de Governança Pública",
     "ano": 2024,
     "situacao": "Publicado",
     "instituicao_beneficiada": "TRE-GO",
-    "aplicabilidade": "Aplicado na Prática",
-    "impacto_resumo": "Mitigação de riscos operacionais e maior segurança no fluxo eleitoral",
     "autores": [
-      { "id": "DIS_BRUNO", "nome": "Bruno Mortari", "categoria": "discente" },
-      { "id": "DOC_GENTIL", "nome": "Prof. Dr. Gentil Veloso Barbosa", "categoria": "docente" }
+      {
+        "id": "DISC_JOSE",
+        "nome": "José Carlos Lucio Maia",
+        "categoria": "discente",
+        "ordem": 1,
+        "is_first_author": true
+      },
+      {
+        "id": "DOC_FLAVIO",
+        "nome": "Flávio Roldão de Carvalho Lelis",
+        "categoria": "docente",
+        "ordem": 2,
+        "is_first_author": false
+      }
     ]
   },
   {
-    "id": "PROD_003",
-    "titulo": "Design Thinking e BPM integrados: Uma proposta metodológica para gestão de grupos de trabalho",
+    "id": "PROD_REAL_2",
+    "titulo": "Detecção de Fake News e Segurança da Informação no Processo Eleitoral",
     "tipo": "Artigo para periódicos",
-    "veiculo": "Revista de Gestão e Tecnologia (G&T)",
-    "ano": 2025,
+    "veiculo": "Revista Veredas do Direito",
+    "ano": 2023,
     "situacao": "Publicado",
     "instituicao_beneficiada": "TRE-GO",
-    "aplicabilidade": "Aplicado na Prática",
-    "impacto_resumo": "Padronização e melhoria de desempenho em comitês e grupos de trabalho",
     "autores": [
-      { "id": "DIS_JOSE", "nome": "José Carlos Lucio Maia", "categoria": "discente" },
-      { "id": "DOC_FLAVIO", "nome": "Prof. Dr. Flávio Roldão de Carvalho Lelis", "categoria": "docente" }
+      {
+        "id": "DISC_BRUNO",
+        "nome": "Bruno Mortari",
+        "categoria": "discente",
+        "ordem": 1,
+        "is_first_author": true
+      },
+      {
+        "id": "DISC_ROBERTO",
+        "nome": "Roberto César Rodrigues",
+        "categoria": "discente",
+        "ordem": 2,
+        "is_first_author": false
+      },
+      {
+        "id": "DOC_MARCELO",
+        "nome": "Marcelo Lisboa Rocha",
+        "categoria": "docente",
+        "ordem": 3,
+        "is_first_author": false
+      }
     ]
   },
   {
-    "id": "PROD_004",
-    "titulo": "Manual de Governança e Gestão de Contratações Públicas Sustentáveis",
-    "tipo": "PTTs",
-    "veiculo": "Editora UFT / TRE-GO",
-    "ano": 2025,
-    "situacao": "Publicado",
-    "instituicao_beneficiada": "TRE-GO",
-    "aplicabilidade": "Aplicado na Prática",
-    "impacto_resumo": "Guia normativo e operacional de compras públicas sustentáveis",
-    "autores": [
-      { "id": "DIS_ADENIR", "nome": "Adenir José de Sousa", "categoria": "discente" },
-      { "id": "DIS_JOSE", "nome": "José Carlos Lucio Maia", "categoria": "discente" },
-      { "id": "DOC_SUZANA", "nome": "Prof.ª Dr.ª Suzana Gilioli da Costa Nunes", "categoria": "docente" }
-    ]
-  },
-  {
-    "id": "PROD_005",
-    "titulo": "Transformação Digital e Inclusão do Eleitor: Avaliação da Acessibilidade nos Cartórios Eleitorais",
+    "id": "PROD_REAL_3",
+    "titulo": "Transformação Digital e o Uso de IA no PJe: Oportunidades e Desafios",
     "tipo": "Artigo para eventos",
-    "veiculo": "Simpósio Brasileiro de Sistemas de Informação (SBSI)",
+    "veiculo": "Infosfera",
     "ano": 2024,
     "situacao": "Publicado",
     "instituicao_beneficiada": "TRE-GO",
-    "aplicabilidade": "Estudo / Análise",
-    "impacto_resumo": "Diagnóstico de acessibilidade física e digital na prestação jurisdicional",
     "autores": [
-      { "id": "DIS_HAMILTON", "nome": "Hamilton Pinheiro de Oliveira", "categoria": "discente" },
-      { "id": "DOC_HUMBERTO", "nome": "Prof. Dr. Humberto Xavier de Araújo", "categoria": "docente" }
+      {
+        "id": "DISC_RAMON",
+        "nome": "Ramon de Freitas Elias Campos",
+        "categoria": "discente",
+        "ordem": 1,
+        "is_first_author": true
+      },
+      {
+        "id": "DOC_PATRICK",
+        "nome": "Patrick Letouzé Moreira",
+        "categoria": "docente",
+        "ordem": 2,
+        "is_first_author": false
+      }
     ]
   },
   {
-    "id": "PROD_006",
-    "titulo": "Framework para Avaliação da Maturidade em Inteligência Artificial no Setor Público",
+    "id": "PROD_REAL_4",
+    "titulo": "Governança e Lotação Nominal da Força de Trabalho: Estudo de Caso",
     "tipo": "Artigo para periódicos",
-    "veiculo": "Brazilian Journal of Public Administration",
-    "ano": 2025,
-    "situacao": "Publicado",
-    "instituicao_beneficiada": "UFT",
-    "aplicabilidade": "Estudo / Análise",
-    "impacto_resumo": "Modelo de maturidade de IA para órgãos governamentais",
-    "autores": [
-      { "id": "DIS_LUIS", "nome": "Luís Cláudio Fernandes", "categoria": "discente" },
-      { "id": "DOC_RAFAEL", "nome": "Prof. Dr. Rafael Lima de Carvalho", "categoria": "docente" }
-    ]
-  },
-  {
-    "id": "PROD_007",
-    "titulo": "Automação de Processos de Negócio (RPA) na Tramitação de Procedimentos Disciplinares e Administrativos",
-    "tipo": "PTTs",
-    "veiculo": "Repositório Institucional TRE-GO",
-    "ano": 2025,
+    "veiculo": "Cadernos Cajuína",
+    "ano": 2024,
     "situacao": "Publicado",
     "instituicao_beneficiada": "TRE-GO",
-    "aplicabilidade": "Aplicado na Prática",
-    "impacto_resumo": "Redução do tempo de tramitação e eliminação de tarefas repetitivas",
     "autores": [
-      { "id": "DIS_KATIUSSE", "nome": "Katiusse Kelle de Melo Soares", "categoria": "discente" },
-      { "id": "DIS_LUIZ", "nome": "Luiz Henrique Borges de Azevedo Silva", "categoria": "discente" },
-      { "id": "DOC_PATRICK", "nome": "Prof. Dr. Patrick Letouzè Moreira", "categoria": "docente" }
+      {
+        "id": "DISC_ADENIR",
+        "nome": "Adenir José de Sousa",
+        "categoria": "discente",
+        "ordem": 1,
+        "is_first_author": true
+      },
+      {
+        "id": "DOC_SUZANA",
+        "nome": "Suzana Gilioli da Costa Nunes",
+        "categoria": "docente",
+        "ordem": 2,
+        "is_first_author": false
+      }
     ]
   },
   {
-    "id": "PROD_008",
-    "titulo": "Gestão do Conhecimento e Retenção de Saberes Críticos na Justiça Eleitoral",
+    "id": "PROD_REAL_5",
+    "titulo": "Aprimorando o Ensino Jurídico com Psicologia Positiva",
     "tipo": "Capítulo de livros",
-    "veiculo": "Governança Pública Contemporânea (Editora Dialética)",
+    "veiculo": "Editora Impacto/UFT",
+    "ano": 2024,
+    "situacao": "Publicado",
+    "instituicao_beneficiada": "Geral",
+    "autores": [
+      {
+        "id": "DISC_LUIZ",
+        "nome": "Luiz Henrique Borges de Azevedo Silva",
+        "categoria": "discente",
+        "ordem": 1,
+        "is_first_author": true
+      },
+      {
+        "id": "DOC_RAFAEL",
+        "nome": "Rafael Lima de Carvalho",
+        "categoria": "docente",
+        "ordem": 2,
+        "is_first_author": false
+      }
+    ]
+  },
+  {
+    "id": "PROD_REAL_6",
+    "titulo": "Classificação de Processos Utilizando Processamento de Linguagem Natural",
+    "tipo": "Artigo para eventos",
+    "veiculo": "ENMC",
+    "ano": 2023,
+    "situacao": "Publicado",
+    "instituicao_beneficiada": "TRE-GO",
+    "autores": [
+      {
+        "id": "DISC_RAFAELD",
+        "nome": "Rafael Dídimo Santos",
+        "categoria": "discente",
+        "ordem": 1,
+        "is_first_author": true
+      },
+      {
+        "id": "DOC_DAVID",
+        "nome": "David Nadler Prata",
+        "categoria": "docente",
+        "ordem": 2,
+        "is_first_author": false
+      }
+    ]
+  },
+  {
+    "id": "PROD_REAL_7",
+    "titulo": "Cartilha SEED de Boas Práticas em Segurança da Informação",
+    "tipo": "PTTs",
+    "veiculo": "TRE-GO",
     "ano": 2024,
     "situacao": "Publicado",
     "instituicao_beneficiada": "TRE-GO",
-    "aplicabilidade": "Estudo / Análise",
-    "impacto_resumo": "Metodologia para preservação de capital intelectual",
+    "anexo5": {
+      "demanda": "Contratada",
+      "complexidade": "Média",
+      "just_complexidade": "Envolveu mapeamento de processos internos e políticas de acesso.",
+      "inovacao": "Média",
+      "just_inovacao": "Introduziu conceitos de zero trust no tribunal.",
+      "impacto": "Alto",
+      "just_impacto": "Redução de 30% nos incidentes de segurança cibernética."
+    },
     "autores": [
-      { "id": "DIS_MARCIO", "nome": "Márcio Antonio Duarte Oliveira", "categoria": "discente" },
-      { "id": "DOC_MARCELO", "nome": "Prof. Dr. Marcelo Lisboa Rocha", "categoria": "docente" }
+      {
+        "id": "DISC_ROBERTO",
+        "nome": "Roberto César Rodrigues",
+        "categoria": "discente",
+        "ordem": 1,
+        "is_first_author": true
+      },
+      {
+        "id": "DOC_GEORGEF",
+        "nome": "George França dos Santos",
+        "categoria": "docente",
+        "ordem": 2,
+        "is_first_author": false
+      }
     ]
   },
   {
-    "id": "PROD_009",
-    "titulo": "Análise Preditiva do Absenteísmo de Mesários: Aplicação de Machine Learning nas Eleições Municipais",
+    "id": "PROD_REAL_8",
+    "titulo": "Plano Anual de Contratação e Governança Orçamentária",
     "tipo": "Artigo para periódicos",
-    "veiculo": "Revista Eletrônica de Ciência Administrativa (RECADM)",
-    "ano": 2025,
+    "veiculo": "Humanidades & Inovação",
+    "ano": 2024,
     "situacao": "Publicado",
     "instituicao_beneficiada": "TRE-GO",
-    "aplicabilidade": "Aplicado na Prática",
-    "impacto_resumo": "Algoritmo de previsão de faltas para otimizar convocações",
     "autores": [
-      { "id": "DIS_RICARDO", "nome": "Ricardo Barbalho Marques", "categoria": "discente" },
-      { "id": "DOC_MARCELO", "nome": "Prof. Dr. Marcelo Lisboa Rocha", "categoria": "docente" }
+      {
+        "id": "DISC_LUCIANA",
+        "nome": "Luciana Mamede da Silva",
+        "categoria": "discente",
+        "ordem": 1,
+        "is_first_author": true
+      },
+      {
+        "id": "DISC_LUIS",
+        "nome": "Luís Cláudio Fernandes",
+        "categoria": "discente",
+        "ordem": 2,
+        "is_first_author": false
+      },
+      {
+        "id": "DOC_LILIANA",
+        "nome": "Liliana Pena Naval",
+        "categoria": "docente",
+        "ordem": 3,
+        "is_first_author": false
+      }
     ]
   },
   {
-    "id": "PROD_010",
-    "titulo": "Painel Gerencial de Indicadores de Gestão de Pessoas (Business Intelligence)",
-    "tipo": "PTTs",
-    "veiculo": "TRE-GO Analytics Hub",
-    "ano": 2025,
-    "situacao": "Publicado",
-    "instituicao_beneficiada": "TRE-GO",
-    "aplicabilidade": "Aplicado na Prática",
-    "impacto_resumo": "Dashboard executivo de tomada de decisão em RH e capacitação",
-    "autores": [
-      { "id": "DIS_VITOR", "nome": "Vitor Carneiro Ramos", "categoria": "discente" },
-      { "id": "DOC_PATRICK", "nome": "Prof. Dr. Patrick Letouzè Moreira", "categoria": "docente" }
-    ]
-  },
-  {
-    "id": "PROD_011",
-    "titulo": "Cultura de Inovação em Tribunais Regionais Eleitorais: Fatores Críticos de Sucesso",
+    "id": "PROD_REAL_9",
+    "titulo": "Linguagem Simples na Justiça Eleitoral: Uma Abordagem com IA",
     "tipo": "Artigo para eventos",
-    "veiculo": "EnANPAD 2025",
-    "ano": 2025,
+    "veiculo": "CONGENI",
+    "ano": 2024,
     "situacao": "Publicado",
     "instituicao_beneficiada": "TRE-GO",
-    "aplicabilidade": "Estudo / Análise",
-    "impacto_resumo": "Diretrizes organizacionais para implantação de laboratórios de inovação",
     "autores": [
-      { "id": "DIS_DIDIMO", "nome": "Rafael Dídimo Santos", "categoria": "discente" },
-      { "id": "DOC_FLAVIO", "nome": "Prof. Dr. Flávio Roldão de Carvalho Lelis", "categoria": "docente" }
+      {
+        "id": "DISC_RICARDO",
+        "nome": "Ricardo Barbalho Marques",
+        "categoria": "discente",
+        "ordem": 1,
+        "is_first_author": true
+      },
+      {
+        "id": "DOC_MARINA",
+        "nome": "Marina Figueiredo Moreira",
+        "categoria": "docente",
+        "ordem": 2,
+        "is_first_author": false
+      }
+    ]
+  },
+  {
+    "id": "PROD_REAL_10",
+    "titulo": "Manual TRACE: Diretrizes de Compliance e Metodologia OKR",
+    "tipo": "PTTs",
+    "veiculo": "TRE-GO",
+    "ano": 2024,
+    "situacao": "Publicado",
+    "instituicao_beneficiada": "TRE-GO",
+    "anexo5": {
+      "demanda": "Contratada",
+      "complexidade": "Alta",
+      "just_complexidade": "Integração do compliance institucional com a execução estratégica via OKRs.",
+      "inovacao": "Alta",
+      "just_inovacao": "Primeiro modelo TRACE aplicado na justiça eleitoral.",
+      "impacto": "Alto",
+      "just_impacto": "Aumento na transparência e rastreabilidade dos processos gerenciais."
+    },
+    "autores": [
+      {
+        "id": "DISC_ILANA",
+        "nome": "Ilana Murici Ayres",
+        "categoria": "discente",
+        "ordem": 1,
+        "is_first_author": true
+      },
+      {
+        "id": "DISC_KATIUSSE",
+        "nome": "Katiusse Kelle de Melo Soares",
+        "categoria": "discente",
+        "ordem": 2,
+        "is_first_author": false
+      },
+      {
+        "id": "DOC_WALDECY",
+        "nome": "Waldecy Rodrigues",
+        "categoria": "docente",
+        "ordem": 3,
+        "is_first_author": false
+      }
     ]
   }
 ]

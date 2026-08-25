@@ -2,266 +2,270 @@
   "programas": [
     {
       "id": "PPGGTD",
-      "nome": "Programa de Pós-Graduação em Governança e Transformação Digital",
+      "nome": "PPG em Governança e Transformação Digital",
       "instituicao": "UFT"
     }
   ],
   "turmas": [
     {
-      "id": "TURMA_PPGGTD_2023_TRE",
-      "nome": "Turma 2023/2024 — Convênio TRE-GO",
+      "id": "tre_go_2023",
+      "nome": "Turma Convênio TRE-GO 2023/2024",
       "programa_id": "PPGGTD",
       "nivel": "Mestrado Profissional",
       "ano_inicio": 2023,
       "ano_fim": 2025
-    },
-    {
-      "id": "TURMA_PPGGTD_2026_MEST",
-      "nome": "Turma 2026/2027 — Mestrado",
-      "programa_id": "PPGGTD",
-      "nivel": "Mestrado",
-      "ano_inicio": 2026,
-      "ano_fim": 2028
-    },
-    {
-      "id": "TURMA_PPGGTD_2026_DOUT",
-      "nome": "Turma 2026/2030 — Doutorado",
-      "programa_id": "PPGGTD",
-      "nivel": "Doutorado",
-      "ano_inicio": 2026,
-      "ano_fim": 2030
     }
   ],
   "docentes": [
     {
       "id": "DOC_FLAVIO",
-      "nome": "Prof. Dr. Flávio Roldão de Carvalho Lelis",
+      "nome": "Flávio Roldão de Carvalho Lelis",
       "titulacao": "Doutor",
-      "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "lattes": "http://lattes.cnpq.br/7287069183620494",
+      "linha_pesquisa": "Transformação Digital",
       "categoria": "permanente"
     },
     {
       "id": "DOC_GENTIL",
-      "nome": "Prof. Dr. Gentil Veloso Barbosa",
+      "nome": "Gentil Veloso Barbosa",
       "titulacao": "Doutor",
-      "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "lattes": "http://lattes.cnpq.br/4195102897973575",
+      "linha_pesquisa": "Transformação Digital",
       "categoria": "permanente"
     },
     {
       "id": "DOC_GEORGE",
-      "nome": "Prof. Dr. George Lauro Ribeiro de Brito",
+      "nome": "George Lauro Ribeiro de Brito",
       "titulacao": "Doutor",
-      "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "lattes": "http://lattes.cnpq.br/8779620606534106",
+      "linha_pesquisa": "Transformação Digital",
       "categoria": "permanente"
     },
     {
       "id": "DOC_HUMBERTO",
-      "nome": "Prof. Dr. Humberto Xavier de Araújo",
+      "nome": "Humberto Xavier de Araújo",
       "titulacao": "Doutor",
-      "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "lattes": "http://lattes.cnpq.br/1914224370310328",
+      "linha_pesquisa": "Transformação Digital",
       "categoria": "permanente"
     },
     {
       "id": "DOC_MARCELO",
-      "nome": "Prof. Dr. Marcelo Lisboa Rocha",
+      "nome": "Marcelo Lisboa Rocha",
       "titulacao": "Doutor",
-      "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "lattes": "http://lattes.cnpq.br/8909823430980265",
+      "linha_pesquisa": "Transformação Digital",
       "categoria": "permanente"
     },
     {
       "id": "DOC_PATRICK",
-      "nome": "Prof. Dr. Patrick Letouzè Moreira",
+      "nome": "Patrick Letouzé Moreira",
       "titulacao": "Doutor",
-      "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "lattes": "http://lattes.cnpq.br/7580955452994028",
+      "linha_pesquisa": "Transformação Digital",
       "categoria": "permanente"
     },
     {
       "id": "DOC_RAFAEL",
-      "nome": "Prof. Dr. Rafael Lima de Carvalho",
+      "nome": "Rafael Lima de Carvalho",
       "titulacao": "Doutor",
-      "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "lattes": "http://lattes.cnpq.br/0175648235036864",
+      "linha_pesquisa": "Transformação Digital",
       "categoria": "permanente"
     },
     {
       "id": "DOC_SUZANA",
-      "nome": "Prof.ª Dr.ª Suzana Gilioli da Costa Nunes",
+      "nome": "Suzana Gilioli da Costa Nunes",
+      "titulacao": "Doutora",
+      "lattes": "http://lattes.cnpq.br/0463372631179918",
+      "linha_pesquisa": "Governança",
+      "categoria": "permanente"
+    },
+    {
+      "id": "DOC_ANDREAS",
+      "nome": "Andreas Kneip",
       "titulacao": "Doutor",
-      "lattes": "http://lattes.cnpq.br/0000000000000000",
-      "linha_pesquisa": "Transformação Digital e Sociedade",
+      "lattes": "",
+      "linha_pesquisa": "Governança",
+      "categoria": "permanente"
+    },
+    {
+      "id": "DOC_DAVID",
+      "nome": "David Nadler Prata",
+      "titulacao": "Doutor",
+      "lattes": "",
+      "linha_pesquisa": "Transformação Digital",
+      "categoria": "permanente"
+    },
+    {
+      "id": "DOC_DIEGO",
+      "nome": "Diego de Castro Rodrigues",
+      "titulacao": "Doutor",
+      "lattes": "",
+      "linha_pesquisa": "Transformação Digital",
+      "categoria": "permanente"
+    },
+    {
+      "id": "DOC_GEORGEF",
+      "nome": "George França dos Santos",
+      "titulacao": "Doutor",
+      "lattes": "",
+      "linha_pesquisa": "Transformação Digital",
+      "categoria": "permanente"
+    },
+    {
+      "id": "DOC_LILIANA",
+      "nome": "Liliana Pena Naval",
+      "titulacao": "Doutora",
+      "lattes": "",
+      "linha_pesquisa": "Governança",
+      "categoria": "permanente"
+    },
+    {
+      "id": "DOC_MARINA",
+      "nome": "Marina Figueiredo Moreira",
+      "titulacao": "Doutora",
+      "lattes": "",
+      "linha_pesquisa": "Transformação Digital",
+      "categoria": "permanente"
+    },
+    {
+      "id": "DOC_PAULO",
+      "nome": "Paulo Henrique de Souza Bermejo",
+      "titulacao": "Doutor",
+      "lattes": "",
+      "linha_pesquisa": "Transformação Digital",
+      "categoria": "permanente"
+    },
+    {
+      "id": "DOC_WALDECY",
+      "nome": "Waldecy Rodrigues",
+      "titulacao": "Doutor",
+      "lattes": "",
+      "linha_pesquisa": "Governança",
       "categoria": "permanente"
     }
   ],
   "discentes": [
     {
-      "id": "DISC_01",
-      "nome": "Aluno Um",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_FLAVIO",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_ADENIR",
+      "nome": "Adenir José de Sousa",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "Lotação Nominal e Governança da Força de Trabalho"
     },
     {
-      "id": "DISC_02",
-      "nome": "Aluno Dois",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_FLAVIO",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_BRUNO",
+      "nome": "Bruno Mortari",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "IA para Detecção de Fake News"
     },
     {
-      "id": "DISC_03",
-      "nome": "Aluno Três",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_GENTIL",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_HAMILTON",
+      "nome": "Hamilton Pinheiro de Oliveira",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "Governança"
     },
     {
-      "id": "DISC_04",
-      "nome": "Aluno Quatro",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_GENTIL",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_ILANA",
+      "nome": "Ilana Murici Ayres",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "Compliance"
     },
     {
-      "id": "DISC_05",
-      "nome": "Aluno Cinco",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_GEORGE",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_JOSE",
+      "nome": "José Carlos Lucio Maia",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "Inovação na Gestão de Grupos de Trabalho - BPM e Design Thinking"
     },
     {
-      "id": "DISC_06",
-      "nome": "Aluno Seis",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_GEORGE",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_KATIUSSE",
+      "nome": "Katiusse Kelle de Melo Soares",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "Metodologia OKR"
     },
     {
-      "id": "DISC_07",
-      "nome": "Aluno Sete",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_HUMBERTO",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_LUCIANA",
+      "nome": "Luciana Mamede da Silva",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "Plano Anual de Contratação no Judiciário"
     },
     {
-      "id": "DISC_08",
-      "nome": "Aluno Oito",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_HUMBERTO",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_LUIS",
+      "nome": "Luís Cláudio Fernandes",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "Gestão Orçamentária"
     },
     {
-      "id": "DISC_09",
-      "nome": "Aluno Nove",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_MARCELO",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_LUIZ",
+      "nome": "Luiz Henrique Borges de Azevedo Silva",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "Ensino Jurídico com Psicologia Positiva"
     },
     {
-      "id": "DISC_10",
-      "nome": "Aluno Dez",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_MARCELO",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_MARCIO",
+      "nome": "Márcio Antonio Duarte Oliveira",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "Gestão de Projetos"
     },
     {
-      "id": "DISC_11",
-      "nome": "Aluno Onze",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_PATRICK",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_RAFAELD",
+      "nome": "Rafael Dídimo Santos",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "PLN para Classificação de Processos no TRE-GO"
     },
     {
-      "id": "DISC_12",
-      "nome": "Aluno Doze",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_PATRICK",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_RAMON",
+      "nome": "Ramon de Freitas Elias Campos",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "IA para Elaboração de Documentos no PJe do TRE-GO"
     },
     {
-      "id": "DISC_13",
-      "nome": "Aluno Treze",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_RAFAEL",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_RICARDO",
+      "nome": "Ricardo Barbalho Marques",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "IA na Linguagem Simples na Justiça Eleitoral"
     },
     {
-      "id": "DISC_14",
-      "nome": "Aluno Quatorze",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_RAFAEL",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_ROBERTO",
+      "nome": "Roberto César Rodrigues",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
+      "linha_pesquisa": "Segurança da Informação"
     },
     {
-      "id": "DISC_15",
-      "nome": "Aluno Quinze",
-      "turma_id": "TURMA_PPGGTD_2023_TRE",
-      "orientador_id": "DOC_SUZANA",
-      "lattes": "http://lattes.cnpq.br/1111111111111111",
+      "id": "DISC_VITOR",
+      "nome": "Vitor Carneiro Ramos",
+      "turma_id": "tre_go_2023",
       "titulacao": "Mestrando",
       "status": "em_curso",
-      "data_titulacao": "2026-06"
-    }
-  ],
-  "disciplinas": [
-    {
-      "id": "DISCIP_01",
-      "nome": "Metodologia Científica"
-    },
-    {
-      "id": "DISCIP_02",
-      "nome": "Seminários Avançados"
-    },
-    {
-      "id": "DISCIP_03",
-      "nome": "Gestão e Tecnologia"
+      "linha_pesquisa": "Modelagem de Processos, Governança e Transformação Digital"
     }
   ]
 }
