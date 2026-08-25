@@ -86,7 +86,14 @@
           <button class="btn btn-primary" onclick="window.print()">Imprimir / PDF</button>
         </div>
       </div>
-      <div class="filters">
+
+      <div style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid var(--border);">
+        <button class="tab-btn active" onclick="switchReportTab('geral', this)" style="background: none; border: none; padding: 10px 16px; font-weight: bold; cursor: pointer; color: var(--primary); border-bottom: 3px solid var(--primary); font-size: 14px;">Relatório Geral</button>
+        <button class="tab-btn" onclick="switchReportTab('anexo2', this)" style="background: none; border: none; padding: 10px 16px; font-weight: bold; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; font-size: 14px;">Anexo 2 - Egressos</button>
+        <button class="tab-btn" onclick="switchReportTab('anexo5', this)" style="background: none; border: none; padding: 10px 16px; font-weight: bold; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; font-size: 14px;">Anexo 5 - PTTs</button>
+      </div>
+
+      <div class="filters" id="filters-geral">
         <select id="filter-inst" onchange="applyFilters()">
           <option value="">Todas as Instituições</option>
           <option value="TRE-GO">Convênio TRE-GO</option>
@@ -107,6 +114,8 @@
         <input type="text" id="search-box" placeholder="Filtrar por autor ou título..." oninput="applyFilters()">
       </div>
 
+      <div id="tab-geral" class="tab-content active">
+      <div id="tab-geral" class="tab-content active">
       <div class="kpi-container">
         <div class="kpi-card"><div class="num" id="kpi-total">0</div><div class="label">Total Selecionado</div></div>
         <div class="kpi-card"><div class="num" id="kpi-tre">0</div><div class="label">Com Impacto TRE-GO</div></div>
@@ -128,6 +137,137 @@
           <tbody id="report-body"></tbody>
         </table>
       </div>
+      </div> <!-- end tab-geral -->
+
+      <!-- Anexo 2 - Acompanhamento de Egressos -->
+      <div id="tab-anexo2" class="tab-content" style="display: none;">
+        <h3 style="color: var(--primary); margin-bottom: 16px;">Acompanhamento de Egressos (Janela de 5 anos)</h3>
+        <div style="overflow-x: auto;">
+          <table style="font-size: 12px; width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: #f8fafc; text-align: left;">
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Nome do Titulado</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Trabalho de Conclusão</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Orientador</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Data de Defesa</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Elegível na Janela CAPES?</th>
+              </tr>
+            </thead>
+            <tbody id="anexo2-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Anexo 5 - Dossiê PTTs -->
+      <div id="tab-anexo5" class="tab-content" style="display: none;">
+        <h3 style="color: var(--primary); margin-bottom: 16px;">Dossiê de Produtos Técnicos e Tecnológicos</h3>
+        <div style="overflow-x: auto;">
+          <table style="font-size: 12px; width: 1400px; border-collapse: collapse;">
+            <thead>
+              <tr style="background: #f8fafc; text-align: left;">
+                <th style="padding: 12px; border-bottom: 1px solid var(--border); width: 250px;">Título PTT</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Ano</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Demanda</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Nível de Complexidade</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Justificativa (Comp)</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Nível de Inovação</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Justificativa (Inov)</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Nível de Impacto</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Justificativa (Imp)</th>
+              </tr>
+            </thead>
+            <tbody id="anexo5-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      </div> <!-- end tab-geral -->
+
+      <!-- Anexo 2 - Acompanhamento de Egressos -->
+      <div id="tab-anexo2" class="tab-content" style="display: none;">
+        <h3 style="color: var(--primary); margin-bottom: 16px;">Acompanhamento de Egressos (Janela de 5 anos)</h3>
+        <div style="overflow-x: auto;">
+          <table style="font-size: 12px; width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: #f8fafc; text-align: left;">
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Nome do Titulado</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Trabalho de Conclusão</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Orientador</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Data de Defesa</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Elegível na Janela CAPES?</th>
+              </tr>
+            </thead>
+            <tbody id="anexo2-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Anexo 5 - Dossiê PTTs -->
+      <div id="tab-anexo5" class="tab-content" style="display: none;">
+        <h3 style="color: var(--primary); margin-bottom: 16px;">Dossiê de Produtos Técnicos e Tecnológicos</h3>
+        <div style="overflow-x: auto;">
+          <table style="font-size: 12px; width: 1400px; border-collapse: collapse;">
+            <thead>
+              <tr style="background: #f8fafc; text-align: left;">
+                <th style="padding: 12px; border-bottom: 1px solid var(--border); width: 250px;">Título PTT</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Ano</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Demanda</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Nível de Complexidade</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Justificativa (Comp)</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Nível de Inovação</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Justificativa (Inov)</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Nível de Impacto</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Justificativa (Imp)</th>
+              </tr>
+            </thead>
+            <tbody id="anexo5-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <!-- Anexo 2 - Acompanhamento de Egressos -->
+      <div id="tab-anexo2" class="tab-content" style="display: none;">
+        <h3 style="color: var(--primary); margin-bottom: 16px;">Acompanhamento de Egressos (Janela de 5 anos)</h3>
+        <div style="overflow-x: auto;">
+          <table style="font-size: 12px;">
+            <thead>
+              <tr>
+                <th>Nome do Titulado</th>
+                <th>Trabalho de Conclusão</th>
+                <th>Orientador</th>
+                <th>Data de Defesa</th>
+                <th>Elegível na Janela CAPES?</th>
+              </tr>
+            </thead>
+            <tbody id="anexo2-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Anexo 5 - Dossiê PTTs -->
+      <div id="tab-anexo5" class="tab-content" style="display: none;">
+        <h3 style="color: var(--primary); margin-bottom: 16px;">Dossiê de Produtos Técnicos e Tecnológicos</h3>
+        <div style="overflow-x: auto;">
+          <table style="font-size: 12px; width: 1400px;">
+            <thead>
+              <tr>
+                <th style="width: 250px;">Título PTT</th>
+                <th>Ano</th>
+                <th>Demanda</th>
+                <th>Nível de Complexidade</th>
+                <th>Justificativa (Comp)</th>
+                <th>Nível de Inovação</th>
+                <th>Justificativa (Inov)</th>
+                <th>Nível de Impacto</th>
+                <th>Justificativa (Imp)</th>
+              </tr>
+            </thead>
+            <tbody id="anexo5-body"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
   <script>
