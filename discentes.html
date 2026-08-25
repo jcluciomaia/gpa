@@ -64,98 +64,64 @@
   <div class="container">
     <div class="card">
       <div class="card-title">Discentes de Mestrado</div>
-      <table id="table-mestrado">
-        <thead>
+            <table id="table-mestrado" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <thead style="background: #f8fafc; text-align: left;">
           <tr>
-            <th>Nome do Aluno</th>
-            <th>Turma / Convênio</th>
-            <th>Orientador</th>
-            <th style="width: 100px; text-align: center;">Currículo</th>
+            <th style="padding: 12px; border-bottom: 1px solid var(--border);">Nome do Discente</th>
+            <th style="padding: 12px; border-bottom: 1px solid var(--border);">Turma / Convênio</th>
+            <th style="padding: 12px; border-bottom: 1px solid var(--border);">Temática de Pesquisa</th>
+            <th style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">Lattes</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="tbody-discentes">
           <!-- Rows will be injected here -->
         </tbody>
       </table>
     </div>
-
-    <div class="card">
-      <div class="card-title">Discentes de Doutorado</div>
-      <table id="table-doutorado">
-        <thead>
-          <tr>
-            <th>Nome do Aluno</th>
-            <th>Turma / Convênio</th>
-            <th>Orientador</th>
-            <th style="width: 100px; text-align: center;">Currículo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Rows will be injected here -->
-        </tbody>
-      </table>
     </div>
   </div>
 
   <script>
     async function loadData() {
       try {
-        let estrutura = JSON.parse(localStorage.getItem('gta_estrutura'));
-
-        if (!estrutura) {
-          const res = await fetch('data/estrutura_gpa.json');
-          estrutura = await res.json();
-          localStorage.setItem('gta_estrutura', JSON.stringify(estrutura));
+        let estrutura = null;
+        const res = await fetch('data/estrutura_gpa.json');
+        if (res.ok) {
+           estrutura = await res.json();
+        } else {
+           return;
         }
 
-        // Helper maps
         const turmasMap = {};
-        (estrutura.turmas || []).forEach(t => turmasMap[t.id] = t);
+        if (estrutura.turmas) {
+           estrutura.turmas.forEach(t => turmasMap[t.id] = t.nome);
+        }
 
-        const docentesMap = {};
-        (estrutura.docentes || []).forEach(d => docentesMap[d.id] = d);
+        const tbody = document.getElementById('tbody-discentes');
+        tbody.innerHTML = '';
 
-        const discentesMestrado = [];
-        const discentesDoutorado = [];
+        const discentes = estrutura.discentes || [];
+        if(discentes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 12px;">Nenhum discente cadastrado.</td></tr>';
+            return;
+        }
 
-        (estrutura.discentes || []).forEach(disc => {
-            const turma = turmasMap[disc.turma_id];
-            if (turma) {
-                if (turma.nivel.toLowerCase().includes('mestrado')) {
-                    discentesMestrado.push(disc);
-                } else if (turma.nivel.toLowerCase().includes('doutorado')) {
-                    discentesDoutorado.push(disc);
-                }
-            }
+        discentes.forEach(d => {
+          const turmaNome = turmasMap[d.turma_id] || d.turma_id || '-';
+          const link = d.lattes ? `<a href="${d.lattes}" target="_blank" style="color: var(--secondary); text-decoration: none; font-weight: bold;">Ver Lattes</a>` : `<span style="color: var(--gray);">Indisponível</span>`;
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="padding: 12px; border-bottom: 1px solid var(--border);"><strong>${d.nome}</strong></td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--border);">${turmaNome}</td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--border);">${d.linha_pesquisa || '-'}</td>
+            <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: center;">${link}</td>
+          `;
+          tbody.appendChild(tr);
         });
 
-        function renderRows(discentes) {
-            if (discentes.length === 0) {
-                return '<tr><td colspan="4" style="text-align:center; color:var(--gray);">Nenhum discente registrado nesta modalidade.</td></tr>';
-            }
-
-            return discentes.map(disc => {
-                const turma = turmasMap[disc.turma_id];
-                const orientador = docentesMap[disc.orientador_id];
-
-                return `
-                <tr>
-                  <td style="font-weight: 500; color: var(--secondary);">${disc.nome}</td>
-                  <td><span class="badge-turma">${turma ? turma.nome : 'N/A'}</span></td>
-                  <td>${orientador ? orientador.nome : 'N/A'}</td>
-                  <td style="text-align: center;">
-                    ${disc.lattes ? `<a href="${disc.lattes}" target="_blank" class="btn-lattes">Lattes</a>` : '<span style="color:#94a3b8; font-size:12px;">N/A</span>'}
-                  </td>
-                </tr>
-              `;
-            }).join('');
-        }
-
-        document.querySelector('#table-mestrado tbody').innerHTML = renderRows(discentesMestrado);
-        document.querySelector('#table-doutorado tbody').innerHTML = renderRows(discentesDoutorado);
-
-      } catch (error) {
-        console.error('Error loading data:', error);
+      } catch (e) {
+        console.error(e);
       }
     }
 
