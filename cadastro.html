@@ -179,22 +179,22 @@
     <h2 style="color: var(--primary); margin-bottom: 24px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; display: inline-block;">Cadastro de Produção (Hub de Entrada)</h2>
 
     <div class="tabs" style="display: flex; border-bottom: 2px solid var(--border); margin-bottom: 24px;">
-      <button class="tab-btn active" data-target="tab-doi-content" style="background: none; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; color: var(--primary); border-bottom: 3px solid var(--primary); font-size: 14px;">⚡ Busca Rápida por DOI</button>
-      <button class="tab-btn" data-target="tab-xml-content" style="background: none; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; font-size: 14px;">📥 Importar XML Lattes</button>
-      <button class="tab-btn" data-target="tab-manual-content" style="background: none; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; font-size: 14px;">✍️ Preenchimento Manual</button>
+      <button class="tab-nav-btn active" data-target="tab-doi">⚡ Busca Rápida por DOI</button>
+      <button class="tab-nav-btn" data-target="tab-xml">📥 Importar XML Lattes</button>
+      <button class="tab-nav-btn" data-target="tab-manual">✍️ Preenchimento Manual</button>
     </div>
 
-    <div class="card tab-content" id="tab-doi-content" style="display: block;">
+    <div class="card tab-pane active" id="tab-doi">
       <h3>Buscar via DOI (Crossref)</h3>
       <p style="color: var(--gray); font-size: 13px; margin-bottom: 16px;">Insira o DOI da publicação para autocompletar os metadados e os autores.</p>
       <div style="display: flex; gap: 12px; max-width: 500px;">
         <input type="text" id="doi-input" placeholder="Ex: 10.1590/S0102-69922015000100002" style="flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 4px;">
-        <button onclick="fetchDOI()" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">Buscar</button>
+        <button id="btn-buscar-doi" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">Buscar</button>
       </div>
       <div id="doi-loading" style="display: none; margin-top: 16px; color: var(--primary); font-size: 13px;">Buscando dados no Crossref...</div>
     </div>
 
-    <div class="card tab-content" id="tab-xml-content" style="display: none;">
+    <div class="card tab-pane" id="tab-xml">
       <h3>Importação em Lote via XML (Lattes)</h3>
       <p style="color: var(--gray); font-size: 13px; margin-bottom: 16px;">Faça upload do currículo Lattes em formato XML para extrair automaticamente artigos, eventos, capítulos e PTTs.</p>
 
@@ -214,9 +214,9 @@
         </div>
       </div>
 
-      <div style="border: 2px dashed var(--border); border-radius: 8px; padding: 40px; text-align: center; background: #f8fafc; cursor: pointer;">
-        <input type="file" id="lattes-xml-input" accept=".xml" style="display: none;" onchange="processRealXML(this)">
-        <label for="lattes-xml-input" style="cursor: pointer; color: var(--primary); font-weight: bold; display: block; width: 100%; height: 100%;">Clique aqui para selecionar o arquivo XML</label>
+      <div style="border: 2px dashed var(--border); border-radius: 8px; padding: 40px; text-align: center; background: #f8fafc;">
+        <label for="lattes-xml-input" style="font-weight: bold; color: var(--primary); display: block; margin-bottom: 12px;">Selecione o arquivo XML do Lattes:</label>
+        <input type="file" id="lattes-xml-input" accept=".xml" style="font-size: 14px;">
       </div>
 
       <div id="lattes-preview-container" style="display: none; margin-top: 24px;">
@@ -243,7 +243,7 @@
       </div>
     </div>
 
-    <div class="card tab-content" id="tab-manual-content" style="display: none;">
+    <div class="card tab-pane" id="tab-manual">
       <h3 style="margin-bottom: 16px;">Dados da Produção</h3>
       <form id="prod-form">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
@@ -351,13 +351,19 @@
       <button onclick="addAuthorManual()" style="background: transparent; color: var(--secondary); border: 1px dashed var(--secondary); padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;">+ Adicionar Autor Manualmente</button>
 
       <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); text-align: right;">
-        <button onclick="salvarProducao()" style="background: var(--secondary); color: white; border: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; font-size: 15px; cursor: pointer;">Salvar e Computar Produção</button>
+        <button id="btn-salvar-manual" style="background: var(--secondary); color: white; border: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; font-size: 15px; cursor: pointer;">Salvar e Computar Produção</button>
       </div>
     </div>
   </div>
 
     <style>
-    .tab-btn:hover { color: var(--primary); }
+
+    .tab-nav-btn { background: none; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; font-size: 14px; }
+    .tab-nav-btn:hover { color: var(--primary); }
+    .tab-nav-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
     .tab-btn.active { color: var(--primary) !important; border-bottom: 3px solid var(--primary) !important; }
 
     .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
@@ -372,122 +378,360 @@
   </style>
 
   <script>
-    let currentAuthors = [];
     let estruturaData = { docentes: [], discentes: [] };
+    let currentAuthors = []; // Used for DOI and Manual
+    let parsedLattesProductions = []; // Used for XML Lattes
 
-    async function loadData() {
-      try {
-        const res = await fetch('data/estrutura_gpa.json');
-        if (res.ok) {
-          estruturaData = await res.json();
-        }
-      } catch(e) { console.error(e); }
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Tab Switching Logic
+      const tabBtns = document.querySelectorAll('.tab-nav-btn');
+      const tabPanes = document.querySelectorAll('.tab-pane');
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          tabBtns.forEach(b => b.classList.remove('active'));
+          tabPanes.forEach(p => p.classList.remove('active'));
+          btn.classList.add('active');
+          const target = document.getElementById(btn.dataset.target);
+          if (target) target.classList.add('active');
+
+          if(btn.dataset.target === 'tab-manual') {
+            document.getElementById('section-autores').style.display = 'block';
+            if(currentAuthors.length === 0) {
+              addAuthorManual();
+            }
+          }
+        });
+      });
+
+      // 2. Load Global Data asynchronously without blocking UI
+      fetch('data/estrutura_gpa.json')
+        .then(res => res.json())
+        .then(data => { estruturaData = data; })
+        .catch(err => console.error("Erro ao carregar estrutura_gpa:", err));
+
+      initDoiSearch();
+      initXmlParser();
+      initManualForm();
+    });
+
+    // ----------------------------------------------------
+    // TAB 1: BUSCA POR DOI
+    // ----------------------------------------------------
+    function initDoiSearch() {
+       document.getElementById('btn-buscar-doi').addEventListener('click', async () => {
+          const doiRaw = document.getElementById('doi-input').value.trim();
+          if(!doiRaw) return alert("Insira um DOI válido");
+
+          const cleanDoi = doiRaw.replace(/^(https?:\/\/)?(dx\.)?doi\.org\//i, '').replace(/\s+/g, '');
+          const loadingDiv = document.getElementById('doi-loading');
+
+          loadingDiv.style.display = 'block';
+          loadingDiv.textContent = 'Buscando dados no Crossref...';
+          loadingDiv.style.color = 'var(--primary)';
+
+          try {
+            const response = await fetch(`https://api.crossref.org/works/${cleanDoi}`);
+            if (!response.ok) throw new Error("DOI não encontrado");
+
+            const data = await response.json();
+            const msg = data.message;
+
+            loadingDiv.style.display = 'none';
+
+            // Populate fields
+            document.getElementById('prod-titulo').value = msg.title ? msg.title[0] : "";
+            document.getElementById('prod-veiculo').value = msg['container-title'] ? msg['container-title'][0] : (msg.publisher || "");
+
+            let ano = new Date().getFullYear();
+            if (msg.published && msg.published['date-parts']) ano = msg.published['date-parts'][0][0];
+            else if (msg.created && msg.created['date-parts']) ano = msg.created['date-parts'][0][0];
+            document.getElementById('prod-ano').value = ano;
+
+            let typeVal = "Artigo para periódicos";
+            if (msg.type === "proceedings-article") typeVal = "Artigo para eventos";
+            else if (msg.type === "book-chapter") typeVal = "Capítulo de livros";
+            else if (msg.type === "book") typeVal = "Livro";
+            document.getElementById('prod-tipo').value = typeVal;
+            togglePTTFields();
+
+            // Extract and link authors
+            if (msg.author && msg.author.length > 0) {
+               const extractedNames = msg.author.map(a => `${a.given || ""} ${a.family || ""}`.trim() || a.name || "Autor Desconhecido");
+               currentAuthors = linkAuthors(extractedNames);
+               if (currentAuthors.length > 0) currentAuthors[0].is_first_author = true;
+            } else {
+               currentAuthors = [];
+            }
+
+            document.getElementById('section-autores').style.display = 'block';
+            if (currentAuthors.length === 0) addAuthorManual();
+            else renderAuthors();
+
+            // Switch to manual tab
+            document.querySelector('[data-target="tab-manual"]').click();
+            alert("Publicação localizada e preenchida com sucesso!");
+
+          } catch(e) {
+            console.error(e);
+            loadingDiv.textContent = '❌ DOI não encontrado ou erro na API.';
+            loadingDiv.style.color = 'red';
+          }
+       });
     }
 
+    // ----------------------------------------------------
+    // TAB 2: IMPORTAR XML LATTES
+    // ----------------------------------------------------
+    function initXmlParser() {
+       document.getElementById('lattes-xml-input').addEventListener('change', function() {
+          if (!this.files || this.files.length === 0) return;
+          const file = this.files[0];
+          const reader = new FileReader();
+
+          reader.onload = function(e) {
+            const text = e.target.result;
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(text, "text/xml");
+            extractLattesData(xmlDoc);
+          };
+          reader.readAsText(file, "ISO-8859-1");
+       });
+
+       // Handle filter changes (re-run parse if file already loaded)
+       document.querySelectorAll('#tab-xml input[type="checkbox"], #lattes-year-filter').forEach(el => {
+           el.addEventListener('change', () => {
+               const fileInput = document.getElementById('lattes-xml-input');
+               if(fileInput.files.length > 0) {
+                   const evt = new Event('change');
+                   fileInput.dispatchEvent(evt);
+               }
+           });
+       });
+    }
+
+    function extractLattesData(xmlDoc) {
+      parsedLattesProductions = [];
+      const yearFilter = parseInt(document.getElementById('lattes-year-filter').value) || 0;
+
+      const wantArtigos = document.getElementById('filter-artigos').checked;
+      const wantEventos = document.getElementById('filter-eventos').checked;
+      const wantLivros = document.getElementById('filter-livros').checked;
+      const wantPtts = document.getElementById('filter-ptts').checked;
+
+      if (wantArtigos) {
+        const artigos = xmlDoc.getElementsByTagName("ARTIGO-PUBLICADO");
+        for (let i = 0; i < artigos.length; i++) {
+          const dados = artigos[i].getElementsByTagName("DADOS-BASICOS-DO-ARTIGO")[0];
+          const det = artigos[i].getElementsByTagName("DETALHAMENTO-DO-ARTIGO")[0];
+          if (!dados) continue;
+
+          const ano = parseInt(dados.getAttribute("ANO-DO-ARTIGO"));
+          if (ano < yearFilter) continue;
+
+          let nomesAutores = [];
+          const autoresNodes = artigos[i].getElementsByTagName("AUTORES");
+          for (let j = 0; j < autoresNodes.length; j++) nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
+
+          parsedLattesProductions.push({
+            titulo: dados.getAttribute("TITULO-DO-ARTIGO"),
+            ano: ano,
+            tipo: "Artigo para periódicos",
+            veiculo: det ? det.getAttribute("TITULO-DO-PERIODICO-OU-REVISTA") : "",
+            doi: dados.getAttribute("DOI") || "",
+            autores: linkAuthors(nomesAutores)
+          });
+        }
+      }
+
+      if (wantEventos) {
+        const eventos = xmlDoc.getElementsByTagName("TRABALHO-EM-EVENTOS");
+        for (let i = 0; i < eventos.length; i++) {
+          const dados = eventos[i].getElementsByTagName("DADOS-BASICOS-DO-TRABALHO")[0];
+          const det = eventos[i].getElementsByTagName("DETALHAMENTO-DO-TRABALHO")[0];
+          if (!dados) continue;
+
+          const ano = parseInt(dados.getAttribute("ANO-DO-TRABALHO"));
+          if (ano < yearFilter) continue;
+
+          let nomesAutores = [];
+          const autoresNodes = eventos[i].getElementsByTagName("AUTORES");
+          for (let j = 0; j < autoresNodes.length; j++) nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
+
+          parsedLattesProductions.push({
+            titulo: dados.getAttribute("TITULO-DO-TRABALHO"),
+            ano: ano,
+            tipo: "Artigo para eventos",
+            veiculo: det ? det.getAttribute("NOME-DO-EVENTO") : "",
+            doi: dados.getAttribute("DOI") || "",
+            autores: linkAuthors(nomesAutores)
+          });
+        }
+      }
+
+      // Simplification: Livros e Capitulos follow the exact same logic.
+      if (wantLivros) {
+        const livros = xmlDoc.getElementsByTagName("LIVRO-PUBLICADO-OU-ORGANIZADO");
+        for (let i = 0; i < livros.length; i++) {
+          const dados = livros[i].getElementsByTagName("DADOS-BASICOS-DO-LIVRO")[0];
+          if (!dados) continue;
+          const ano = parseInt(dados.getAttribute("ANO"));
+          if (ano < yearFilter) continue;
+          let nomesAutores = [];
+          const autoresNodes = livros[i].getElementsByTagName("AUTORES");
+          for (let j = 0; j < autoresNodes.length; j++) nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
+          parsedLattesProductions.push({ titulo: dados.getAttribute("TITULO-DO-LIVRO"), ano: ano, tipo: "Livro", veiculo: "", doi: dados.getAttribute("DOI")||"", autores: linkAuthors(nomesAutores) });
+        }
+      }
+
+      if (wantPtts) {
+        const ptts = xmlDoc.getElementsByTagName("PRODUCAO-TECNICA")[0];
+        if (ptts) {
+          const children = ptts.children;
+          for (let i = 0; i < children.length; i++) {
+            const node = children[i];
+            const dadosNode = Array.from(node.children).find(c => c.tagName.startsWith("DADOS-BASICOS"));
+            if (!dadosNode) continue;
+            const ano = parseInt(dadosNode.getAttribute("ANO") || dadosNode.getAttribute("ANO-DO-TRABALHO") || dadosNode.getAttribute("ANO-DO-SOFTWARE"));
+            if (ano < yearFilter) continue;
+            let titulo = dadosNode.getAttribute("TITULO") || dadosNode.getAttribute("TITULO-DO-TRABALHO") || dadosNode.getAttribute("TITULO-DO-SOFTWARE") || "Produção Técnica";
+
+            let nomesAutores = [];
+            const autoresNodes = node.getElementsByTagName("AUTORES");
+            for (let j = 0; j < autoresNodes.length; j++) nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
+            parsedLattesProductions.push({ titulo: titulo, ano: ano, tipo: "PTTs", veiculo: "", doi: "", autores: linkAuthors(nomesAutores) });
+          }
+        }
+      }
+
+      renderLattesPreview();
+    }
+
+    function renderLattesPreview() {
+      const tbody = document.getElementById('lattes-preview-body');
+      tbody.innerHTML = '';
+
+      const container = document.getElementById('lattes-preview-container');
+      container.style.display = 'block';
+
+      if (parsedLattesProductions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--gray);">Nenhuma produção encontrada.</td></tr>';
+        return;
+      }
+
+      parsedLattesProductions.forEach((prod, index) => {
+        const tr = document.createElement('tr');
+        const ppgAuthors = prod.autores.filter(a => a.categoria !== 'externo');
+        const ppgHtml = ppgAuthors.length > 0
+          ? ppgAuthors.map(a => `<span style="background: var(--${a.categoria}-color); color: white; padding: 2px 6px; border-radius: 12px; font-size: 10px; margin-right: 4px;">${a.nome}</span>`).join('')
+          : '<span style="color: var(--gray); font-size: 11px;">Apenas Externos</span>';
+
+        tr.innerHTML = `
+          <td style="padding: 10px; border-bottom: 1px solid var(--border); text-align: center;">
+            <input type="checkbox" class="lattes-checkbox" value="${index}" checked>
+          </td>
+          <td style="padding: 10px; border-bottom: 1px solid var(--border); font-weight: bold;">${prod.titulo}</td>
+          <td style="padding: 10px; border-bottom: 1px solid var(--border);">${prod.tipo}</td>
+          <td style="padding: 10px; border-bottom: 1px solid var(--border);">${prod.ano}</td>
+          <td style="padding: 10px; border-bottom: 1px solid var(--border);">${ppgHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleAllLattes(masterCheckbox) {
+      document.querySelectorAll('.lattes-checkbox').forEach(cb => cb.checked = masterCheckbox.checked);
+    }
+
+    function salvarProducoesLattes() {
+      const checkboxes = document.querySelectorAll('.lattes-checkbox:checked');
+      if (checkboxes.length === 0) return alert("Selecione ao menos uma produção para salvar.");
+
+      let prodList = JSON.parse(localStorage.getItem('gpa_productions') || "[]");
+      let adicionadas = 0; let duplicadas = 0;
+
+      checkboxes.forEach(cb => {
+        const prod = parsedLattesProductions[cb.value];
+        const isDuplicate = prodList.some(ex => {
+          const sameDoi = (prod.doi && ex.doi && prod.doi === ex.doi);
+          const sameTitle = (formatAuthorName(ex.titulo) === formatAuthorName(prod.titulo));
+          return sameDoi || sameTitle;
+        });
+
+        if (!isDuplicate) {
+          prod.id = "PROD_LATTES_" + Date.now() + "_" + Math.floor(Math.random()*1000);
+          if (prod.autores) {
+              prod.autores.forEach((a, i) => { a.ordem = i + 1; a.is_first_author = (i === 0); });
+          }
+          prodList.push(prod);
+          adicionadas++;
+        } else {
+          duplicadas++;
+        }
+      });
+
+      localStorage.setItem('gpa_productions', JSON.stringify(prodList));
+      alert(`Importação concluída!\n\nNovas cadastradas: ${adicionadas}\nIgnoradas (duplicadas): ${duplicadas}`);
+      window.location.href = 'producoes.html';
+    }
+
+
+    // ----------------------------------------------------
+    // TAB 3: PREENCHIMENTO MANUAL E LOGICA COMPARTILHADA
+    // ----------------------------------------------------
+    function initManualForm() {
+       document.getElementById('btn-salvar-manual').addEventListener('click', salvarProducao);
+       document.getElementById('prod-tipo').addEventListener('change', togglePTTFields);
+    }
 
     function togglePTTFields() {
       const tipo = document.getElementById('prod-tipo').value;
       const pttDiv = document.getElementById('ptt-fields');
-      if (tipo === 'PTTs') {
-        pttDiv.style.display = 'block';
-      } else {
-        pttDiv.style.display = 'none';
-      }
+      if (tipo === 'PTTs') pttDiv.style.display = 'block';
+      else pttDiv.style.display = 'none';
     }
 
-
-
-    async function fetchDOI() {
-      const doiRaw = document.getElementById('doi-input').value.trim();
-      if(!doiRaw) return alert("Insira um DOI válido");
-
-      const cleanDoi = doiRaw.replace(/^(https?:\/\/)?(dx\.)?doi\.org\//i, '');
-
-      document.getElementById('doi-loading').style.display = 'block';
-
-      try {
-        const response = await fetch(`https://api.crossref.org/works/${cleanDoi}`);
-
-        if (!response.ok) {
-           throw new Error("DOI não encontrado ou erro na API");
-        }
-
-        const data = await response.json();
-        const msg = data.message;
-
-        document.getElementById('doi-loading').style.display = 'none';
-
-        document.getElementById('prod-titulo').value = msg.title ? msg.title[0] : "";
-        document.getElementById('prod-veiculo').value = msg['container-title'] ? msg['container-title'][0] : (msg.publisher || "");
-
-        let ano = new Date().getFullYear();
-        if (msg.published && msg.published['date-parts'] && msg.published['date-parts'][0]) {
-           ano = msg.published['date-parts'][0][0];
-        } else if (msg.created && msg.created['date-parts']) {
-           ano = msg.created['date-parts'][0][0];
-        }
-        document.getElementById('prod-ano').value = ano;
-
-        let typeVal = "Artigo para periódicos";
-        if (msg.type === "proceedings-article") typeVal = "Artigo para eventos";
-        else if (msg.type === "book-chapter") typeVal = "Capítulo de livros";
-        else if (msg.type === "book") typeVal = "Livro";
-        document.getElementById('prod-tipo').value = typeVal;
-        togglePTTFields();
-
-        if (msg.author && msg.author.length > 0) {
-           const extractedNames = msg.author.map(a => `${a.given || ""} ${a.family || ""}`.trim() || a.name || "Autor Desconhecido");
-           currentAuthors = linkAuthors(extractedNames);
-           if (currentAuthors.length > 0) {
-               currentAuthors[0].is_first_author = true;
-           }
-        } else {
-           currentAuthors = [];
-        }
-
-        document.getElementById('section-autores').style.display = 'block';
-        if (currentAuthors.length === 0) addAuthorManual();
-        else renderAuthors();
-
-        const manualBtn = document.querySelector('[data-target="tab-manual-content"]');
-        if(manualBtn) manualBtn.click();
-
-      } catch(e) {
-        console.error(e);
-        document.getElementById('doi-loading').style.display = 'none';
-        alert("Atenção: Não foi possível carregar os dados deste DOI. Verifique se o código está correto ou tente preencher manualmente.");
+    function formatAuthorName(str) {
+      if(!str) return "";
+      let n = str.trim();
+      if (n.includes(",")) {
+        const parts = n.split(",");
+        if (parts.length === 2) n = parts[1].trim() + " " + parts[0].trim();
       }
+      return n.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[.,;]/g, " ").replace(/\s+/g, "_").toLowerCase();
     }
 
-    function processXML_old(input) {
-      if(!input.files.length) return;
-      alert("XML do Lattes processado (Mock). Artigos extraídos com sucesso.");
+    function checkMatch(nomeBase, nomeLattes) {
+      const normBase = formatAuthorName(nomeBase).replace(/_/g, " ");
+      const normLattes = formatAuthorName(nomeLattes).replace(/_/g, " ");
+      if (normBase.includes(normLattes) || normLattes.includes(normBase)) return true;
+      return false;
+    }
 
-      document.getElementById('prod-titulo').value = "Título Extraído do XML Lattes";
-      document.getElementById('prod-veiculo').value = "Congresso de Inovação";
-      document.getElementById('prod-ano').value = "2023";
-      document.getElementById('prod-tipo').value = "Artigo para eventos";
+    function linkAuthors(autoresNomes) {
+      return autoresNomes.map(nome => {
+        let id = null; let categoria = "externo"; let nomeDisplay = nome;
 
-      currentAuthors = [
-            { nome: "Autor Extraído 1", type: "docente", is_first_author: true },
-        { nome: "Pesquisador Lattes 1", type: "docente" },
-        { nome: "Aluno Lattes 2", type: "discente" }
-      ];
+        const docMatch = estruturaData.docentes.find(d => checkMatch(d.nome, nome));
+        if (docMatch) { id = docMatch.id; categoria = "docente"; nomeDisplay = docMatch.nome; }
+        else {
+          const discMatch = estruturaData.discentes.find(d => checkMatch(d.nome, nome));
+          if (discMatch) { id = discMatch.id; categoria = "discente"; nomeDisplay = discMatch.nome; }
+        }
 
-      document.getElementById('section-autores').style.display = 'block';
-      renderAuthors();
-      document.querySelector('[data-target="tab-manual-content"]').click();
+        return {
+          id: id || ("EXT_" + formatAuthorName(nome)),
+          nome: nomeDisplay,
+          categoria: categoria,
+          is_first_author: false
+        };
+      });
     }
 
     function addAuthorManual() {
-      const isFirst = currentAuthors.length === 0; currentAuthors.push({ nome: "", type: "externo", is_first_author: isFirst });
-      document.getElementById('section-autores').style.display = 'block';
+      const isFirst = currentAuthors.length === 0;
+      currentAuthors.push({ nome: "", categoria: "externo", is_first_author: isFirst });
       renderAuthors();
-    }
-
-
-    function updateFirstAuthor(index) {
-      currentAuthors.forEach((a, i) => a.is_first_author = (i === index));
     }
 
     function removeAuthor(index) {
@@ -495,18 +739,12 @@
       renderAuthors();
     }
 
-    function updateAuthorName(index, val) {
-      currentAuthors[index].nome = val;
+    function updateFirstAuthor(index) {
+      currentAuthors.forEach((a, i) => a.is_first_author = (i === index));
     }
-
-    function updateAuthorType(index, val) {
-      currentAuthors[index].type = val;
-      renderAuthors(); // re-render to update the linkage select box
-    }
-
-    function updateAuthorLink(index, val) {
-      currentAuthors[index].id = val;
-    }
+    function updateAuthorName(idx, val) { currentAuthors[idx].nome = val; }
+    function updateAuthorType(idx, val) { currentAuthors[idx].categoria = val; renderAuthors(); }
+    function updateAuthorLink(idx, val) { currentAuthors[idx].id = val; }
 
     function renderAuthors() {
       const container = document.getElementById('autores-list');
@@ -514,36 +752,43 @@
 
       currentAuthors.forEach((a, i) => {
         let linkSelectHtml = '';
-
-        if(a.type === 'docente') {
+        if(a.categoria === 'docente') {
           linkSelectHtml = `<select onchange="updateAuthorLink(${i}, this.value)">
             <option value="">Vincular a Docente...</option>
             ${estruturaData.docentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
           </select>`;
-        } else if (a.type === 'discente') {
+        } else if (a.categoria === 'discente') {
           linkSelectHtml = `<select onchange="updateAuthorLink(${i}, this.value)">
             <option value="">Vincular a Discente...</option>
             ${estruturaData.discentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
           </select>`;
         } else {
-          linkSelectHtml = `<select disabled><option>Externo (Sem Vínculo GPA)</option></select>`;
+          linkSelectHtml = `<select disabled><option>Externo (Sem Vínculo)</option></select>`;
         }
 
         const div = document.createElement('div');
         div.className = 'author-row';
+        div.style.display = 'grid';
         div.style.gridTemplateColumns = 'auto 2fr 1fr 1fr auto';
+        div.style.gap = '12px';
+        div.style.alignItems = 'center';
+        div.style.background = '#f8fafc';
+        div.style.padding = '12px';
+        div.style.borderRadius = '6px';
+        div.style.border = '1px solid var(--border)';
+
         div.innerHTML = `
           <div style="text-align: center;" title="Marcar como 1º Autor">
              <input type="radio" name="first_author" value="${i}" ${a.is_first_author ? 'checked' : ''} onchange="updateFirstAuthor(${i})">
           </div>
-          <input type="text" value="${a.nome}" placeholder="Nome do Autor" onchange="updateAuthorName(${i}, this.value)">
-          <select onchange="updateAuthorType(${i}, this.value)">
-            <option value="externo" ${a.type === 'externo' ? 'selected' : ''}>Externo</option>
-            <option value="docente" ${a.type === 'docente' ? 'selected' : ''}>Docente PPG</option>
-            <option value="discente" ${a.type === 'discente' ? 'selected' : ''}>Discente PPG</option>
+          <input type="text" value="${a.nome}" placeholder="Nome do Autor" onchange="updateAuthorName(${i}, this.value)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+          <select onchange="updateAuthorType(${i}, this.value)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+            <option value="externo" ${a.categoria === 'externo' ? 'selected' : ''}>Externo</option>
+            <option value="docente" ${a.categoria === 'docente' ? 'selected' : ''}>Docente PPG</option>
+            <option value="discente" ${a.categoria === 'discente' ? 'selected' : ''}>Discente PPG</option>
           </select>
           ${linkSelectHtml}
-          <button class="btn-remove" onclick="removeAuthor(${i})">X</button>
+          <button style="background: #fee2e2; color: #ef4444; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;" onclick="removeAuthor(${i})">X</button>
         `;
         container.appendChild(div);
       });
@@ -553,31 +798,26 @@
       const titulo = document.getElementById('prod-titulo').value;
       if(!titulo) return alert("O título é obrigatório");
 
-      let localProd = localStorage.getItem('gpa_productions');
-      let prodList = localProd ? JSON.parse(localProd) : [];
+      let prodList = JSON.parse(localStorage.getItem('gpa_productions') || "[]");
 
-      const duplicate = prodList.find(p => p.titulo.toLowerCase() === titulo.toLowerCase());
+      const duplicate = prodList.find(p => formatAuthorName(p.titulo) === formatAuthorName(titulo));
       if (duplicate) {
-        if (!confirm("Aviso: Uma produção com este título já existe na base. Deseja vinculá-la como coautor na produção existente em vez de criar uma duplicata?")) {
-           return;
-        } else {
-           // Basic merge strategy: just add the new authors to the existing production if they aren't there
-           currentAuthors.forEach(ca => {
-               const exists = duplicate.autores.some(ea => ea.id === ca.id);
-               if(!exists) {
-                   duplicate.autores.push({
-                       id: ca.id || ("EXT_" + formatAuthorName(ca.nome)),
-                       nome: ca.nome,
-                       categoria: ca.type,
-                       is_first_author: ca.is_first_author
-                   });
-               }
-           });
-           localStorage.setItem('gpa_productions', JSON.stringify(prodList));
-           alert("Coautores vinculados à produção existente com sucesso!");
-           window.location.href = 'producoes.html';
-           return;
-        }
+        if (!confirm("Aviso: Uma produção com este título já existe. Deseja fundir os coautores?")) return;
+        currentAuthors.forEach(ca => {
+            if(!duplicate.autores.some(ea => ea.id === ca.id)) {
+                duplicate.autores.push({
+                    id: ca.id || ("EXT_" + formatAuthorName(ca.nome)),
+                    nome: ca.nome,
+                    categoria: ca.categoria,
+                    is_first_author: false,
+                    ordem: duplicate.autores.length + 1
+                });
+            }
+        });
+        localStorage.setItem('gpa_productions', JSON.stringify(prodList));
+        alert("Coautores mesclados com sucesso!");
+        window.location.href = 'producoes.html';
+        return;
       }
 
       let anexo5 = null;
@@ -593,7 +833,6 @@
           };
       }
 
-
       const newProd = {
         id: "PROD_" + Date.now(),
         titulo: titulo,
@@ -605,441 +844,17 @@
         autores: currentAuthors.map((a, idx) => ({
           id: a.id || ("EXT_" + formatAuthorName(a.nome || "")),
           nome: a.nome || "Autor Desconhecido",
-          categoria: a.type,
+          categoria: a.categoria,
           ordem: idx + 1,
           is_first_author: a.is_first_author || false
         }))
       };
 
-      // Retrieve existing, add, save
-      let localProd = localStorage.getItem('gpa_productions');
-      let prodList = [];
-      if(localProd) {
-        prodList = JSON.parse(localProd);
-      } else {
-        // if none in local storage we should ideally fetch data/producoes.json, but for simulation we just create array
-        prodList = [];
-      }
-
       prodList.push(newProd);
       localStorage.setItem('gpa_productions', JSON.stringify(prodList));
-
-      alert("Produção cadastrada e vinculada com sucesso! O Score CAPES será atualizado.");
+      alert("Produção salva com sucesso!");
       window.location.href = 'producoes.html';
     }
-
-
-    let parsedLattesProductions = [];
-
-    function processRealXML(input) {
-      if (!input.files || input.files.length === 0) return;
-      const file = input.files[0];
-      const reader = new FileReader();
-
-      reader.onload = function(e) {
-        const text = e.target.result;
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(text, "text/xml");
-
-        extractLattesData(xmlDoc);
-      };
-
-      reader.readAsText(file, "ISO-8859-1"); // Lattes XML is often in ISO-8859-1
-    }
-
-
-
-    function formatAuthorName(str) {
-      if(!str) return "";
-      let n = str.trim();
-      // Handle "LASTNAME, FIRSTNAME" format explicitly
-      if (n.includes(",")) {
-        const parts = n.split(",");
-        if (parts.length === 2) {
-          n = parts[1].trim() + " " + parts[0].trim();
-        }
-      }
-      return n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.,;]/g, " ").replace(/\s+/g, "_").toLowerCase();
-    }
-
-    function normalizeString(str) {
-      if (!str) return "";
-      return str.normalize("NFD").replace(/[̀-ͯ]/g, "") // remove accents
-                .replace(/[.,;]/g, " ") // remove punctuation
-                .replace(/\s+/g, " ") // collapse multiple spaces
-                .toLowerCase().trim();
-    }
-
-    function checkMatch(nomeBase, nomeLattes) {
-      const normBase = normalizeString(nomeBase);
-      const normLattes = normalizeString(nomeLattes);
-
-      // Direct match
-      if (normBase.includes(normLattes) || normLattes.includes(normBase)) return true;
-
-      // Handle "LASTNAME, FIRSTNAME" format (but normalization already removes the comma)
-      // Actually, let's just do a naive check: if all parts of Lattes name > 1 char are in the base name
-      const baseParts = normBase.split(" ");
-      const lattesParts = normLattes.split(" ");
-
-      // A common citation is LELIS, FLAVIO R. C. -> normalized to "lelis flavio r c"
-      // Or CARVALHO, R. L. -> "carvalho r l"
-      // If the first part of Lattes matches any part of Base, and other parts are initials or match
-      const lattesLastName = lattesParts[0];
-      if (baseParts.includes(lattesLastName)) {
-         let matched = true;
-         for (let i = 1; i < lattesParts.length; i++) {
-            const p = lattesParts[i];
-            if (p.length === 1) {
-               // Initial
-               if (!baseParts.some(bp => bp.startsWith(p))) matched = false;
-            } else {
-               if (!baseParts.includes(p)) matched = false;
-            }
-         }
-         if (matched && lattesParts.length > 1) return true;
-      }
-
-      return false;
-    }
-
-    function linkAuthors(autoresNomes) {
-      return autoresNomes.map(nome => {
-        let id = null;
-        let categoria = "externo";
-        let nomeDisplay = nome;
-
-        const docMatch = estruturaData.docentes.find(d => checkMatch(d.nome, nome));
-        if (docMatch) {
-          id = docMatch.id;
-          categoria = "docente";
-          nomeDisplay = docMatch.nome;
-        } else {
-          const discMatch = estruturaData.discentes.find(d => checkMatch(d.nome, nome));
-          if (discMatch) {
-            id = discMatch.id;
-            categoria = "discente";
-            nomeDisplay = discMatch.nome;
-          }
-        }
-
-        return {
-          id: id || ("EXT_" + formatAuthorName(nomeDisplay)),
-          nome: nomeDisplay,
-          categoria: categoria,
-          originalLattesName: nome
-        };
-      });
-    }
-
-    function extractLattesData(xmlDoc) {
-      parsedLattesProductions = [];
-      const yearFilter = parseInt(document.getElementById('lattes-year-filter').value) || 0;
-
-      const wantArtigos = document.getElementById('filter-artigos').checked;
-      const wantEventos = document.getElementById('filter-eventos').checked;
-      const wantLivros = document.getElementById('filter-livros').checked;
-      const wantPtts = document.getElementById('filter-ptts').checked;
-
-      // 1. Artigos Publicados
-      if (wantArtigos) {
-        const artigos = xmlDoc.getElementsByTagName("ARTIGO-PUBLICADO");
-        for (let i = 0; i < artigos.length; i++) {
-          const dados = artigos[i].getElementsByTagName("DADOS-BASICOS-DO-ARTIGO")[0];
-          const det = artigos[i].getElementsByTagName("DETALHAMENTO-DO-ARTIGO")[0];
-          if (!dados) continue;
-
-          const ano = parseInt(dados.getAttribute("ANO-DO-ARTIGO"));
-          if (ano < yearFilter) continue;
-
-          const titulo = dados.getAttribute("TITULO-DO-ARTIGO");
-          const doi = dados.getAttribute("DOI");
-          const veiculo = det ? det.getAttribute("TITULO-DO-PERIODICO-OU-REVISTA") : "";
-
-          const autoresNodes = artigos[i].getElementsByTagName("AUTORES");
-          let nomesAutores = [];
-          for (let j = 0; j < autoresNodes.length; j++) {
-            nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
-          }
-
-          parsedLattesProductions.push({
-            titulo: titulo,
-            ano: ano,
-            tipo: "Artigo para periódicos",
-            veiculo: veiculo,
-            doi: doi,
-            autores: linkAuthors(nomesAutores)
-          });
-        }
-      }
-
-      // 2. Trabalhos em Eventos
-      if (wantEventos) {
-        const eventos = xmlDoc.getElementsByTagName("TRABALHO-EM-EVENTOS");
-        for (let i = 0; i < eventos.length; i++) {
-          const dados = eventos[i].getElementsByTagName("DADOS-BASICOS-DO-TRABALHO")[0];
-          const det = eventos[i].getElementsByTagName("DETALHAMENTO-DO-TRABALHO")[0];
-          if (!dados) continue;
-
-          const ano = parseInt(dados.getAttribute("ANO-DO-TRABALHO"));
-          if (ano < yearFilter) continue;
-
-          const titulo = dados.getAttribute("TITULO-DO-TRABALHO");
-          const doi = dados.getAttribute("DOI");
-          const veiculo = det ? det.getAttribute("NOME-DO-EVENTO") : "";
-
-          const autoresNodes = eventos[i].getElementsByTagName("AUTORES");
-          let nomesAutores = [];
-          for (let j = 0; j < autoresNodes.length; j++) {
-            nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
-          }
-
-          parsedLattesProductions.push({
-            titulo: titulo,
-            ano: ano,
-            tipo: "Artigo para eventos",
-            veiculo: veiculo,
-            doi: doi,
-            autores: linkAuthors(nomesAutores)
-          });
-        }
-      }
-
-      // 3. Livros e Capítulos
-      if (wantLivros) {
-        const livros = xmlDoc.getElementsByTagName("LIVRO-PUBLICADO-OU-ORGANIZADO");
-        for (let i = 0; i < livros.length; i++) {
-          const dados = livros[i].getElementsByTagName("DADOS-BASICOS-DO-LIVRO")[0];
-          const det = livros[i].getElementsByTagName("DETALHAMENTO-DO-LIVRO")[0];
-          if (!dados) continue;
-
-          const ano = parseInt(dados.getAttribute("ANO"));
-          if (ano < yearFilter) continue;
-
-          const titulo = dados.getAttribute("TITULO-DO-LIVRO");
-          const doi = dados.getAttribute("DOI");
-          const veiculo = det ? det.getAttribute("NOME-DA-EDITORA") : "";
-
-          const autoresNodes = livros[i].getElementsByTagName("AUTORES");
-          let nomesAutores = [];
-          for (let j = 0; j < autoresNodes.length; j++) {
-            nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
-          }
-
-          parsedLattesProductions.push({
-            titulo: titulo,
-            ano: ano,
-            tipo: "Livro",
-            veiculo: veiculo,
-            doi: doi,
-            autores: linkAuthors(nomesAutores)
-          });
-        }
-
-        const capitulos = xmlDoc.getElementsByTagName("CAPITULO-DE-LIVRO-PUBLICADO");
-        for (let i = 0; i < capitulos.length; i++) {
-          const dados = capitulos[i].getElementsByTagName("DADOS-BASICOS-DO-CAPITULO")[0];
-          const det = capitulos[i].getElementsByTagName("DETALHAMENTO-DO-CAPITULO")[0];
-          if (!dados) continue;
-
-          const ano = parseInt(dados.getAttribute("ANO"));
-          if (ano < yearFilter) continue;
-
-          const titulo = dados.getAttribute("TITULO-DO-CAPITULO-DO-LIVRO");
-          const doi = dados.getAttribute("DOI");
-          const veiculo = det ? det.getAttribute("TITULO-DO-LIVRO") + " (" + det.getAttribute("NOME-DA-EDITORA") + ")" : "";
-
-          const autoresNodes = capitulos[i].getElementsByTagName("AUTORES");
-          let nomesAutores = [];
-          for (let j = 0; j < autoresNodes.length; j++) {
-            nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
-          }
-
-          parsedLattesProductions.push({
-            titulo: titulo,
-            ano: ano,
-            tipo: "Capítulo de livros",
-            veiculo: veiculo,
-            doi: doi,
-            autores: linkAuthors(nomesAutores)
-          });
-        }
-      }
-
-      // 4. Produção Técnica
-      if (wantPtts) {
-        // Includes softwares, patentes, marcas, produtos tecnológicos, etc. We can look at PRODUCAO-TECNICA child nodes generically
-        // The Lattes schema for PTTs varies (SOFTWARE, PRODUTO-TECNOLOGICO, TRABALHO-TECNICO)
-        // Let's do a generic search within PRODUCAO-TECNICA for any node containing DADOS-BASICOS...
-        const ptts = xmlDoc.getElementsByTagName("PRODUCAO-TECNICA")[0];
-        if (ptts) {
-          const children = ptts.children;
-          for (let i = 0; i < children.length; i++) {
-            const node = children[i]; // e.g. SOFTWARE, TRABALHO-TECNICO
-            // usually DADOS-BASICOS-...
-            const dadosNodeName = Array.from(node.children).find(c => c.tagName.startsWith("DADOS-BASICOS"));
-            if (!dadosNodeName) continue;
-
-            const ano = parseInt(dadosNodeName.getAttribute("ANO") || dadosNodeName.getAttribute("ANO-DO-TRABALHO") || dadosNodeName.getAttribute("ANO-DO-SOFTWARE"));
-            if (ano < yearFilter) continue;
-
-            let titulo = dadosNodeName.getAttribute("TITULO") || dadosNodeName.getAttribute("TITULO-DO-TRABALHO") || dadosNodeName.getAttribute("TITULO-DO-SOFTWARE");
-            if(!titulo) titulo = "Produção Técnica Sem Título Específico";
-
-            const autoresNodes = node.getElementsByTagName("AUTORES");
-            let nomesAutores = [];
-            for (let j = 0; j < autoresNodes.length; j++) {
-              nomesAutores.push(autoresNodes[j].getAttribute("NOME-COMPLETO-DO-AUTOR"));
-            }
-
-            parsedLattesProductions.push({
-              titulo: titulo,
-              ano: ano,
-              tipo: "PTTs",
-              veiculo: "",
-              doi: "",
-              autores: linkAuthors(nomesAutores)
-            });
-          }
-        }
-      }
-
-      renderLattesPreview();
-    }
-
-    function renderLattesPreview() {
-      const tbody = document.getElementById('lattes-preview-body');
-      tbody.innerHTML = '';
-
-      if (parsedLattesProductions.length === 0) {
-        document.getElementById('lattes-preview-container').style.display = 'block';
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--gray);">Nenhuma produção encontrada com os filtros atuais.</td></tr>';
-        return;
-      }
-
-      parsedLattesProductions.forEach((prod, index) => {
-        const tr = document.createElement('tr');
-
-        // Count PPG authors
-        const ppgAuthors = prod.autores.filter(a => a.categoria !== 'externo');
-        const ppgHtml = ppgAuthors.length > 0
-          ? ppgAuthors.map(a => `<span style="background: var(--${a.categoria}-color); color: white; padding: 2px 6px; border-radius: 12px; font-size: 10px; margin-right: 4px;">${a.nome}</span>`).join('')
-          : '<span style="color: var(--gray); font-size: 11px;">Nenhum / Apenas Externos</span>';
-
-        tr.innerHTML = `
-          <td style="padding: 10px; border-bottom: 1px solid var(--border); text-align: center;">
-            <input type="checkbox" class="lattes-checkbox" value="${index}" checked>
-          </td>
-          <td style="padding: 10px; border-bottom: 1px solid var(--border); font-weight: bold;">${prod.titulo}</td>
-          <td style="padding: 10px; border-bottom: 1px solid var(--border);">${prod.tipo}</td>
-          <td style="padding: 10px; border-bottom: 1px solid var(--border);">${prod.ano}</td>
-          <td style="padding: 10px; border-bottom: 1px solid var(--border);">${ppgHtml}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('lattes-preview-container').style.display = 'block';
-    }
-
-    function toggleAllLattes(masterCheckbox) {
-      const checkboxes = document.querySelectorAll('.lattes-checkbox');
-      checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
-    }
-
-    function salvarProducoesLattes() {
-      const checkboxes = document.querySelectorAll('.lattes-checkbox:checked');
-      if (checkboxes.length === 0) {
-        return alert("Selecione ao menos uma produção para salvar.");
-      }
-
-      let localProd = localStorage.getItem('gpa_productions');
-      let prodList = localProd ? JSON.parse(localProd) : [];
-      let adicionadas = 0;
-      let duplicadas = 0;
-
-      checkboxes.forEach(cb => {
-        const prod = parsedLattesProductions[cb.value];
-
-        // Verifica duplicidade por DOI ou Titulo
-        const isDuplicate = prodList.some(existing => {
-          const sameDoi = (prod.doi && existing.doi && prod.doi === existing.doi);
-          const sameTitle = (normalizeString(existing.titulo) === normalizeString(prod.titulo));
-          return sameDoi || sameTitle;
-        });
-
-        if (!isDuplicate) {
-          prod.id = "PROD_LATTES_" + Date.now() + "_" + Math.floor(Math.random()*1000);
-          // Set first author based on order
-          if (prod.autores && prod.autores.length > 0) {
-              prod.autores.forEach((a, i) => {
-                  a.ordem = i + 1;
-                  a.is_first_author = (i === 0);
-              });
-          }
-          prodList.push(prod);
-          adicionadas++;
-        } else {
-          // Merge authors instead of just ignoring
-          const existing = prodList.find(existing => {
-              const sameDoi = (prod.doi && existing.doi && prod.doi === existing.doi);
-              const sameTitle = (normalizeString(existing.titulo) === normalizeString(prod.titulo));
-              return sameDoi || sameTitle;
-          });
-
-          if(existing) {
-              prod.autores.forEach(pa => {
-                  if(!existing.autores.some(ea => ea.id === pa.id)) {
-                      pa.is_first_author = false; // Never override first author on merge
-                      pa.ordem = existing.autores.length + 1;
-                      existing.autores.push(pa);
-                  }
-              });
-          }
-          duplicadas++; // Actually "Merged"
-        }
-      });
-
-      localStorage.setItem('gpa_productions', JSON.stringify(prodList));
-      alert(`Importação concluída!\n\nNovas cadastradas: ${adicionadas}\nIgnoradas (duplicadas): ${duplicadas}`);
-      window.location.href = 'producoes.html';
-    }
-
-
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          // Remover class active de todos os botoes
-          document.querySelectorAll('.tab-btn').forEach(b => {
-             b.classList.remove('active');
-             b.style.color = 'var(--gray)';
-             b.style.borderBottomColor = 'transparent';
-          });
-
-          // Esconder todos os conteudos
-          document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-
-          // Adicionar active no botao clicado
-          btn.classList.add('active');
-          btn.style.color = 'var(--primary)';
-          btn.style.borderBottomColor = 'var(--primary)';
-
-          // Mostrar o painel correto
-          const target = document.getElementById(btn.dataset.target);
-          if (target) target.style.display = 'block';
-
-          // Logica adicional para Aba Manual
-          if(btn.dataset.target === 'tab-manual-content') {
-            document.getElementById('section-autores').style.display = 'block';
-            if(currentAuthors.length === 0) {
-              addAuthorManual();
-            }
-          }
-        });
-      });
-
-      loadData();
-    });
-
   </script>
 </body>
 </html>
