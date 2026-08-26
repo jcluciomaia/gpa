@@ -178,13 +178,13 @@
   <div class="container">
     <h2 style="color: var(--primary); margin-bottom: 24px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; display: inline-block;">Cadastro de Produção (Hub de Entrada)</h2>
 
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('tab-doi', this)">⚡ Busca Rápida por DOI</div>
-      <div class="tab" onclick="switchTab('tab-lattes', this)">📥 Importar XML Lattes</div>
-      <div class="tab" onclick="switchTab('tab-manual', this)">✍️ Preenchimento Manual</div>
+    <div class="tabs" style="display: flex; border-bottom: 2px solid var(--border); margin-bottom: 24px;">
+      <button class="tab-btn active" data-target="tab-doi-content" style="background: none; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; color: var(--primary); border-bottom: 3px solid var(--primary); font-size: 14px;">⚡ Busca Rápida por DOI</button>
+      <button class="tab-btn" data-target="tab-xml-content" style="background: none; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; font-size: 14px;">📥 Importar XML Lattes</button>
+      <button class="tab-btn" data-target="tab-manual-content" style="background: none; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; font-size: 14px;">✍️ Preenchimento Manual</button>
     </div>
 
-    <div class="card tab-content active" id="tab-doi">
+    <div class="card tab-content" id="tab-doi-content" style="display: block;">
       <h3>Buscar via DOI (Crossref)</h3>
       <p style="color: var(--gray); font-size: 13px; margin-bottom: 16px;">Insira o DOI da publicação para autocompletar os metadados e os autores.</p>
       <div style="display: flex; gap: 12px; max-width: 500px;">
@@ -194,7 +194,7 @@
       <div id="doi-loading" style="display: none; margin-top: 16px; color: var(--primary); font-size: 13px;">Buscando dados no Crossref...</div>
     </div>
 
-    <div class="card tab-content" id="tab-lattes">
+    <div class="card tab-content" id="tab-xml-content" style="display: none;">
       <h3>Importação em Lote via XML (Lattes)</h3>
       <p style="color: var(--gray); font-size: 13px; margin-bottom: 16px;">Faça upload do currículo Lattes em formato XML para extrair automaticamente artigos, eventos, capítulos e PTTs.</p>
 
@@ -219,7 +219,7 @@
         <label for="lattes-xml-input" style="cursor: pointer; color: var(--primary); font-weight: bold; display: block; width: 100%; height: 100%;">Clique aqui para selecionar o arquivo XML</label>
       </div>
 
-      <div id="lattes-preview-section" style="display: none; margin-top: 24px;">
+      <div id="lattes-preview-container" style="display: none; margin-top: 24px;">
         <h4 style="font-size: 14px; color: var(--primary); margin-bottom: 12px;">Pré-visualização das Produções Extraídas</h4>
         <div style="overflow-x: auto; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 8px;">
           <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
@@ -243,7 +243,7 @@
       </div>
     </div>
 
-    <div class="card tab-content" id="tab-manual">
+    <div class="card tab-content" id="tab-manual-content" style="display: none;">
       <h3 style="margin-bottom: 16px;">Dados da Produção</h3>
       <form id="prod-form">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
@@ -356,7 +356,10 @@
     </div>
   </div>
 
-  <style>
+    <style>
+    .tab-btn:hover { color: var(--primary); }
+    .tab-btn.active { color: var(--primary) !important; border-bottom: 3px solid var(--primary) !important; }
+
     .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
     .tab { padding: 12px 24px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--gray); border-bottom: 3px solid transparent; }
     .tab:hover { color: var(--primary); }
@@ -369,8 +372,7 @@
   </style>
 
   <script>
-    let currentAuthors = [
-            { nome: "Autor Extraído 1", type: "docente", is_first_author: true },];
+    let currentAuthors = [];
     let estruturaData = { docentes: [], discentes: [] };
 
     async function loadData() {
@@ -393,18 +395,7 @@
       }
     }
 
-    function switchTab(tabId, el) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      el.classList.add('active');
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
 
-      // If switching to manual, show authors section directly
-      if(tabId === 'tab-manual' && currentAuthors.length === 0) {
-        document.getElementById('section-autores').style.display = 'block';
-        addAuthorManual();
-      }
-    }
 
     async function fetchDOI() {
       const doi = document.getElementById('doi-input').value.trim();
@@ -432,7 +423,7 @@
           renderAuthors();
 
           // Switch to manual view to show populated fields
-          document.querySelectorAll('.tab')[2].click();
+          document.querySelector('[data-target="tab-manual-content"]').click();
         }, 800);
       } catch(e) {
         document.getElementById('doi-loading').style.display = 'none';
@@ -457,7 +448,7 @@
 
       document.getElementById('section-autores').style.display = 'block';
       renderAuthors();
-      document.querySelectorAll('.tab')[2].click();
+      document.querySelector('[data-target="tab-manual-content"]').click();
     }
 
     function addAuthorManual() {
@@ -893,7 +884,7 @@
       tbody.innerHTML = '';
 
       if (parsedLattesProductions.length === 0) {
-        document.getElementById('lattes-preview-section').style.display = 'block';
+        document.getElementById('lattes-preview-container').style.display = 'block';
         tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--gray);">Nenhuma produção encontrada com os filtros atuais.</td></tr>';
         return;
       }
@@ -919,7 +910,7 @@
         tbody.appendChild(tr);
       });
 
-      document.getElementById('lattes-preview-section').style.display = 'block';
+      document.getElementById('lattes-preview-container').style.display = 'block';
     }
 
     function toggleAllLattes(masterCheckbox) {
@@ -985,7 +976,42 @@
       window.location.href = 'producoes.html';
     }
 
-    document.addEventListener('DOMContentLoaded', loadData);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Remover class active de todos os botoes
+          document.querySelectorAll('.tab-btn').forEach(b => {
+             b.classList.remove('active');
+             b.style.color = 'var(--gray)';
+             b.style.borderBottomColor = 'transparent';
+          });
+
+          // Esconder todos os conteudos
+          document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+
+          // Adicionar active no botao clicado
+          btn.classList.add('active');
+          btn.style.color = 'var(--primary)';
+          btn.style.borderBottomColor = 'var(--primary)';
+
+          // Mostrar o painel correto
+          const target = document.getElementById(btn.dataset.target);
+          if (target) target.style.display = 'block';
+
+          // Logica adicional para Aba Manual
+          if(btn.dataset.target === 'tab-manual-content') {
+            document.getElementById('section-autores').style.display = 'block';
+            if(currentAuthors.length === 0) {
+              addAuthorManual();
+            }
+          }
+        });
+      });
+
+      loadData();
+    });
+
   </script>
 </body>
 </html>
