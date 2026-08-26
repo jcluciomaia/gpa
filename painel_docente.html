@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPA — Painel de Docentes</title>
+  <style>
+    :root {
+      --gray: #848688;
+      --accent: #FDB92E;
+      --secondary: #00897C;
+      --primary: #005484;
+      --primary-hover: #003e62;
+      --docente-color: #005484;
+      --discente-color: #00897C;
+      --bg: #f4f7fa;
+      --card-bg: #ffffff;
+      --border: #d0dce8;
+      --text: #373435;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 40px; }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 0 24px 0 0; height: 76px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header h1 { font-size: 16px; font-weight: 600; }
+    header .nav-links a { color: #a8d0e8; text-decoration: none; font-size: 13px; margin-left: 15px; }
+    header .nav-links a:hover { color: #fff; }
+    header .nav-links a.active { color: #fff; font-weight: bold; }
+
+    .subnav { background: white; padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; gap: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .subnav a { text-decoration: none; color: var(--gray); font-weight: 600; padding: 8px 16px; border-radius: 4px; transition: 0.2s; font-size: 14px; }
+    .subnav a:hover { background: var(--bg); color: var(--primary); }
+    .subnav a.active { background: #e0f2fe; color: var(--primary); border: 1px solid #bae6fd; }
+
+    .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 20px; }
+    .card-title { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; display: inline-block; }
+
+    .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+    .stat-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-card h3 { font-size: 12px; color: var(--gray); margin-bottom: 8px; }
+    .stat-card .value { font-size: 24px; font-weight: 700; color: var(--docente-color); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background-color: #f8fafc; font-weight: 600; color: #475569; }
+    tr:hover { background-color: #f1f5f9; }
+    .badge { padding: 2px 6px; border-radius: 12px; color: #fff; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display: flex; align-items: center; height: 100%;">
+      <div style="background: white; padding: 14px 24px; display: flex; align-items: center; justify-content: center; height: 100%; box-sizing: border-box;">
+        <img src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png" alt="UFT" style="height: 48px;">
+      </div>
+      <h1 style="font-size: 22px; font-weight: 600; margin: 0; margin-left: 24px;">Gestão da Produção Acadêmica - GPA</h1>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">🏛️ Painel da Turma</a>
+      <a href="producoes.html">📚 Produções</a>
+      <a href="rede.html">🕸 Rede de Colaboração</a>
+      <a href="painel_docente.html" class="active">👨‍🏫 Painel de Docentes</a>
+      <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
+      <a href="cadastro.html">➕ Cadastrar Produção</a>
+      <a href="relatorios.html">📑 Relatórios</a>
+      <a href="admin.html">⚙️ Administração</a>
+    </nav>
+  </header>
+
+  <div class="subnav">
+    <a href="index.html">🏛️ Painel da Turma</a>
+    <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
+    <a href="painel_docente.html" class="active">👨‍🏫 Painel de Docentes</a>
+  </div>
+
+  <div class="container">
+    <div class="card" style="background: #e0f2fe; border-color: #bae6fd;">
+      <label style="font-weight: bold; color: var(--primary); font-size: 14px; margin-right: 12px;">Selecione o Docente:</label>
+      <select id="docente-selector" onchange="loadDocentePanel()" style="padding: 8px 12px; font-size: 14px; border: 1px solid var(--border); border-radius: 4px; width: 300px;">
+        <option value="">Carregando docentes...</option>
+      </select>
+    </div>
+
+    <div class="grid-container">
+      <!-- Perfil -->
+      <div class="card">
+        <div class="card-title">Perfil do Docente</div>
+        <div style="font-size: 14px; line-height: 1.8;">
+          <div style="display: grid; grid-template-columns: 120px 1fr; border-bottom: 1px dashed var(--border); padding-bottom: 4px; margin-bottom: 4px;">
+            <span style="color: var(--gray); font-weight: bold;">Nome:</span> <span id="p-nome">-</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 120px 1fr; border-bottom: 1px dashed var(--border); padding-bottom: 4px; margin-bottom: 4px;">
+            <span style="color: var(--gray); font-weight: bold;">Titulação:</span> <span id="p-titulacao">-</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 120px 1fr; border-bottom: 1px dashed var(--border); padding-bottom: 4px; margin-bottom: 4px;">
+            <span style="color: var(--gray); font-weight: bold;">Categoria:</span> <span id="p-cat" style="text-transform: capitalize;">-</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 120px 1fr; border-bottom: 1px dashed var(--border); padding-bottom: 4px; margin-bottom: 4px;">
+            <span style="color: var(--gray); font-weight: bold;">Linha de Pesq.:</span> <span id="p-linha">-</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 120px 1fr;">
+            <span style="color: var(--gray); font-weight: bold;">Lattes:</span> <span id="p-lattes">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Métricas Individuais -->
+      <div class="card">
+        <div class="card-title">Métricas no Quadriênio</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div class="stat-card"><h3>Total de Produções</h3><div class="value" id="s-total">0</div></div>
+          <div class="stat-card"><h3>Como 1º Autor(a)</h3><div class="value" id="s-first" style="color: var(--primary);">0</div></div>
+        </div>
+        <div class="stat-card" style="padding: 12px;">
+           <h3 style="margin-bottom: 4px;">Taxa de Coautoria com Estudantes</h3>
+           <div style="display: flex; align-items: center; gap: 12px; justify-content: center;">
+             <div class="value" id="s-taxa-co" style="font-size: 20px; color: var(--secondary);">0%</div>
+             <div style="font-size: 11px; color: var(--gray);" id="s-taxa-desc">0 de 0 produções possuem discentes</div>
+           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-container">
+      <!-- Orientações -->
+      <div class="card" style="margin-bottom: 0;">
+        <div class="card-title">Estudantes sob Orientação</div>
+        <div style="overflow-y: auto; max-height: 250px;">
+          <table style="font-size: 12px;">
+            <thead><tr><th>Discente</th><th>Status</th></tr></thead>
+            <tbody id="table-orientacoes"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Simulador Destaques CAPES -->
+      <div class="card" style="margin-bottom: 0;">
+        <div class="card-title">Simulador de Destaques CAPES (Item 2.4.3)</div>
+        <p style="font-size: 12px; color: var(--gray); margin-bottom: 12px;">Selecione as 4 melhores produções do docente para o relatório CAPES.</p>
+        <div id="destaques-list" style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="border: 1px dashed var(--border); padding: 8px; border-radius: 4px; font-size: 12px; color: #94a3b8; text-align: center;">[Destaque 1 não selecionado]</div>
+          <div style="border: 1px dashed var(--border); padding: 8px; border-radius: 4px; font-size: 12px; color: #94a3b8; text-align: center;">[Destaque 2 não selecionado]</div>
+          <div style="border: 1px dashed var(--border); padding: 8px; border-radius: 4px; font-size: 12px; color: #94a3b8; text-align: center;">[Destaque 3 não selecionado]</div>
+          <div style="border: 1px dashed var(--border); padding: 8px; border-radius: 4px; font-size: 12px; color: #94a3b8; text-align: center;">[Destaque 4 não selecionado]</div>
+        </div>
+        <div style="text-align: right; margin-top: 12px;">
+          <button onclick="abrirModalDestaques()" style="background: white; border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;">Selecionar Destaques</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de Produções -->
+    <div class="card">
+      <div class="card-title">Todas as Produções do Docente</div>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Título / Veículo</th>
+              <th>Tipo</th>
+              <th>Ano</th>
+              <th>Autores</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- Modal Simulador Destaques -->
+  <div id="modal-destaques" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: white; width: 700px; max-width: 95%; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <h3 style="color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">⭐ Selecionar Destaques CAPES</h3>
+      <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px;">Selecione até 4 produções do quadrienio e insira a justificativa (Item 2.4.3).</p>
+
+      <div id="modal-destaques-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+        <!-- Javascript will populate the productions here -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border); padding-top: 16px;">
+        <button onclick="fecharModalDestaques()" style="background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px;">Cancelar</button>
+        <button onclick="salvarDestaques()" style="background: var(--secondary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;">Salvar Destaques</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let docentesData = [];
+    let discentesData = [];
+    let productionsData = [];
+
+    async function init() {
+      try {
+        const resEstr = await fetch('data/estrutura_gpa.json');
+        if (resEstr.ok) {
+           const estr = await resEstr.json();
+           docentesData = estr.docentes || [];
+           discentesData = estr.discentes || [];
+
+           const sel = document.getElementById('docente-selector');
+           sel.innerHTML = '';
+           docentesData.forEach(d => {
+             const opt = document.createElement('option');
+             opt.value = d.id;
+             opt.textContent = d.nome;
+             sel.appendChild(opt);
+           });
+        }
+
+        const localData = localStorage.getItem('gpa_productions');
+        if (localData) {
+          productionsData = JSON.parse(localData);
+        } else {
+          const res = await fetch('data/producoes.json');
+          if (res.ok) productionsData = await res.json();
+        }
+
+        if(docentesData.length > 0) loadDocentePanel();
+
+      } catch (e) { console.error(e); }
+    }
+
+
+    let currentDocenteId = null;
+    let myProdsGlobal = [];
+    let savedDestaques = {}; // Map of production ID -> Justification for current teacher
+
+    function abrirModalDestaques() {
+        if(!currentDocenteId) return;
+        const list = document.getElementById('modal-destaques-list');
+        list.innerHTML = '';
+
+        myProdsGlobal.forEach(p => {
+            const isSelected = !!savedDestaques[p.id];
+            const div = document.createElement('div');
+            div.style.border = '1px solid var(--border)';
+            div.style.padding = '12px';
+            div.style.borderRadius = '6px';
+            div.style.background = isSelected ? '#f0fdf4' : '#fff';
+
+            div.innerHTML = `
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                    <input type="checkbox" id="check-${p.id}" value="${p.id}" ${isSelected ? 'checked' : ''} onchange="toggleDestaqueJustificativa('${p.id}', this)" style="margin-top: 4px;">
+                    <div style="flex: 1;">
+                        <label for="check-${p.id}" style="font-weight: bold; font-size: 13px; cursor: pointer; color: var(--primary);">${p.titulo}</label>
+                        <div style="font-size: 11px; color: var(--gray); margin-bottom: 8px;">${p.tipo} (${p.ano})</div>
+                        <textarea id="just-${p.id}" placeholder="Justificativa do destaque (até 50 palavras)..." style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px; display: ${isSelected ? 'block' : 'none'};">${savedDestaques[p.id] || ''}</textarea>
+                    </div>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+
+        document.getElementById('modal-destaques').style.display = 'flex';
+    }
+
+    function toggleDestaqueJustificativa(id, cb) {
+        document.getElementById(`just-${id}`).style.display = cb.checked ? 'block' : 'none';
+        const parentDiv = cb.closest('div').parentElement;
+        parentDiv.style.background = cb.checked ? '#f0fdf4' : '#fff';
+    }
+
+    function fecharModalDestaques() {
+        document.getElementById('modal-destaques').style.display = 'none';
+    }
+
+    function salvarDestaques() {
+        const checkboxes = document.querySelectorAll('#modal-destaques-list input[type="checkbox"]:checked');
+        if (checkboxes.length > 4) {
+            alert('Você pode selecionar no máximo 4 destaques.');
+            return;
+        }
+
+        savedDestaques = {};
+        checkboxes.forEach(cb => {
+            const id = cb.value;
+            const just = document.getElementById(`just-${id}`).value;
+            savedDestaques[id] = just;
+        });
+
+        // Normally we would save this to localStorage against the Docente ID.
+        // Let's persist it in a specific 'gpa_destaques' map.
+        let allDestaques = JSON.parse(localStorage.getItem('gpa_destaques') || '{}');
+        allDestaques[currentDocenteId] = savedDestaques;
+        localStorage.setItem('gpa_destaques', JSON.stringify(allDestaques));
+
+        fecharModalDestaques();
+        renderizarDestaquesCard();
+    }
+
+    function renderizarDestaquesCard() {
+        const list = document.getElementById('destaques-list');
+        list.innerHTML = '';
+
+        const selectedIds = Object.keys(savedDestaques);
+        for(let i=0; i<4; i++) {
+            const div = document.createElement('div');
+            div.style.border = '1px solid var(--border)';
+            div.style.padding = '8px 12px';
+            div.style.borderRadius = '4px';
+            div.style.fontSize = '12px';
+
+            if (i < selectedIds.length) {
+                const prodId = selectedIds[i];
+                const prod = myProdsGlobal.find(p => p.id === prodId);
+                const just = savedDestaques[prodId];
+                div.style.background = '#f0fdf4';
+                div.style.borderColor = '#86efac';
+                div.innerHTML = `<div style="font-weight: bold; color: var(--primary); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">⭐ ${prod ? prod.titulo : 'Desconhecido'}</div>
+                                 <div style="color: #475569; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">"${just || 'Sem justificativa'}"</div>`;
+            } else {
+                div.style.borderStyle = 'dashed';
+                div.style.color = '#94a3b8';
+                div.style.textAlign = 'center';
+                div.textContent = `[Destaque ${i+1} não selecionado]`;
+            }
+            list.appendChild(div);
+        }
+    }
+
+    function loadDocentePanel() {
+      const id = document.getElementById('docente-selector').value;
+      const docente = docentesData.find(d => d.id === id);
+      if(!docente) return;
+
+      document.getElementById('p-nome').textContent = docente.nome;
+      document.getElementById('p-titulacao').textContent = docente.titulacao || '-';
+      document.getElementById('p-cat').textContent = docente.categoria || 'Não definido';
+      document.getElementById('p-linha').textContent = docente.linha_pesquisa || '-';
+      document.getElementById('p-lattes').innerHTML = docente.lattes ? `<a href="${docente.lattes}" target="_blank" style="color: var(--secondary); text-decoration: none;">Acessar Currículo</a>` : '-';
+
+      const myProds = productionsData.filter(p => (p.autores || []).some(a => a.id === id));
+      currentDocenteId = id;
+      myProdsGlobal = myProds;
+
+      let allDestaques = JSON.parse(localStorage.getItem('gpa_destaques') || '{}');
+      savedDestaques = allDestaques[id] || {};
+      renderizarDestaquesCard();
+
+
+      let firstCount = 0;
+      let coAuthWithDiscente = 0;
+
+      myProds.forEach(p => {
+         const myAuthorData = p.autores.find(a => a.id === id);
+         if(myAuthorData && myAuthorData.is_first_author) firstCount++;
+
+         const hasDiscente = p.autores.some(a => a.categoria === 'discente');
+         if (hasDiscente) coAuthWithDiscente++;
+      });
+
+      document.getElementById('s-total').textContent = myProds.length;
+      document.getElementById('s-first').textContent = firstCount;
+
+      const txCo = myProds.length > 0 ? Math.round((coAuthWithDiscente / myProds.length) * 100) : 0;
+      document.getElementById('s-taxa-co').textContent = txCo + '%';
+      document.getElementById('s-taxa-desc').textContent = `${coAuthWithDiscente} de ${myProds.length} produções possuem discentes`;
+
+      // Orientações
+      const orientacoes = discentesData.filter(d => d.orientador_id === id);
+      const tbodyO = document.getElementById('table-orientacoes');
+      tbodyO.innerHTML = '';
+      if(orientacoes.length === 0) {
+        tbodyO.innerHTML = '<tr><td colspan="2" style="text-align:center; color:var(--gray);">Nenhum estudante</td></tr>';
+      } else {
+        orientacoes.forEach(o => {
+          let stColor = '#0369a1'; let stBg = '#e0f2fe';
+          if(o.status === 'qualificado') { stColor = '#b45309'; stBg = '#ffedd5'; }
+          if(o.status === 'defesa_agendada') { stColor = '#6d28d9'; stBg = '#ede9fe'; }
+          if(o.status === 'egresso') { stColor = '#15803d'; stBg = '#dcfce7'; }
+
+          tbodyO.innerHTML += `<tr>
+             <td><strong>${o.nome}</strong></td>
+             <td><span style="font-size: 10px; font-weight: bold; background: ${stBg}; color: ${stColor}; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">${(o.status||'em_curso').replace('_', ' ')}</span></td>
+          </tr>`;
+        });
+      }
+
+      // Tabela Principal
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+      if(myProds.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--gray);">Nenhuma produção registrada.</td></tr>';
+        return;
+      }
+
+      myProds.forEach(prod => {
+        const tr = document.createElement('tr');
+        const authorsHtml = (prod.autores || []).map(a => {
+          const isFirst = a.is_first_author ? ' ⭐' : '';
+          let bg = a.categoria === 'discente' ? 'var(--discente-color)' : (a.categoria === 'docente' ? 'var(--docente-color)' : 'var(--gray)');
+          return `<span class="badge" style="background: ${bg}; margin-right: 4px; display: inline-block;">${a.nome}${isFirst}</span>`;
+        }).join('');
+        tr.innerHTML = `
+          <td><strong>${prod.titulo}</strong><br><small style="color: #667;">${prod.veiculo || ''}</small></td>
+          <td>${prod.tipo}</td>
+          <td>${prod.ano}</td>
+          <td>${authorsHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
