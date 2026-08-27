@@ -15,7 +15,7 @@
       --primary: #005484;
       --docente-color: #005484;
       --discente-color: #00897C;
-      --externo-color: #848688;
+      --externo-color: #718096;
       --bg: #f4f7fa;
       --border: #d0dce8;
       --text: #373435;
@@ -507,6 +507,20 @@
 
         zoomBehavior = d3.zoom()
             .scaleExtent([0.1, 8])
+            // Filter zoom events so they don't trigger when clicking ON a node
+            .filter(e => {
+               if(e.type === "mousedown") {
+                   const x = transform.invertX(e.offsetX);
+                   const y = transform.invertY(e.offsetY);
+                   const hit = activeNodes.some(n => {
+                       const dx = x - n.x;
+                       const dy = y - n.y;
+                       return (dx*dx + dy*dy) < 400; // Hit radius
+                   });
+                   if(hit) return false; // Block zoom/pan if hitting a node
+               }
+               return !e.button && e.type !== 'dblclick';
+            })
             .on("zoom", (e) => {
                 transform = e.transform;
                 draw();
