@@ -337,6 +337,7 @@
         </div>
 
       </form>
+        <datalist id="externos-list"></datalist>
     </div>
 
     <!-- Seção de Confirmação e Vínculo de Coautores -->
@@ -485,40 +486,62 @@
       container.innerHTML = '';
 
       currentAuthors.forEach((a, i) => {
-        let linkSelectHtml = '';
+        let inputHtml = '';
 
-        if(a.type === 'docente') {
-          linkSelectHtml = `<select onchange="updateAuthorLink(${i}, this.value)">
-            <option value="">Vincular a Docente...</option>
-            ${estruturaData.docentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
+        if(a.categoria === 'docente') {
+          const sortedDocentes = [...estruturaData.docentes].sort((x,y) => x.nome.localeCompare(y.nome));
+          inputHtml = `<select onchange="updateAuthorFromSelect(${i}, this)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
+            <option value="">Selecione o Docente...</option>
+            ${sortedDocentes.map(d => `<option value="${d.id}" data-nome="${d.nome}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
           </select>`;
-        } else if (a.type === 'discente') {
-          linkSelectHtml = `<select onchange="updateAuthorLink(${i}, this.value)">
-            <option value="">Vincular a Discente...</option>
-            ${estruturaData.discentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
+        } else if (a.categoria === 'discente') {
+          const sortedDiscentes = [...estruturaData.discentes].sort((x,y) => x.nome.localeCompare(y.nome));
+          inputHtml = `<select onchange="updateAuthorFromSelect(${i}, this)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
+            <option value="">Selecione o Discente...</option>
+            ${sortedDiscentes.map(d => `<option value="${d.id}" data-nome="${d.nome}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
           </select>`;
         } else {
-          linkSelectHtml = `<select disabled><option>Externo (Sem Vínculo GPA)</option></select>`;
+          inputHtml = `<input type="text" list="externos-list" value="${a.nome}" placeholder="Nome do Externo (Digite ou selecione)" onchange="updateAuthorFromInput(${i}, this.value)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">`;
         }
 
         const div = document.createElement('div');
         div.className = 'author-row';
-        div.style.gridTemplateColumns = 'auto 2fr 1fr 1fr auto';
+        div.style.display = 'grid';
+        div.style.gridTemplateColumns = 'auto 1fr 2fr auto';
+        div.style.gap = '12px';
+        div.style.alignItems = 'center';
+        div.style.background = '#f8fafc';
+        div.style.padding = '12px';
+        div.style.borderRadius = '6px';
+        div.style.border = '1px solid var(--border)';
+
         div.innerHTML = `
           <div style="text-align: center;" title="Marcar como 1º Autor">
              <input type="radio" name="first_author" value="${i}" ${a.is_first_author ? 'checked' : ''} onchange="updateFirstAuthor(${i})">
           </div>
-          <input type="text" value="${a.nome}" placeholder="Nome do Autor" onchange="updateAuthorName(${i}, this.value)">
-          <select onchange="updateAuthorType(${i}, this.value)">
-            <option value="externo" ${a.type === 'externo' ? 'selected' : ''}>Externo</option>
-            <option value="docente" ${a.type === 'docente' ? 'selected' : ''}>Docente PPG</option>
-            <option value="discente" ${a.type === 'discente' ? 'selected' : ''}>Discente PPG</option>
+          <select onchange="updateAuthorType(${i}, this.value)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+            <option value="externo" ${a.categoria === 'externo' ? 'selected' : ''}>Externo</option>
+            <option value="docente" ${a.categoria === 'docente' ? 'selected' : ''}>Docente PPG</option>
+            <option value="discente" ${a.categoria === 'discente' ? 'selected' : ''}>Discente PPG</option>
           </select>
-          ${linkSelectHtml}
-          <button class="btn-remove" onclick="removeAuthor(${i})">X</button>
+          ${inputHtml}
+          <button style="background: #fee2e2; color: #ef4444; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;" onclick="removeAuthor(${i})">X</button>
         `;
         container.appendChild(div);
       });
+    }
+
+    function updateAuthorFromSelect(idx, selectEl) {
+        const option = selectEl.options[selectEl.selectedIndex];
+        currentAuthors[idx].id = option.value;
+        currentAuthors[idx].nome = option.getAttribute('data-nome') || '';
+    }
+
+    function updateAuthorFromInput(idx, val) {
+        if(!val) return;
+        const normalized = typeof capitalizeName === 'function' ? capitalizeName(val) : val;
+        currentAuthors[idx].nome = normalized;
+        currentAuthors[idx].id = "EXT_" + (typeof formatAuthorName === 'function' ? formatAuthorName(normalized) : val.replace(/\s+/g, '_').toLowerCase());
     }
 
     function salvarProducao() {
@@ -576,7 +599,7 @@
         anexo5: anexo5,
         autores: currentAuthors.map((a, idx) => ({
           id: a.id || ("EXT_" + formatAuthorName(a.nome || "")),
-          nome: capitalizeName(a.nome || "Autor Desconhecido"),
+          nome: a.nome || "Autor Desconhecido",
           categoria: a.type,
           ordem: idx + 1,
           is_first_author: a.is_first_author || false
@@ -611,24 +634,25 @@
 
 
 
-        function formatAuthorName(str) {
+    function formatAuthorName(str) {
       if(!str) return "";
       let n = str.trim();
+      // Handle "LASTNAME, FIRSTNAME" format explicitly
       if (n.includes(",")) {
         const parts = n.split(",");
-        if (parts.length === 2) n = parts[1].trim() + " " + parts[0].trim();
+        if (parts.length === 2) {
+          n = parts[1].trim() + " " + parts[0].trim();
+        }
       }
       return n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.,;]/g, " ").replace(/\s+/g, "_").toLowerCase();
     }
 
-    function capitalizeName(str) {
-      if(!str) return "";
-      let n = str.trim();
-      if (n.includes(",")) {
-        const parts = n.split(",");
-        if (parts.length === 2) n = parts[1].trim() + " " + parts[0].trim();
-      }
-      return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+    function normalizeString(str) {
+      if (!str) return "";
+      return str.normalize("NFD").replace(/[̀-ͯ]/g, "") // remove accents
+                .replace(/[.,;]/g, " ") // remove punctuation
+                .replace(/\s+/g, " ") // collapse multiple spaces
+                .toLowerCase().trim();
     }
 
     function checkMatch(nomeBase, nomeLattes) {
