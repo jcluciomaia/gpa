@@ -415,9 +415,9 @@
           document.getElementById('prod-tipo').value = "Artigo para periódicos";
 
           currentAuthors = [
-            { nome: "Autor Extraído 1", type: "docente", is_first_author: true },
-            { nome: "Autor Extraído 1", type: "docente" },
-            { nome: "Autor Extraído 2", type: "externo" }
+            { nome: "Autor Extraído 1", categoria: "docente", is_first_author: true },
+            { nome: "Autor Extraído 1", categoria: "docente" },
+            { nome: "Autor Extraído 2", categoria: "externo" }
           ];
 
           document.getElementById('section-autores').style.display = 'block';
@@ -442,9 +442,9 @@
       document.getElementById('prod-tipo').value = "Artigo para eventos";
 
       currentAuthors = [
-            { nome: "Autor Extraído 1", type: "docente", is_first_author: true },
-        { nome: "Pesquisador Lattes 1", type: "docente" },
-        { nome: "Aluno Lattes 2", type: "discente" }
+            { nome: "Autor Extraído 1", categoria: "docente", is_first_author: true },
+        { nome: "Pesquisador Lattes 1", categoria: "docente" },
+        { nome: "Aluno Lattes 2", categoria: "discente" }
       ];
 
       document.getElementById('section-autores').style.display = 'block';
@@ -453,7 +453,7 @@
     }
 
     function addAuthorManual() {
-      const isFirst = currentAuthors.length === 0; currentAuthors.push({ nome: "", type: "externo", is_first_author: isFirst });
+      const isFirst = currentAuthors.length === 0; currentAuthors.push({ nome: "", categoria: "externo", is_first_author: isFirst });
       document.getElementById('section-autores').style.display = 'block';
       renderAuthors();
     }
@@ -472,9 +472,32 @@
       currentAuthors[index].nome = val;
     }
 
-    function updateAuthorType(index, val) {
-      currentAuthors[index].type = val;
-      renderAuthors(); // re-render to update the linkage select box
+    function updateAuthorType(idx, val) {
+        currentAuthors[idx].categoria = val;
+        currentAuthors[idx].nome = "";
+        currentAuthors[idx].id = "";
+
+        // Update DOM surgically instead of full re-render
+        const container = document.getElementById(`author-input-container-${idx}`);
+        if(container) {
+            let inputHtml = '';
+            if(val === 'docente') {
+              const sortedDocentes = [...estruturaData.docentes].sort((x,y) => x.nome.localeCompare(y.nome));
+              inputHtml = `<select onchange="updateAuthorFromSelect(${idx}, this)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
+                <option value="">Selecione o Docente...</option>
+                ${sortedDocentes.map(d => `<option value="${d.id}" data-nome="${d.nome}">${d.nome}</option>`).join('')}
+              </select>`;
+            } else if (val === 'discente') {
+              const sortedDiscentes = [...estruturaData.discentes].sort((x,y) => x.nome.localeCompare(y.nome));
+              inputHtml = `<select onchange="updateAuthorFromSelect(${idx}, this)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
+                <option value="">Selecione o Discente...</option>
+                ${sortedDiscentes.map(d => `<option value="${d.id}" data-nome="${d.nome}">${d.nome}</option>`).join('')}
+              </select>`;
+            } else {
+              inputHtml = `<input type="text" list="externos-list" placeholder="Nome do Externo (Digite ou selecione)" onchange="updateAuthorFromInput(${idx}, this.value)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">`;
+            }
+            container.innerHTML = inputHtml;
+        }
     }
 
     function updateAuthorLink(index, val) {
@@ -524,7 +547,7 @@
             <option value="docente" ${a.categoria === 'docente' ? 'selected' : ''}>Docente PPG</option>
             <option value="discente" ${a.categoria === 'discente' ? 'selected' : ''}>Discente PPG</option>
           </select>
-          ${inputHtml}
+          <div id="author-input-container-${i}" style="width: 100%;">${inputHtml}</div>
           <button style="background: #fee2e2; color: #ef4444; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;" onclick="removeAuthor(${i})">X</button>
         `;
         container.appendChild(div);
@@ -600,7 +623,7 @@
         autores: currentAuthors.map((a, idx) => ({
           id: a.id || ("EXT_" + formatAuthorName(a.nome || "")),
           nome: a.nome || "Autor Desconhecido",
-          categoria: a.type,
+          categoria: a.categoria,
           ordem: idx + 1,
           is_first_author: a.is_first_author || false
         }))
