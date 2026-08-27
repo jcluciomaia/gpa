@@ -398,37 +398,86 @@
 
 
 
-    async function fetchDOI() {
-      const doi = document.getElementById('doi-input').value.trim();
-      if(!doi) return alert("Insira um DOI válido");
+        async function fetchDOI() {
+      let rawDoi = document.getElementById('doi-input').value.trim();
+      let cleanDoi = rawDoi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '').replace(/^doi:\s*/i, '');
+
+      if(!cleanDoi) return alert("Insira um código DOI válido.");
+
+      const btnSearch = document.getElementById('btn-buscar-doi') || document.querySelector('#tab-doi-content button');
+      if (btnSearch) {
+        btnSearch.disabled = true;
+        btnSearch.innerText = 'Buscando metadados...';
+      }
 
       document.getElementById('doi-loading').style.display = 'block';
 
       try {
-        // Mock Crossref fetch
-        setTimeout(() => {
-          document.getElementById('doi-loading').style.display = 'none';
+        const response = await fetch(`https://api.crossref.org/works/${encodeURIComponent(cleanDoi)}`);
+        if (!response.ok) {
+          throw new Error(`DOI não encontrado na base Crossref (Status: ${response.status})`);
+        }
 
-          document.getElementById('prod-titulo').value = "Título Simulado via API Crossref para o DOI " + doi;
-          document.getElementById('prod-veiculo').value = "Revista Exemplo";
-          document.getElementById('prod-ano').value = "2024";
-          document.getElementById('prod-tipo').value = "Artigo para periódicos";
+        const data = await response.json();
+        const item = data.message;
 
-          currentAuthors = [
-            { nome: "Autor Extraído 1", categoria: "docente", is_first_author: true },
-            { nome: "Autor Extraído 1", categoria: "docente" },
-            { nome: "Autor Extraído 2", categoria: "externo" }
-          ];
-
-          document.getElementById('section-autores').style.display = 'block';
-          renderAuthors();
-
-          // Switch to manual view to show populated fields
-          document.querySelector('[data-target="tab-manual-content"]').click();
-        }, 800);
-      } catch(e) {
         document.getElementById('doi-loading').style.display = 'none';
-        alert("Erro ao buscar DOI");
+
+        // Extração real dos metadados
+        const title = item.title && item.title.length > 0 ? item.title[0] : '';
+        const journal = (item['container-title'] && item['container-title'].length > 0) ? item['container-title'][0] : (item.publisher || '');
+
+        let year = new Date().getFullYear();
+        if (item['published-print'] && item['published-print']['date-parts']) {
+          year = item['published-print']['date-parts'][0][0];
+        } else if (item['published-online'] && item['published-online']['date-parts']) {
+          year = item['published-online']['date-parts'][0][0];
+        } else if (item.created && item.created['date-parts']) {
+          year = item.created['date-parts'][0][0];
+        }
+
+        let typeVal = "Artigo para periódicos";
+        if (item.type === "proceedings-article") typeVal = "Artigo para eventos";
+        else if (item.type === "book-chapter") typeVal = "Capítulo de livros";
+        else if (item.type === "book") typeVal = "Livro";
+
+        // Preencher formulário
+        document.getElementById('prod-titulo').value = title;
+        document.getElementById('prod-veiculo').value = journal;
+        document.getElementById('prod-ano').value = year;
+        document.getElementById('prod-tipo').value = typeVal;
+        if(typeof togglePTTFields === 'function') togglePTTFields();
+
+        // Extrair autores
+        const extractedNames = (item.author || []).map(a => `${a.given || ""} ${a.family || ""}`.trim() || a.name || "Autor Desconhecido");
+
+        if (extractedNames.length > 0) {
+           currentAuthors = linkAuthors(extractedNames);
+           if (currentAuthors.length > 0) {
+               currentAuthors.forEach(a => a.is_first_author = false);
+               currentAuthors[0].is_first_author = true;
+           }
+        } else {
+           currentAuthors = [];
+        }
+
+        document.getElementById('section-autores').style.display = 'block';
+        if (currentAuthors.length === 0) addAuthorManual();
+        else renderAuthors();
+
+        // Switch to manual view
+        const manualBtn = document.querySelector('[data-target="tab-manual-content"]');
+        if(manualBtn) manualBtn.click();
+
+      } catch(e) {
+        console.error('Erro ao consultar Crossref:', e);
+        document.getElementById('doi-loading').style.display = 'none';
+        alert('Não foi possível localizar os dados deste DOI. Verifique o código digitado ou opte pelo preenchimento manual.');
+      } finally {
+        if (btnSearch) {
+          btnSearch.disabled = false;
+          btnSearch.innerText = 'Buscar';
+        }
       }
     }
 
