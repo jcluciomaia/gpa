@@ -61,10 +61,10 @@
     </div>
     <nav class="nav-links">
       <a href="index.html">🏛️ Painel da Turma</a>
-      <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
-      <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
       <a href="producoes.html" class="active">📚 Produções</a>
-      <a href="rede.html">🕸️ Rede de Colaboração</a>
+      <a href="rede.html">🕸 Rede de Colaboração</a>
+      <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
+      <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
       <a href="cadastro.html">➕ Cadastrar Produção</a>
       <a href="relatorios.html">📑 Relatórios</a>
       <a href="admin.html">⚙️ Administração</a>
@@ -180,6 +180,7 @@
           <!-- JS injects authors -->
         </div>
       </div>
+      <datalist id="externos-list"></datalist>
 
       <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border); padding-top: 16px;">
         <button onclick="fecharModalEdicao()" style="background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px;">Cancelar</button>
@@ -201,6 +202,7 @@
     }
 
     let productionsData = [];
+    let externalAuthorsList = [];
 
     let estruturaData = { docentes: [], discentes: [] };
 
@@ -221,26 +223,6 @@
     function normalizeString(str) {
       if (!str) return "";
       return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.,;]/g, " ").replace(/\s+/g, " ").toLowerCase().trim();
-    }
-
-    function formatAuthorName(str) {
-      if(!str) return "";
-      let n = str.trim();
-      if (n.includes(",")) {
-        const parts = n.split(",");
-        if (parts.length === 2) n = parts[1].trim() + " " + parts[0].trim();
-      }
-      return n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.,;]/g, " ").replace(/\s+/g, "_").toLowerCase();
-    }
-
-    function capitalizeName(str) {
-      if(!str) return "";
-      let n = str.trim();
-      if (n.includes(",")) {
-        const parts = n.split(",");
-        if (parts.length === 2) n = parts[1].trim() + " " + parts[0].trim();
-      }
-      return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
     }
 
     let editAuthorsCache = [];
@@ -285,7 +267,7 @@
       editAuthorsCache.forEach((a, i) => {
         const div = document.createElement('div');
         div.style.display = 'grid';
-        div.style.gridTemplateColumns = '2fr 1fr 1fr auto';
+        div.style.gridTemplateColumns = 'auto auto 1fr 2fr auto';
         div.style.gap = '8px';
         div.style.alignItems = 'center';
         div.style.background = '#f8fafc';
@@ -293,52 +275,54 @@
         div.style.borderRadius = '4px';
         div.style.border = '1px solid var(--border)';
 
-        // Combo de vinculo de membros reais
-        let linkSelectHtml = '';
+        let inputHtml = '';
         if(a.categoria === 'docente') {
-          linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value, this.options[this.selectedIndex].text)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
+          const sortedDocentes = [...estruturaData.docentes].sort((x,y) => x.nome.localeCompare(y.nome));
+          inputHtml = `<select onchange="updateEditAuthorFromSelect(${i}, this)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
             <option value="">Selecione Docente...</option>
-            ${estruturaData.docentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
+            ${sortedDocentes.map(d => `<option value="${d.id}" data-nome="${d.nome}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
           </select>`;
         } else if (a.categoria === 'discente') {
-          linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value, this.options[this.selectedIndex].text)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
+          const sortedDiscentes = [...estruturaData.discentes].sort((x,y) => x.nome.localeCompare(y.nome));
+          inputHtml = `<select onchange="updateEditAuthorFromSelect(${i}, this)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
             <option value="">Selecione Discente...</option>
-            ${estruturaData.discentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
+            ${sortedDiscentes.map(d => `<option value="${d.id}" data-nome="${d.nome}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
           </select>`;
         } else {
-          linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value, this.options[this.selectedIndex].text)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
-            <option value="">Selec. Existente...</option>
-            ${externalAuthorsList.map(ex => `<option value="${ex.id}" ${a.id === ex.id ? 'selected' : ''}>${ex.nome}</option>`).join('')}
-          </select>`;
+          inputHtml = `<input type="text" list="externos-list" value="${a.nome}" placeholder="Nome do Externo (Digite ou selecione)" onchange="updateEditAuthorFromInput(${i}, this.value)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">`;
         }
 
         div.innerHTML = `
-          <input type="text" value="${a.nome}" onchange="updateEditAuthorName(${i}, this.value)" placeholder="Nome" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <button onclick="moveAuthorUp(${i})" title="Mover para Cima" style="background:none; border:none; cursor:pointer; font-size:10px; padding:0;">▲</button>
+            <button onclick="moveAuthorDown(${i})" title="Mover para Baixo" style="background:none; border:none; cursor:pointer; font-size:10px; padding:0;">▼</button>
+          </div>
+          <div style="text-align: center; display: flex; align-items: center;" title="Marcar como 1º Autor">
+             <input type="radio" name="edit_first_author" value="${i}" ${a.is_first_author ? 'checked' : ''} onchange="updateEditFirstAuthor(${i})">
+          </div>
           <select onchange="updateEditAuthorCat(${i}, this.value)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
             <option value="externo" ${a.categoria === 'externo' ? 'selected' : ''}>Externo</option>
             <option value="docente" ${a.categoria === 'docente' ? 'selected' : ''}>Docente</option>
             <option value="discente" ${a.categoria === 'discente' ? 'selected' : ''}>Discente</option>
           </select>
-          ${linkSelectHtml}
+          ${inputHtml}
           <button onclick="removerEditAuthor(${i})" style="background: #fee2e2; color: #ef4444; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold;">X</button>
         `;
         list.appendChild(div);
       });
     }
 
-    function updateEditAuthorName(idx, val) { editAuthorsCache[idx].nome = val; }
-    function updateEditAuthorLink(idx, val, text) { editAuthorsCache[idx].id = val; if(val) { editAuthorsCache[idx].nome = text; renderEditAuthors(); } }
-    function updateEditAuthorCat(idx, val) {
-      editAuthorsCache[idx].categoria = val;
-      renderEditAuthors(); // update the third dropdown
+    function updateEditAuthorFromSelect(idx, selectEl) {
+        const option = selectEl.options[selectEl.selectedIndex];
+        editAuthorsCache[idx].id = option.value;
+        editAuthorsCache[idx].nome = option.getAttribute('data-nome') || '';
     }
-    function removerEditAuthor(idx) {
-      editAuthorsCache.splice(idx, 1);
-      renderEditAuthors();
-    }
-    function adicionarCoautorEdicao() {
-      editAuthorsCache.push({ id: "", nome: "", categoria: "externo" });
-      renderEditAuthors();
+
+    function updateEditAuthorFromInput(idx, val) {
+        if(!val) return;
+        const normalized = typeof capitalizeName === 'function' ? capitalizeName(val) : val;
+        editAuthorsCache[idx].nome = normalized;
+        editAuthorsCache[idx].id = "EXT_" + (typeof formatAuthorName === 'function' ? formatAuthorName(normalized) : val.replace(/\s+/g, '_').toLowerCase());
     }
 
     function salvarEdicao() {
@@ -353,7 +337,7 @@
       productionsData[index].situacao = document.getElementById('edit-situacao').value;
       productionsData[index].instituicao_beneficiada = document.getElementById('edit-inst').value;
       productionsData[index].autores = editAuthorsCache.map(a => {
-        if(a.categoria === 'externo') {
+        if(a.categoria === 'externo' && (!a.id || a.id.startsWith('EXT_'))) {
             a.id = "EXT_" + formatAuthorName(a.nome || "desconhecido");
         }
         return a;
