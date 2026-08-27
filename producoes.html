@@ -223,6 +223,26 @@
       return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.,;]/g, " ").replace(/\s+/g, " ").toLowerCase().trim();
     }
 
+    function formatAuthorName(str) {
+      if(!str) return "";
+      let n = str.trim();
+      if (n.includes(",")) {
+        const parts = n.split(",");
+        if (parts.length === 2) n = parts[1].trim() + " " + parts[0].trim();
+      }
+      return n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.,;]/g, " ").replace(/\s+/g, "_").toLowerCase();
+    }
+
+    function capitalizeName(str) {
+      if(!str) return "";
+      let n = str.trim();
+      if (n.includes(",")) {
+        const parts = n.split(",");
+        if (parts.length === 2) n = parts[1].trim() + " " + parts[0].trim();
+      }
+      return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+    }
+
     let editAuthorsCache = [];
 
     // Tentar carregar estrutura para o select de coautores
@@ -276,17 +296,20 @@
         // Combo de vinculo de membros reais
         let linkSelectHtml = '';
         if(a.categoria === 'docente') {
-          linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
-            <option value="">Selecione...</option>
+          linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value, this.options[this.selectedIndex].text)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
+            <option value="">Selecione Docente...</option>
             ${estruturaData.docentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
           </select>`;
         } else if (a.categoria === 'discente') {
-          linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
-            <option value="">Selecione...</option>
+          linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value, this.options[this.selectedIndex].text)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
+            <option value="">Selecione Discente...</option>
             ${estruturaData.discentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
           </select>`;
         } else {
-          linkSelectHtml = `<select disabled style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;"><option>Externo</option></select>`;
+          linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value, this.options[this.selectedIndex].text)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
+            <option value="">Selec. Existente...</option>
+            ${externalAuthorsList.map(ex => `<option value="${ex.id}" ${a.id === ex.id ? 'selected' : ''}>${ex.nome}</option>`).join('')}
+          </select>`;
         }
 
         div.innerHTML = `
@@ -304,7 +327,7 @@
     }
 
     function updateEditAuthorName(idx, val) { editAuthorsCache[idx].nome = val; }
-    function updateEditAuthorLink(idx, val) { editAuthorsCache[idx].id = val; }
+    function updateEditAuthorLink(idx, val, text) { editAuthorsCache[idx].id = val; if(val) { editAuthorsCache[idx].nome = text; renderEditAuthors(); } }
     function updateEditAuthorCat(idx, val) {
       editAuthorsCache[idx].categoria = val;
       renderEditAuthors(); // update the third dropdown
@@ -330,7 +353,7 @@
       productionsData[index].situacao = document.getElementById('edit-situacao').value;
       productionsData[index].instituicao_beneficiada = document.getElementById('edit-inst').value;
       productionsData[index].autores = editAuthorsCache.map(a => {
-        if(a.categoria === 'externo' && (!a.id || a.id.startsWith('EXT_'))) {
+        if(a.categoria === 'externo') {
             a.id = "EXT_" + formatAuthorName(a.nome || "desconhecido");
         }
         return a;
