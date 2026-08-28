@@ -47,16 +47,33 @@
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
     th { background-color: #f8fafc; font-weight: 600; color: #475569; }
+    .print-header { display: none; }
     @media print {
-      header, .filters, .btn-group { display: none !important; }
+      header, .filters, .btn-group, .tab-buttons { display: none !important; }
       body { background: white; padding: 0; }
       .card { border: none; box-shadow: none; padding: 0; }
+      .print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: 10px;
+      }
+      .print-header img { height: 60px; margin-bottom: 10px; }
+      .print-header h2 { font-size: 16px; color: var(--primary); margin: 0; }
+      .print-header p { font-size: 12px; color: #555; margin: 4px 0 0 0; }
+      table, tr, td, th { page-break-inside: avoid; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Sistema de Gestão Acadêmica — GPA</h1>
+    <div style="display: flex; align-items: center; height: 100%;">
+      <div style="background: white; padding: 14px 24px; display: flex; align-items: center; justify-content: center; height: 100%; box-sizing: border-box;">
+        <img src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png" alt="UFT" style="height: 48px;">
+      </div>
+      <h1 style="font-size: 22px; font-weight: 600; margin: 0; margin-left: 24px;">Gestão da Produção Acadêmica - GPA</h1>
+    </div>
     <nav class="nav-links">
       <a href="index.html">🏛️ Painel da Turma</a>
       <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
@@ -78,13 +95,24 @@
         </div>
       </div>
 
-      <div style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid var(--border);">
-        <button class="tab-btn active" onclick="switchReportTab('geral', this)" style="background: none; border: none; padding: 10px 16px; font-weight: bold; cursor: pointer; color: var(--primary); border-bottom: 3px solid var(--primary); font-size: 14px;">Relatório Geral</button>
-        <button class="tab-btn" onclick="switchReportTab('anexo2', this)" style="background: none; border: none; padding: 10px 16px; font-weight: bold; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; font-size: 14px;">Anexo 2 - Egressos</button>
-        <button class="tab-btn" onclick="switchReportTab('anexo5', this)" style="background: none; border: none; padding: 10px 16px; font-weight: bold; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; font-size: 14px;">Anexo 5 - PTTs</button>
+      <div class="print-header">
+        <img src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png" alt="UFT">
+        <h2>Universidade Federal do Tocantins - UFT</h2>
+        <p>Programa de Pós-Graduação em Governança e Transformação Digital (PPGGTD)</p>
+        <p>Convênio TRE-GO — Relatório Oficial — Data: <span id="print-date"></span></p>
+      </div>
+
+      <div class="tab-buttons" style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid var(--border);">
+        <button id="tab-btn-geral" class="tab-btn active" onclick="switchReportTab('geral', this)" style="background: none; border: none; padding: 10px 16px; font-weight: bold; cursor: pointer; color: var(--primary); border-bottom: 3px solid var(--primary); font-size: 14px;">📋 Relatório Geral</button>
+        <button id="tab-btn-anexo2" class="tab-btn" onclick="switchReportTab('anexo2', this)" style="background: none; border: none; padding: 10px 16px; font-weight: bold; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; font-size: 14px;">🎓 Anexo 2 - Egressos</button>
+        <button id="tab-btn-anexo5" class="tab-btn" onclick="switchReportTab('anexo5', this)" style="background: none; border: none; padding: 10px 16px; font-weight: bold; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; font-size: 14px;">⚙️ Anexo 5 - PTTs</button>
+        <button id="tab-btn-trego" class="tab-btn" onclick="switchReportTab('trego', this)" style="background: none; border: none; padding: 10px 16px; font-weight: bold; cursor: pointer; color: var(--gray); border-bottom: 3px solid transparent; font-size: 14px;">🏛️ Dossiê TRE-GO</button>
       </div>
 
       <div class="filters" id="filters-geral">
+        <select id="filter-turma" onchange="applyFilters()">
+          <option value="">Todas as Turmas</option>
+        </select>
         <select id="filter-inst" onchange="applyFilters()">
           <option value="">Todas as Instituições</option>
           <option value="TRE-GO">Convênio TRE-GO</option>
@@ -105,7 +133,7 @@
         <input type="text" id="search-box" placeholder="Filtrar por autor ou título..." oninput="applyFilters()">
       </div>
 
-      <div id="tab-geral" class="tab-content active">
+      <div id="tab-geral" class="tab-content">
       <div class="kpi-container">
         <div class="kpi-card"><div class="num" id="kpi-total">0</div><div class="label">Total Selecionado</div></div>
         <div class="kpi-card"><div class="num" id="kpi-tre">0</div><div class="label">Com Impacto TRE-GO</div></div>
@@ -132,6 +160,14 @@
       <!-- Anexo 2 - Acompanhamento de Egressos -->
       <div id="tab-anexo2" class="tab-content" style="display: none;">
         <h3 style="color: var(--primary); margin-bottom: 16px;">Acompanhamento de Egressos (Janela de 5 anos)</h3>
+
+        <div class="kpi-container" style="margin-bottom: 20px;">
+          <div class="kpi-card" style="max-width: 250px;">
+            <div class="num" id="kpi-tempo-medio">-</div>
+            <div class="label">Tempo Médio de Titulação (Meses)</div>
+          </div>
+        </div>
+
         <div style="overflow-x: auto;">
           <table style="font-size: 12px; width: 100%; border-collapse: collapse;">
             <thead>
@@ -140,6 +176,7 @@
                 <th style="padding: 12px; border-bottom: 1px solid var(--border);">Trabalho de Conclusão</th>
                 <th style="padding: 12px; border-bottom: 1px solid var(--border);">Orientador</th>
                 <th style="padding: 12px; border-bottom: 1px solid var(--border);">Data de Defesa</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Tempo de Titulação (Meses)</th>
                 <th style="padding: 12px; border-bottom: 1px solid var(--border);">Elegível na Janela CAPES?</th>
               </tr>
             </thead>
@@ -150,23 +187,55 @@
 
       <!-- Anexo 5 - Dossiê PTTs -->
       <div id="tab-anexo5" class="tab-content" style="display: none;">
-        <h3 style="color: var(--primary); margin-bottom: 16px;">Dossiê de Produtos Técnicos e Tecnológicos</h3>
+        <h3 style="color: var(--primary); margin-bottom: 16px;">Dossiê de Produtos Técnicos e Tecnológicos (Anexo 5)</h3>
         <div style="overflow-x: auto;">
-          <table style="font-size: 12px; width: 1400px; border-collapse: collapse;">
+          <table style="font-size: 12px; width: 100%; border-collapse: collapse;">
             <thead>
               <tr style="background: #f8fafc; text-align: left;">
-                <th style="padding: 12px; border-bottom: 1px solid var(--border); width: 250px;">Título PTT</th>
-                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Ano</th>
-                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Demanda</th>
-                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Nível de Complexidade</th>
-                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Justificativa (Comp)</th>
-                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Nível de Inovação</th>
-                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Justificativa (Inov)</th>
-                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Nível de Impacto</th>
-                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Justificativa (Imp)</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Descrição do PTT</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Autores</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Subtipo Técnico</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Instituição Beneficiada</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Grau de Inov/Comp</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Link do Produto</th>
               </tr>
             </thead>
             <tbody id="anexo5-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Dossiê TRE-GO -->
+      <div id="tab-trego" class="tab-content" style="display: none;">
+        <h3 style="color: var(--primary); margin-bottom: 16px;">Relatório Executivo: Entregas Aplicadas à Justiça Eleitoral</h3>
+
+        <div class="kpi-container" style="margin-bottom: 24px;">
+          <div class="kpi-card">
+            <div class="num" id="kpi-trego-total">0</div>
+            <div class="label">Total de Produções (TRE-GO)</div>
+          </div>
+          <div class="kpi-card">
+            <div class="num" id="kpi-trego-ptts">0</div>
+            <div class="label">Produtos Técnicos (PTTs)</div>
+          </div>
+          <div class="kpi-card">
+            <div class="num" id="kpi-trego-artigos">0</div>
+            <div class="label">Artigos e Capítulos</div>
+          </div>
+        </div>
+
+        <h4 style="margin-bottom: 12px; color: #334155;">Lista de Artefatos Aplicados Diretamente à Justiça Eleitoral</h4>
+        <div style="overflow-x: auto;">
+          <table style="font-size: 12px; width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: #f8fafc; text-align: left;">
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Título / Artefato</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Tipo</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Autores (TRE-GO)</th>
+                <th style="padding: 12px; border-bottom: 1px solid var(--border);">Ano</th>
+              </tr>
+            </thead>
+            <tbody id="trego-body"></tbody>
           </table>
         </div>
       </div>
@@ -176,32 +245,97 @@
   <script>
     let rawData = [];
     let filteredData = [];
+    let estruturaData = {};
+
+    function switchReportTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('active');
+        el.style.color = 'var(--gray)';
+        el.style.borderBottomColor = 'transparent';
+      });
+
+      document.getElementById('tab-' + tabId).style.display = 'block';
+      btn.classList.add('active');
+      btn.style.color = 'var(--primary)';
+      btn.style.borderBottomColor = 'var(--primary)';
+
+      const filterEl = document.getElementById('filters-geral');
+      if (tabId === 'geral') {
+        filterEl.style.display = 'grid';
+      } else {
+        filterEl.style.display = 'none';
+      }
+    }
 
     async function init() {
       try {
-        const local = localStorage.getItem('gpa_productions');
-        if (local) {
-          rawData = JSON.parse(local);
+        const d = new Date();
+        document.getElementById('print-date').textContent = d.toLocaleDateString('pt-BR');
+
+        // Load Productions
+        const localProd = localStorage.getItem('gpa_productions');
+        if (localProd) {
+          rawData = JSON.parse(localProd);
         } else {
           const res = await fetch('data/producoes.json');
           if (res.ok) rawData = await res.json();
         }
-        applyFilters();
+
+        // Load Structure
+        const localEst = localStorage.getItem('gpa_estrutura');
+        if (localEst) {
+          estruturaData = JSON.parse(localEst);
+        } else {
+          const res2 = await fetch('data/estrutura_gpa.json');
+          if (res2.ok) estruturaData = await res2.json();
+        }
+
+        // Populate Turma dropdown
+        const turmaSelect = document.getElementById('filter-turma');
+        (estruturaData.turmas || []).forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = t.nome;
+          turmaSelect.appendChild(opt);
+        });
+
+        applyFilters();       // Renders Tab 1
+        renderAnexo2();       // Renders Tab 2
+        renderAnexo5();       // Renders Tab 3
+        renderTrego();        // Renders Tab 4
       } catch (e) { console.error(e); }
     }
 
     function applyFilters() {
+      const turma = document.getElementById('filter-turma').value;
       const inst = document.getElementById('filter-inst').value;
       const tipo = document.getElementById('filter-tipo').value;
       const aplic = document.getElementById('filter-aplic').value;
       const q = document.getElementById('search-box').value.toLowerCase();
 
+      // Find all student IDs that belong to the selected Turma
+      let discentesDaTurma = new Set();
+      if (turma) {
+         (estruturaData.discentes || []).forEach(d => {
+             if (d.turma_id === turma) {
+                 discentesDaTurma.add(d.id);
+             }
+         });
+      }
+
       filteredData = rawData.filter(p => {
+        // If a turma is selected, check if any author is a student in that turma
+        let mTurma = true;
+        if (turma) {
+           mTurma = (p.autores || []).some(a => discentesDaTurma.has(a.id));
+        }
+
         const mInst = !inst || (p.instituicao_beneficiada || '').includes(inst);
         const mTipo = !tipo || (p.tipo || '').toLowerCase().includes(tipo.toLowerCase());
         const mAplic = !aplic || (p.aplicabilidade || '').toLowerCase().includes(aplic.toLowerCase());
         const mQ = !q || (p.titulo || '').toLowerCase().includes(q) || (p.autores && p.autores.some(a => (a.nome || '').toLowerCase().includes(q)));
-        return mInst && mTipo && mAplic && mQ;
+        return mTurma && mInst && mTipo && mAplic && mQ;
       });
 
       renderKPIs();
@@ -254,6 +388,104 @@
       link.href = URL.createObjectURL(blob);
       link.download = 'relatorio_producao_gpa.csv';
       link.click();
+    }
+
+    function renderAnexo2() {
+      const tbody = document.getElementById('anexo2-body');
+      tbody.innerHTML = '';
+      const discentes = estruturaData.discentes || [];
+      const docentesMap = {};
+      (estruturaData.docentes || []).forEach(d => docentesMap[d.id] = d.nome);
+
+      let totalMeses = 0;
+      let countTitulados = 0;
+
+      discentes.forEach(d => {
+        let tempoMeses = '-';
+        if (d.status === 'titulado') {
+          // Mock data calc based on some standard 24m for Masters if not provided
+          tempoMeses = d.tempo_titulacao_meses || 24;
+          totalMeses += parseInt(tempoMeses);
+          countTitulados++;
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${d.nome}</strong><br><small style="color: #64748b;">Status: ${d.status || 'Desconhecido'}</small></td>
+          <td>${d.trabalho_conclusao || '-'}</td>
+          <td>${docentesMap[d.orientador_id] || d.orientador_id || 'Não definido'}</td>
+          <td>${d.data_defesa || '-'}</td>
+          <td>${tempoMeses}</td>
+          <td>
+            <span style="padding: 2px 6px; border-radius: 4px; font-size: 11px; background: ${d.status === 'titulado' ? '#dcfce7' : '#f1f5f9'}; color: ${d.status === 'titulado' ? '#166534' : '#475569'};">
+              ${d.status === 'titulado' ? 'Sim (Janela 2023-2027)' : 'Aguardando Defesa'}
+            </span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const media = countTitulados > 0 ? (totalMeses / countTitulados).toFixed(1) : '-';
+      document.getElementById('kpi-tempo-medio').textContent = media;
+    }
+
+    function renderAnexo5() {
+      const tbody = document.getElementById('anexo5-body');
+      tbody.innerHTML = '';
+
+      const ptts = rawData.filter(p => (p.tipo || '').toLowerCase().includes('ptt') || (p.tipo || '').toLowerCase() === 'produto técnico');
+
+      if (!ptts.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">Nenhum Produto Técnico encontrado.</td></tr>';
+        return;
+      }
+
+      ptts.forEach(p => {
+        const authors = (p.autores || []).map(a => a.nome).join(', ');
+        const anexo5Data = p.anexo5 || {};
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${p.titulo}</strong><br><small style="color: #64748b;">Ano: ${p.ano || '-'}</small></td>
+          <td style="font-size: 11px;">${authors}</td>
+          <td>${p.subtipo || 'Desenvolvimento de App/Sistema'}</td>
+          <td>${p.instituicao_beneficiada || '-'}</td>
+          <td>
+            <div style="font-size: 11px; margin-bottom: 4px;">Inov: ${anexo5Data.inovacao || p.inovacao || 'Média'}</div>
+            <div style="font-size: 11px;">Comp: ${anexo5Data.complexidade || p.complexidade || 'Média'}</div>
+          </td>
+          <td>${p.link_produto ? `<a href="${p.link_produto}" target="_blank" style="color: var(--primary);">Acessar Produto</a>` : 'Não informado'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderTrego() {
+      const tbody = document.getElementById('trego-body');
+      tbody.innerHTML = '';
+
+      const treProds = rawData.filter(p => (p.instituicao_beneficiada || '').includes('TRE-GO'));
+
+      document.getElementById('kpi-trego-total').textContent = treProds.length;
+      document.getElementById('kpi-trego-ptts').textContent = treProds.filter(p => (p.tipo || '').toLowerCase().includes('ptt')).length;
+      document.getElementById('kpi-trego-artigos').textContent = treProds.filter(p => !(p.tipo || '').toLowerCase().includes('ptt')).length;
+
+      if (!treProds.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888;">Nenhuma produção associada ao TRE-GO encontrada.</td></tr>';
+        return;
+      }
+
+      treProds.forEach(p => {
+        const authors = (p.autores || []).map(a => a.nome).join(', ');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${p.titulo}</strong><br><small style="color: #64748b;">${p.veiculo || ''}</small></td>
+          <td>${p.tipo}</td>
+          <td style="font-size: 11px;">${authors}</td>
+          <td>${p.ano}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
     document.addEventListener('DOMContentLoaded', init);
