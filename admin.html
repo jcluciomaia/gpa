@@ -84,11 +84,11 @@
 
       <!-- Cadastro de Membros -->
       <div class="card">
-        <div class="card-title" style="font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 16px;">👥 Cadastro de Membros</div>
+        <div class="card-title" style="font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 16px;">👥 Gestão de Membros</div>
         <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px;">Gerencie Docentes e Discentes. Lattes e ORCID são obrigatórios para importação.</p>
         <div style="display: flex; gap: 12px;">
-          <button style="background: var(--docente-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer;">+ Docente</button>
-          <button style="background: var(--discente-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer;" onclick="openDiscenteModal()">+ Discente / Editar</button>
+          <button id="btn-manage-docentes" style="background: var(--docente-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer;" onclick="openManageDocentesModal()">👨‍🏫 Gerenciar Docentes</button>
+          <button id="btn-manage-discentes" style="background: var(--discente-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer;" onclick="openManageDiscentesModal()">🎓 Gerenciar Discentes</button>
         </div>
       </div>
 
@@ -128,8 +128,8 @@
       <!-- Persistência de Dados -->
       <div class="card" style="grid-column: 1 / -1;">
         <div class="card-title" style="font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 16px;">💾 Exportação e Persistência de Dados</div>
-        <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px;">Gere o arquivo consolidado de produções e estrutura para commit no repositório.</p>
-        <button onclick="downloadConsolidatedJSON()" style="background: var(--docente-color); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;">Baixar base consolidada (producoes.json)</button>
+        <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px;">Gere os arquivos consolidados de produções e estrutura para commit no repositório.</p>
+        <button onclick="downloadConsolidatedJSON()" style="background: var(--docente-color); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;">Baixar base consolidada</button>
       </div>
 
     </div>
@@ -138,25 +138,125 @@
   <script>
 
     function downloadConsolidatedJSON() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(productionsData, null, 2));
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", "producoes.json");
-      document.body.appendChild(downloadAnchorNode); // required for firefox
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
+      // Download producoes
+      const prodStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(productionsData, null, 2));
+      const prodNode = document.createElement('a');
+      prodNode.setAttribute("href", prodStr);
+      prodNode.setAttribute("download", "producoes.json");
+      document.body.appendChild(prodNode);
+      prodNode.click();
+      prodNode.remove();
+
+      // Download estrutura
+      const estStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(estruturaData, null, 2));
+      const estNode = document.createElement('a');
+      estNode.setAttribute("href", estStr);
+      estNode.setAttribute("download", "estrutura_gpa.json");
+      document.body.appendChild(estNode);
+      estNode.click();
+      estNode.remove();
     }
 
     let productionsData = JSON.parse(localStorage.getItem("gpa_productions") || "[]");
   </script>
 
-<!-- Modal Edição Discente -->
-<div id="modalEdicaoDiscente" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-  <div style="background: white; padding: 24px; border-radius: 8px; width: 400px; max-width: 90%;">
-    <h3 style="margin-bottom: 16px; color: var(--primary);">Editar Discente</h3>
+<!-- Modal Manage Docentes -->
+<div id="modalManageDocentes" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: white; padding: 24px; border-radius: 8px; width: 800px; max-width: 90%; max-height: 90vh; overflow-y: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="color: var(--primary); margin: 0;">👨‍🏫 Gerenciar Docentes</h3>
+      <button onclick="openEditDocenteModal()" style="background: var(--docente-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px;">➕ Cadastrar Novo Docente</button>
+    </div>
 
-    <label style="font-size: 13px; display: block; margin-bottom: 4px;">Selecione o Discente</label>
-    <select id="select-edit-discente" style="width: 100%; padding: 8px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 4px;" onchange="loadDiscenteData()"></select>
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px;">
+      <thead>
+        <tr style="background: #f5f5f5; border-bottom: 2px solid var(--border); text-align: left;">
+          <th style="padding: 12px; font-weight: bold;">Nome</th>
+          <th style="padding: 12px; font-weight: bold;">Titulação</th>
+          <th style="padding: 12px; font-weight: bold;">Categoria</th>
+          <th style="padding: 12px; font-weight: bold;">Lattes</th>
+          <th style="padding: 12px; font-weight: bold; width: 140px;">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="table-body-docentes">
+        <!-- Rows will be injected here -->
+      </tbody>
+    </table>
+
+    <div style="display: flex; justify-content: flex-end; gap: 12px;">
+      <button onclick="closeManageDocentesModal()" style="background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 4px; cursor: pointer;">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Docente -->
+<div id="modalEditDocente" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1100; align-items: center; justify-content: center;">
+  <div style="background: white; padding: 24px; border-radius: 8px; width: 400px; max-width: 90%;">
+    <h3 id="edit-docente-title" style="margin-bottom: 16px; color: var(--primary);">Cadastrar / Editar Docente</h3>
+
+    <input type="hidden" id="docente-id">
+
+    <label style="font-size: 13px; display: block; margin-bottom: 4px;">Nome Completo</label>
+    <input type="text" id="docente-nome" style="width: 100%; padding: 8px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box;">
+
+    <label style="font-size: 13px; display: block; margin-bottom: 4px;">Titulação</label>
+    <select id="docente-titulacao" style="width: 100%; padding: 8px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box;">
+      <option value="Doutor(a)">Doutor(a)</option>
+      <option value="Mestre(a)">Mestre(a)</option>
+    </select>
+
+    <label style="font-size: 13px; display: block; margin-bottom: 4px;">Categoria</label>
+    <select id="docente-categoria" style="width: 100%; padding: 8px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box;">
+      <option value="Docente Permanente">Docente Permanente</option>
+      <option value="Colaborador">Colaborador</option>
+    </select>
+
+    <label style="font-size: 13px; display: block; margin-bottom: 4px;">Link do Lattes</label>
+    <input type="text" id="docente-lattes" style="width: 100%; padding: 8px; margin-bottom: 24px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box;">
+
+    <div style="display: flex; justify-content: flex-end; gap: 12px;">
+      <button onclick="closeEditDocenteModal()" style="background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 4px; cursor: pointer;">Cancelar</button>
+      <button onclick="saveDocenteData()" style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Manage Discentes -->
+<div id="modalManageDiscentes" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: white; padding: 24px; border-radius: 8px; width: 800px; max-width: 90%; max-height: 90vh; overflow-y: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="color: var(--primary); margin: 0;">🎓 Gerenciar Discentes</h3>
+      <button onclick="openEditDiscenteModal()" style="background: var(--discente-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px;">➕ Cadastrar Novo Discente</button>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px;">
+      <thead>
+        <tr style="background: #f5f5f5; border-bottom: 2px solid var(--border); text-align: left;">
+          <th style="padding: 12px; font-weight: bold;">Nome</th>
+          <th style="padding: 12px; font-weight: bold;">Status</th>
+          <th style="padding: 12px; font-weight: bold; width: 140px;">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="table-body-discentes">
+        <!-- Rows will be injected here -->
+      </tbody>
+    </table>
+
+    <div style="display: flex; justify-content: flex-end; gap: 12px;">
+      <button onclick="closeManageDiscentesModal()" style="background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 4px; cursor: pointer;">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Discente (Atualizado) -->
+<div id="modalEdicaoDiscente" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1100; align-items: center; justify-content: center;">
+  <div style="background: white; padding: 24px; border-radius: 8px; width: 400px; max-width: 90%;">
+    <h3 id="edit-discente-title" style="margin-bottom: 16px; color: var(--primary);">Cadastrar / Editar Discente</h3>
+
+    <input type="hidden" id="discente-id">
+
+    <label style="font-size: 13px; display: block; margin-bottom: 4px;">Nome Completo</label>
+    <input type="text" id="discente-nome" style="width: 100%; padding: 8px; margin-bottom: 16px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box;">
 
     <label style="font-size: 13px; display: block; margin-bottom: 4px;">Status do Percurso</label>
     <select id="status-percurso" style="width: 100%; padding: 8px; margin-bottom: 24px; border: 1px solid var(--border); border-radius: 4px;">
@@ -168,7 +268,7 @@
     </select>
 
     <div style="display: flex; justify-content: flex-end; gap: 12px;">
-      <button onclick="closeDiscenteModal()" style="background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 4px; cursor: pointer;">Cancelar</button>
+      <button onclick="closeEditDiscenteModal()" style="background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 4px; cursor: pointer;">Cancelar</button>
       <button onclick="saveDiscenteData()" style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Salvar</button>
     </div>
   </div>
@@ -176,53 +276,209 @@
 <script>
     let estruturaData = JSON.parse(localStorage.getItem('gpa_estrutura')) || {};
 
-    function openDiscenteModal() {
-      // Fetch or use cached structure data
-      const discentes = estruturaData.discentes || [];
-      const select = document.getElementById('select-edit-discente');
-      select.innerHTML = '<option value="">-- Selecione --</option>';
-      discentes.forEach(d => {
-        const opt = document.createElement('option');
-        opt.value = d.id;
-        opt.textContent = d.nome;
-        select.appendChild(opt);
+    // --- Docentes Management ---
+    function openManageDocentesModal() {
+      renderDocentesTable();
+      document.getElementById('modalManageDocentes').style.display = 'flex';
+    }
+
+    function closeManageDocentesModal() {
+      document.getElementById('modalManageDocentes').style.display = 'none';
+    }
+
+    function renderDocentesTable() {
+      const tbody = document.getElementById('table-body-docentes');
+      tbody.innerHTML = '';
+      const docentes = estruturaData.docentes || [];
+
+      docentes.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--border)';
+
+        tr.innerHTML = `
+          <td style="padding: 12px;">${d.nome}</td>
+          <td style="padding: 12px;">${d.titulacao || 'Não informada'}</td>
+          <td style="padding: 12px;">${d.categoria || 'Não informada'}</td>
+          <td style="padding: 12px;">${d.lattes ? `<a href="${d.lattes}" target="_blank" style="color: var(--primary);">Link</a>` : '-'}</td>
+          <td style="padding: 12px; display: flex; gap: 8px;">
+            <button onclick="editDocente('${d.id}')" style="background: transparent; border: none; cursor: pointer; font-size: 16px;" title="Editar">✏️</button>
+            <button onclick="deleteDocente('${d.id}')" style="background: transparent; border: none; cursor: pointer; font-size: 16px;" title="Excluir">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
       });
+    }
+
+    function openEditDocenteModal() {
+      document.getElementById('edit-docente-title').textContent = 'Cadastrar Novo Docente';
+      document.getElementById('docente-id').value = '';
+      document.getElementById('docente-nome').value = '';
+      document.getElementById('docente-titulacao').value = 'Doutor(a)';
+      document.getElementById('docente-categoria').value = 'Docente Permanente';
+      document.getElementById('docente-lattes').value = '';
+      document.getElementById('modalEditDocente').style.display = 'flex';
+    }
+
+    function editDocente(id) {
+      const docente = (estruturaData.docentes || []).find(d => d.id === id);
+      if (!docente) return;
+
+      document.getElementById('edit-docente-title').textContent = 'Editar Docente';
+      document.getElementById('docente-id').value = docente.id;
+      document.getElementById('docente-nome').value = docente.nome;
+      document.getElementById('docente-titulacao').value = docente.titulacao || 'Doutor(a)';
+      document.getElementById('docente-categoria').value = docente.categoria || 'Docente Permanente';
+      document.getElementById('docente-lattes').value = docente.lattes || '';
+
+      document.getElementById('modalEditDocente').style.display = 'flex';
+    }
+
+    function closeEditDocenteModal() {
+      document.getElementById('modalEditDocente').style.display = 'none';
+    }
+
+    function saveDocenteData() {
+      let id = document.getElementById('docente-id').value;
+      const nome = document.getElementById('docente-nome').value.trim();
+      const titulacao = document.getElementById('docente-titulacao').value;
+      const categoria = document.getElementById('docente-categoria').value;
+      const lattes = document.getElementById('docente-lattes').value.trim();
+
+      if (!nome) {
+        alert('O nome é obrigatório.');
+        return;
+      }
+
+      if (!estruturaData.docentes) estruturaData.docentes = [];
+
+      if (id) {
+        // Edit existing
+        const index = estruturaData.docentes.findIndex(d => d.id === id);
+        if (index > -1) {
+          estruturaData.docentes[index] = { ...estruturaData.docentes[index], nome, titulacao, categoria, lattes };
+        }
+      } else {
+        // Create new
+        id = 'DOC_' + Date.now(); // simple unique ID
+        estruturaData.docentes.push({ id, nome, titulacao, categoria, lattes });
+      }
+
+      localStorage.setItem('gpa_estrutura', JSON.stringify(estruturaData));
+      renderDocentesTable();
+      closeEditDocenteModal();
+    }
+
+    function deleteDocente(id) {
+      if (confirm('Tem certeza que deseja excluir este docente?')) {
+        estruturaData.docentes = (estruturaData.docentes || []).filter(d => d.id !== id);
+        localStorage.setItem('gpa_estrutura', JSON.stringify(estruturaData));
+        renderDocentesTable();
+      }
+    }
+
+
+    // --- Discentes Management ---
+    function openManageDiscentesModal() {
+      renderDiscentesTable();
+      document.getElementById('modalManageDiscentes').style.display = 'flex';
+    }
+
+    function closeManageDiscentesModal() {
+      document.getElementById('modalManageDiscentes').style.display = 'none';
+    }
+
+    const statusLabels = {
+      'em_creditos': 'Em Créditos',
+      'qualificado': 'Qualificado(a)',
+      'defesa_agendada': 'Defesa Agendada',
+      'titulado': 'Titulado(a)',
+      'desligado': 'Desligado(a)'
+    };
+
+    function renderDiscentesTable() {
+      const tbody = document.getElementById('table-body-discentes');
+      tbody.innerHTML = '';
+      const discentes = estruturaData.discentes || [];
+
+      discentes.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--border)';
+
+        let currentStatus = d.status || 'em_creditos';
+        if (currentStatus === 'em_curso') currentStatus = 'em_creditos';
+
+        tr.innerHTML = `
+          <td style="padding: 12px;">${d.nome}</td>
+          <td style="padding: 12px;">${statusLabels[currentStatus] || currentStatus}</td>
+          <td style="padding: 12px; display: flex; gap: 8px;">
+            <button onclick="editDiscente('${d.id}')" style="background: transparent; border: none; cursor: pointer; font-size: 16px;" title="Editar">✏️</button>
+            <button onclick="deleteDiscente('${d.id}')" style="background: transparent; border: none; cursor: pointer; font-size: 16px;" title="Excluir">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openEditDiscenteModal() {
+      document.getElementById('edit-discente-title').textContent = 'Cadastrar Novo Discente';
+      document.getElementById('discente-id').value = '';
+      document.getElementById('discente-nome').value = '';
+      document.getElementById('status-percurso').value = 'em_creditos';
       document.getElementById('modalEdicaoDiscente').style.display = 'flex';
     }
 
-    function closeDiscenteModal() {
+    function editDiscente(id) {
+      const discente = (estruturaData.discentes || []).find(d => d.id === id);
+      if (!discente) return;
+
+      document.getElementById('edit-discente-title').textContent = 'Editar Discente';
+      document.getElementById('discente-id').value = discente.id;
+      document.getElementById('discente-nome').value = discente.nome;
+
+      let currentStatus = discente.status || 'em_creditos';
+      if (currentStatus === 'em_curso') currentStatus = 'em_creditos';
+      document.getElementById('status-percurso').value = currentStatus;
+
+      document.getElementById('modalEdicaoDiscente').style.display = 'flex';
+    }
+
+    function closeEditDiscenteModal() {
       document.getElementById('modalEdicaoDiscente').style.display = 'none';
     }
 
-    function loadDiscenteData() {
-      const id = document.getElementById('select-edit-discente').value;
-      if (!id) return;
-      const discentes = estruturaData.discentes || [];
-      const student = discentes.find(d => d.id === id);
-      if (student) {
-        // Map old status 'em_curso' to 'em_creditos' if needed, or just set what we have
-        const statusSelect = document.getElementById('status-percurso');
-        let currentStatus = student.status || 'em_creditos';
-        if (currentStatus === 'em_curso') currentStatus = 'em_creditos';
-        statusSelect.value = currentStatus;
+    function saveDiscenteData() {
+      let id = document.getElementById('discente-id').value;
+      const nome = document.getElementById('discente-nome').value.trim();
+      const status = document.getElementById('status-percurso').value;
+
+      if (!nome) {
+        alert('O nome é obrigatório.');
+        return;
       }
+
+      if (!estruturaData.discentes) estruturaData.discentes = [];
+
+      if (id) {
+        const index = estruturaData.discentes.findIndex(d => d.id === id);
+        if (index > -1) {
+          estruturaData.discentes[index] = { ...estruturaData.discentes[index], nome, status };
+        }
+      } else {
+        id = 'DISC_' + Date.now();
+        estruturaData.discentes.push({ id, nome, status });
+      }
+
+      localStorage.setItem('gpa_estrutura', JSON.stringify(estruturaData));
+      renderDiscentesTable();
+      closeEditDiscenteModal();
     }
 
-    function saveDiscenteData() {
-      const id = document.getElementById('select-edit-discente').value;
-      if (!id) return closeDiscenteModal();
-
-      const newStatus = document.getElementById('status-percurso').value;
-
-      // Update data
-      const discentes = estruturaData.discentes || [];
-      const studentIndex = discentes.findIndex(d => d.id === id);
-      if (studentIndex > -1) {
-        discentes[studentIndex].status = newStatus;
+    function deleteDiscente(id) {
+      if (confirm('Tem certeza que deseja excluir este discente?')) {
+        estruturaData.discentes = (estruturaData.discentes || []).filter(d => d.id !== id);
         localStorage.setItem('gpa_estrutura', JSON.stringify(estruturaData));
-        alert('Status atualizado com sucesso!');
+        renderDiscentesTable();
       }
-      closeDiscenteModal();
     }
 
     // Check if gpa_estrutura is in localStorage, if not load from data/estrutura_gpa.json
