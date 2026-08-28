@@ -512,43 +512,70 @@
                 draw();
             });
 
-        d3Canvas.call(zoomBehavior);
+        function dragSubject(e) {
+            const x = transform.invertX(e.x);
+            const y = transform.invertY(e.y);
+            let closest = null;
+            let minDist = Infinity;
+            for (const node of activeNodes) {
+                const dx = x - node.x;
+                const dy = y - node.y;
+                const dist = dx * dx + dy * dy;
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = node;
+                }
+            }
+            const r = closest ? getRadius(closest) : 0;
+            // Radius + generous click margin
+            return minDist <= Math.pow(r + 15, 2) ? closest : null;
+        }
 
-        // Dragging
-        d3Canvas.call(d3.drag()
-            .subject((e) => {
-                const x = transform.invertX(e.x);
-                const y = transform.invertY(e.y);
-                let closest = null;
-                let minDist = Infinity;
+        // Apply zoom to canvas, but filter it so clicking on a node doesn't trigger zoom/pan
+        zoomBehavior.filter((e) => {
+            if (e.type === "mousedown") {
+                // Manually check if mouse is over a subject
+                const x = transform.invertX(e.offsetX);
+                const y = transform.invertY(e.offsetY);
+                let hit = false;
                 for (const node of activeNodes) {
                     const dx = x - node.x;
                     const dy = y - node.y;
-                    const dist = dx * dx + dy * dy;
-                    if (dist < minDist) {
-                        minDist = dist;
-                        closest = node;
+                    const r = getRadius(node);
+                    if (dx * dx + dy * dy <= Math.pow(r + 15, 2)) {
+                        hit = true;
+                        break;
                     }
                 }
-                const r = closest ? getRadius(closest) : 0;
-                return minDist <= r * r + 100 ? closest : null;
-            })
-            .on("start", (e) => {
+                if (hit) return false;
+            }
+            return !e.button && e.type !== 'dblclick';
+        });
+
+        d3Canvas.call(zoomBehavior);
+
+        // Standard D3 drag behavior
+        d3Canvas.call(d3.drag()
+            .container(canvas)
+            .subject(dragSubject)
+            .on("start", function(e) {
                 if (!e.active) simulation.alphaTarget(0.3).restart();
                 e.subject.fx = e.subject.x;
                 e.subject.fy = e.subject.y;
             })
-            .on("drag", (e) => {
-                e.subject.fx = transform.invertX(e.x);
-                e.subject.fy = transform.invertY(e.y);
+            .on("drag", function(e) {
+                // Must adjust for zoom scale mapping correctly
+                e.subject.fx = e.subject.x + e.dx / transform.k;
+                e.subject.fy = e.subject.y + e.dy / transform.k;
             })
-            .on("end", (e) => {
+            .on("end", function(e) {
                 if (!e.active) simulation.alphaTarget(0);
-                if (!nodesFixed) {
+                if (!window.nodesFixed) {
                     e.subject.fx = null;
                     e.subject.fy = null;
                 }
-            }));
+            })
+        );
 
         // Hover & Click
         d3Canvas.on("mousemove", (e) => {
@@ -585,7 +612,7 @@
     }
 
     let activeFilters = { 'docente': true, 'discente': true, 'externo': true };
-    let nodesFixed = false;
+    window.nodesFixed = false;
 
     function toggleFilter(type) {
         activeFilters[type] = !activeFilters[type];
@@ -625,7 +652,7 @@
           radialMode = false;
           simulation.force("radial", null);
           simulation.force("charge", d3.forceManyBody().strength(-300));
-          if(!nodesFixed) {
+          if(!window.nodesFixed) {
               activeNodes.forEach(n => { n.fx = null; n.fy = null; });
           }
       }
@@ -646,11 +673,11 @@
     }
 
     function toggleFixNodes() {
-        nodesFixed = !nodesFixed;
-        document.getElementById('btn-fix-nodes').textContent = nodesFixed ? 'Liberar Nós' : 'Fixar Nós';
+        window.nodesFixed = !window.nodesFixed;
+        document.getElementById('btn-fix-nodes').textContent = window.nodesFixed ? 'Liberar Nós' : 'Fixar Nós';
 
         activeNodes.forEach(n => {
-            if (nodesFixed) {
+            if (window.nodesFixed) {
                 n.fx = n.x;
                 n.fy = n.y;
             } else {
@@ -659,7 +686,7 @@
             }
         });
 
-        if (!nodesFixed) {
+        if (!window.nodesFixed) {
             simulation.alpha(0.3).restart();
         }
     }
