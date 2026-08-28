@@ -151,20 +151,20 @@
             <div style="color: #667; margin-top: 4px;">Em Créditos</div>
           </div>
           <div style="flex: 1; border-left: 1px solid var(--border);">
-            <div style="font-size: 20px; font-weight: bold; color: var(--primary);" id="fase-projeto">0</div>
-            <div style="color: #667; margin-top: 4px;">Projeto Aprovado</div>
-          </div>
-          <div style="flex: 1; border-left: 1px solid var(--border);">
             <div style="font-size: 20px; font-weight: bold; color: var(--primary);" id="fase-qualificados">0</div>
-            <div style="color: #667; margin-top: 4px;">Qualificados</div>
+            <div style="color: #667; margin-top: 4px;">📋 Qualificados</div>
           </div>
           <div style="flex: 1; border-left: 1px solid var(--border);">
             <div style="font-size: 20px; font-weight: bold; color: var(--accent);" id="fase-defesa">0</div>
-            <div style="color: #667; margin-top: 4px;">Defesa Agendada</div>
+            <div style="color: #667; margin-top: 4px;">📅 Defesa Agendada</div>
           </div>
           <div style="flex: 1; border-left: 1px solid var(--border);">
             <div style="font-size: 20px; font-weight: bold; color: var(--secondary);" id="fase-titulados">0</div>
-            <div style="color: #667; margin-top: 4px;">Titulados</div>
+            <div style="color: #667; margin-top: 4px;">🎓 Titulados</div>
+          </div>
+          <div style="flex: 1; border-left: 1px solid var(--border);">
+            <div style="font-size: 20px; font-weight: bold; color: #991b1b;" id="fase-desligados">0</div>
+            <div style="color: #667; margin-top: 4px;">⏸️ Desligados</div>
           </div>
         </div>
       </div>
@@ -184,11 +184,12 @@
           if (resProd.ok) productionsData = await resProd.json();
         }
 
-        const localDiscentes = localStorage.getItem('gpa_discentes');
-        if (localDiscentes) {
-          discentesData = JSON.parse(localDiscentes);
+        const localEstrutura = localStorage.getItem('gpa_estrutura');
+        if (localEstrutura) {
+          window.estruturaData = JSON.parse(localEstrutura);
+          discentesData = window.estruturaData.discentes || [];
         } else {
-                    const resEstrutura = await fetch('data/estrutura_gpa.json');
+          const resEstrutura = await fetch('data/estrutura_gpa.json');
           if (resEstrutura.ok) {
             window.estruturaData = await resEstrutura.json();
             discentesData = window.estruturaData.discentes || [];
@@ -293,22 +294,22 @@
       document.getElementById('media-coproducao-dp').textContent = mediaCopro;
       document.getElementById('media-coproducao-desc').textContent = `${coproducoes} coprods / ${dps} DPs`;
 
-      let fases = { creditos: 0, projeto: 0, qualificados: 0, defesa: 0, titulados: 0 };
+      let fases = { creditos: 0, qualificados: 0, defesa: 0, titulados: 0, desligados: 0 };
 
-      filteredDiscentes.forEach((d, i) => {
-        const fase = d.fase || (i % 5);
-        if (fase === 0) fases.creditos++;
-        else if (fase === 1) fases.projeto++;
-        else if (fase === 2) fases.qualificados++;
-        else if (fase === 3) fases.defesa++;
-        else if (fase === 4) fases.titulados++;
+      filteredDiscentes.forEach((d) => {
+        const status = d.status || 'em_creditos';
+        if (status === 'em_creditos' || status === 'em_curso') fases.creditos++;
+        else if (status === 'qualificado') fases.qualificados++;
+        else if (status === 'defesa_agendada') fases.defesa++;
+        else if (status === 'titulado') fases.titulados++;
+        else if (status === 'desligado') fases.desligados++;
       });
 
       document.getElementById('fase-creditos').textContent = fases.creditos;
-      document.getElementById('fase-projeto').textContent = fases.projeto;
       document.getElementById('fase-qualificados').textContent = fases.qualificados;
       document.getElementById('fase-defesa').textContent = fases.defesa;
       document.getElementById('fase-titulados').textContent = fases.titulados;
+      document.getElementById('fase-desligados').textContent = fases.desligados;
     }
 
 
