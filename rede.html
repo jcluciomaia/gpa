@@ -359,12 +359,10 @@
       activeEdges = graphData.edges.map(e => ({...e}));
 
       simulation = d3.forceSimulation(activeNodes)
-        .alphaDecay(0.02)
-        .velocityDecay(0.3)
-        .force("link", d3.forceLink(activeEdges).id(d => d.id).distance(120))
-        .force("charge", d3.forceManyBody().strength(-450))
-        .force("center", d3.forceCenter(width / 2, height / 2).strength(0.05))
-        .force("collide", d3.forceCollide().radius(d => getRadius(d) + 15).iterations(3))
+        .force("link", d3.forceLink(activeEdges).id(d => d.id).distance(100))
+        .force("charge", d3.forceManyBody().strength(-300))
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("collide", d3.forceCollide().radius(d => getRadius(d) + 2).iterations(2))
         .on("tick", draw);
 
       setupInteractions();
@@ -514,69 +512,43 @@
                 draw();
             });
 
-        function dragSubject(e) {
-            const x = transform.invertX(e.x);
-            const y = transform.invertY(e.y);
-            let closest = null;
-            let minDist = Infinity;
-            for (const node of activeNodes) {
-                const dx = x - node.x;
-                const dy = y - node.y;
-                const dist = dx * dx + dy * dy;
-                if (dist < minDist) {
-                    minDist = dist;
-                    closest = node;
-                }
-            }
-            const r = closest ? getRadius(closest) : 0;
-            // Radius + generous click margin
-            return minDist <= Math.pow(r + 15, 2) ? closest : null;
-        }
+        d3Canvas.call(zoomBehavior);
 
-        // Apply zoom to canvas, but filter it so clicking on a node doesn't trigger zoom/pan
-        zoomBehavior.filter((e) => {
-            if (e.type === "mousedown") {
-                // Manually check if mouse is over a subject
-                const x = transform.invertX(e.offsetX);
-                const y = transform.invertY(e.offsetY);
-                let hit = false;
+        // Dragging
+        d3Canvas.call(d3.drag()
+            .subject((e) => {
+                const x = transform.invertX(e.x);
+                const y = transform.invertY(e.y);
+                let closest = null;
+                let minDist = Infinity;
                 for (const node of activeNodes) {
                     const dx = x - node.x;
                     const dy = y - node.y;
-                    const r = getRadius(node);
-                    if (dx * dx + dy * dy <= Math.pow(r + 15, 2)) {
-                        hit = true;
-                        break;
+                    const dist = dx * dx + dy * dy;
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closest = node;
                     }
                 }
-                if (hit) return false;
-            }
-            return !e.button && e.type !== 'dblclick';
-        });
-
-        d3Canvas.call(zoomBehavior);
-
-        // Standard D3 drag behavior
-        d3Canvas.call(d3.drag()
-            .container(canvas)
-            .subject(dragSubject)
-            .on("start", function(e) {
-                if (!e.active) simulation.alphaTarget(0.1).restart();
+                const r = closest ? getRadius(closest) : 0;
+                return minDist <= r * r + 100 ? closest : null;
+            })
+            .on("start", (e) => {
+                if (!e.active) simulation.alphaTarget(0.3).restart();
                 e.subject.fx = e.subject.x;
                 e.subject.fy = e.subject.y;
             })
-            .on("drag", function(e) {
-                // Must adjust for zoom scale mapping correctly
-                e.subject.fx = e.subject.x + e.dx / transform.k;
-                e.subject.fy = e.subject.y + e.dy / transform.k;
+            .on("drag", (e) => {
+                e.subject.fx = transform.invertX(e.x);
+                e.subject.fy = transform.invertY(e.y);
             })
-            .on("end", function(e) {
+            .on("end", (e) => {
                 if (!e.active) simulation.alphaTarget(0);
-                // Keep the node exactly where it was dropped
-                e.subject.fx = e.subject.x;
-                e.subject.fy = e.subject.y;
-            })
-        );
+                if (!nodesFixed) {
+                    e.subject.fx = null;
+                    e.subject.fy = null;
+                }
+            }));
 
         // Hover & Click
         d3Canvas.on("mousemove", (e) => {
@@ -613,7 +585,7 @@
     }
 
     let activeFilters = { 'docente': true, 'discente': true, 'externo': true };
-    window.nodesFixed = false;
+    let nodesFixed = false;
 
     function toggleFilter(type) {
         activeFilters[type] = !activeFilters[type];
@@ -652,13 +624,11 @@
       if (radialMode) {
           radialMode = false;
           simulation.force("radial", null);
-          simulation.force("charge", d3.forceManyBody().strength(-450));
+          simulation.force("charge", d3.forceManyBody().strength(-300));
+          if(!nodesFixed) {
+              activeNodes.forEach(n => { n.fx = null; n.fy = null; });
+          }
       }
-
-      window.nodesFixed = false;
-      document.getElementById('btn-fix-nodes').textContent = 'Fixar Nós';
-      activeNodes.forEach(n => { n.fx = null; n.fy = null; });
-      simulation.alpha(1).restart();
 
       d3.select(canvas).transition().duration(750).call(
           zoomBehavior.transform, d3.zoomIdentity
@@ -676,11 +646,11 @@
     }
 
     function toggleFixNodes() {
-        window.nodesFixed = !window.nodesFixed;
-        document.getElementById('btn-fix-nodes').textContent = window.nodesFixed ? 'Liberar Nós' : 'Fixar Nós';
+        nodesFixed = !nodesFixed;
+        document.getElementById('btn-fix-nodes').textContent = nodesFixed ? 'Liberar Nós' : 'Fixar Nós';
 
         activeNodes.forEach(n => {
-            if (window.nodesFixed) {
+            if (nodesFixed) {
                 n.fx = n.x;
                 n.fy = n.y;
             } else {
@@ -689,8 +659,8 @@
             }
         });
 
-        if (!window.nodesFixed) {
-            simulation.alpha(1).restart(); // Restart simulation completely when released
+        if (!nodesFixed) {
+            simulation.alpha(0.3).restart();
         }
     }
 
