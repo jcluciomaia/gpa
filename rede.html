@@ -181,11 +181,6 @@
         <label style="font-size: 12px; margin-left: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
           <input type="checkbox" id="ocultar-externos" onchange="applyFilters()"> Ocultar Autores Externos (Focar PPG)
         </label>
-
-        <div style="margin-left: 12px; font-size: 12px; display: flex; align-items: center; gap: 4px;">
-          Intensidade mín. colaborações:
-          <input type="number" id="min-degree" value="0" min="0" style="width: 50px; padding: 4px; font-size: 11px; border: 1px solid var(--border); border-radius: 4px;" onchange="applyFilters()">
-        </div>
     </div>
 
     <input type="text" id="search-author" placeholder="Buscar autor..." oninput="applyFilters()" style="padding: 6px 12px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px;">
@@ -193,8 +188,8 @@
     <div class="controls" style="display: flex; gap: 5px;">
         <button onclick="zoomIn()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Zoom +</button>
         <button onclick="zoomOut()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Zoom -</button>
-        <button onclick="resetView()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Resetar</button>
-        <button onclick="toggleFixNodes()" id="btn-fix-nodes" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Fixar Nós</button>
+        <button onclick="resetView()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Resetar Visão</button>
+        <button onclick="liberarNos()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Liberar Nós</button>
         <button onclick="exportPNG()" style="padding: 6px 10px; border: 1px solid var(--border); background: var(--primary); color: white; cursor:pointer; border-radius:4px; font-size:12px;">Exportar PNG</button>
     </div>
   </div>
@@ -342,6 +337,7 @@
     let activeNodes = [];
     let activeEdges = [];
     let hoverNode = null;
+    let connectedNodes = new Set();
     let selectedNode = null;
 
     function initSimulation() {
@@ -359,10 +355,10 @@
       activeEdges = graphData.edges.map(e => ({...e}));
 
       simulation = d3.forceSimulation(activeNodes)
-        .force("link", d3.forceLink(activeEdges).id(d => d.id).distance(100))
-        .force("charge", d3.forceManyBody().strength(-300))
+        .force("link", d3.forceLink(activeEdges).id(d => d.id).distance(150))
+        .force("charge", d3.forceManyBody().strength(-800))
         .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("collide", d3.forceCollide().radius(d => getRadius(d) + 2).iterations(2))
+        .force("collide", d3.forceCollide().radius(d => getRadius(d) + 30).iterations(3))
         .on("tick", draw);
 
       setupInteractions();
@@ -393,262 +389,58 @@
     }
 
     function draw() {
-      ctx.save();
-      ctx.clearRect(0, 0, width, height);
-      ctx.translate(transform.x, transform.y);
-      ctx.scale(transform.k, transform.k);
+        ctx.save();
+        ctx.clearRect(0, 0, width, height);
+        ctx.translate(transform.x, transform.y);
+        ctx.scale(transform.k, transform.k);
 
-      // Draw Edges
-      ctx.beginPath();
-      activeEdges.forEach(d => {
-        ctx.moveTo(d.source.x, d.source.y);
-        ctx.lineTo(d.target.x, d.target.y);
-      });
-      ctx.strokeStyle = "#cbd5e1";
-      ctx.lineWidth = 1;
-      ctx.stroke();
+        // Draw Edges
+        activeEdges.forEach(e => {
+            let opacity = 1;
+            if (hoverNode) {
+                if (e.source.id === hoverNode.id || e.target.id === hoverNode.id) opacity = 1;
+                else opacity = 0.15;
+            }
+            ctx.beginPath();
+            ctx.moveTo(e.source.x, e.source.y);
+            ctx.lineTo(e.target.x, e.target.y);
+            ctx.strokeStyle = `rgba(203, 213, 225, ${opacity})`;
+            ctx.lineWidth = hoverNode && opacity === 1 ? 2 : 1;
+            ctx.stroke();
+        });
 
-      // Draw Nodes
-      activeNodes.forEach(d => {
-        ctx.beginPath();
-        const r = getRadius(d);
-        ctx.arc(d.x, d.y, r, 0, 2 * Math.PI);
-
-        ctx.fillStyle = getColor(d.categoria);
-
-        if (selectedNode && selectedNode.id === d.id) {
-          ctx.lineWidth = 3;
-          ctx.strokeStyle = "#f59e0b";
-          ctx.stroke();
-        } else if (hoverNode && hoverNode.id === d.id) {
-          ctx.lineWidth = 2;
-          ctx.strokeStyle = "#1e293b";
-          ctx.stroke();
-        } else {
-          ctx.lineWidth = 1.5;
-          ctx.strokeStyle = "#fff";
-          ctx.stroke();
-        }
-
-        ctx.fill();
-
-        // Draw Text
-        if (transform.k > 0.8 || (hoverNode && hoverNode.id === d.id) || (selectedNode && selectedNode.id === d.id)) {
-            ctx.fillStyle = "#334155";
-            ctx.font = `${Math.max(10, 12 / transform.k)}px sans-serif`;
-            ctx.textAlign = "center";
-            ctx.fillText(d.nome, d.x, d.y + r + (14/transform.k));
-        }
-      });
-
-      ctx.restore();
-      drawMinimap();
-    }
-
-    function drawMinimap() {
-        const mw = minimapCanvas.width;
-        const mh = minimapCanvas.height;
-        minimapCtx.clearRect(0, 0, mw, mh);
-
-        minimapCtx.fillStyle = '#f8fafc';
-        minimapCtx.fillRect(0, 0, mw, mh);
-
-        if (activeNodes.length === 0) return;
-
-        // Find bounds
-        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        // Draw Nodes
         activeNodes.forEach(n => {
-            if(n.x < minX) minX = n.x;
-            if(n.x > maxX) maxX = n.x;
-            if(n.y < minY) minY = n.y;
-            if(n.y > maxY) maxY = n.y;
-        });
+            let opacity = 1;
+            if (hoverNode && !connectedNodes.has(n.id)) opacity = 0.15;
 
-        // Add padding
-        const pad = 50;
-        minX -= pad; maxX += pad; minY -= pad; maxY += pad;
+            ctx.beginPath();
+            const r = getRadius(n);
+            ctx.arc(n.x, n.y, r, 0, 2 * Math.PI);
 
-        const scaleX = mw / (maxX - minX);
-        const scaleY = mh / (maxY - minY);
-        const scale = Math.min(scaleX, scaleY);
+            // Standardized Colors
+            let fillHex = n.cat === 'docente' ? '#005484' : (n.cat === 'discente' ? '#00897C' : '#718096');
 
-        const ox = (mw - (maxX - minX) * scale) / 2;
-        const oy = (mh - (maxY - minY) * scale) / 2;
+            ctx.fillStyle = fillHex;
+            ctx.globalAlpha = opacity;
+            ctx.fill();
 
-        minimapCtx.save();
-        minimapCtx.translate(ox, oy);
-        minimapCtx.scale(scale, scale);
-        minimapCtx.translate(-minX, -minY);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.globalAlpha = 1.0;
 
-        minimapCtx.beginPath();
-        activeNodes.forEach(d => {
-            minimapCtx.moveTo(d.x, d.y);
-            minimapCtx.arc(d.x, d.y, Math.max(10, getRadius(d)), 0, 2 * Math.PI);
-        });
-        minimapCtx.fillStyle = "#94a3b8";
-        minimapCtx.fill();
-        minimapCtx.restore();
-
-        // Viewport rectangle
-        minimapCtx.strokeStyle = "rgba(0, 75, 120, 0.8)";
-        minimapCtx.lineWidth = 2;
-
-        const vx = ((-transform.x / transform.k) - minX) * scale + ox;
-        const vy = ((-transform.y / transform.k) - minY) * scale + oy;
-        const vw = (width / transform.k) * scale;
-        const vh = (height / transform.k) * scale;
-
-        minimapCtx.strokeRect(vx, vy, vw, vh);
-    }
-
-    let zoomBehavior;
-    function setupInteractions() {
-        const d3Canvas = d3.select(canvas);
-
-        zoomBehavior = d3.zoom()
-            .scaleExtent([0.1, 8])
-            // Filter zoom events so they don't trigger when clicking ON a node
-            .filter(e => {
-               if(e.type === "mousedown") {
-                   const x = transform.invertX(e.offsetX);
-                   const y = transform.invertY(e.offsetY);
-                   const hit = activeNodes.some(n => {
-                       const dx = x - n.x;
-                       const dy = y - n.y;
-                       return (dx*dx + dy*dy) < 400; // Hit radius
-                   });
-                   if(hit) return false; // Block zoom/pan if hitting a node
-               }
-               return !e.button && e.type !== 'dblclick';
-            })
-            .on("zoom", (e) => {
-                transform = e.transform;
-                draw();
-            });
-
-        d3Canvas.call(zoomBehavior);
-
-        // Dragging
-        d3Canvas.call(d3.drag()
-            .subject((e) => {
-                const x = transform.invertX(e.x);
-                const y = transform.invertY(e.y);
-                let closest = null;
-                let minDist = Infinity;
-                for (const node of activeNodes) {
-                    const dx = x - node.x;
-                    const dy = y - node.y;
-                    const dist = dx * dx + dy * dy;
-                    if (dist < minDist) {
-                        minDist = dist;
-                        closest = node;
-                    }
-                }
-                const r = closest ? getRadius(closest) : 0;
-                return minDist <= r * r + 100 ? closest : null;
-            })
-            .on("start", (e) => {
-                if (!e.active) simulation.alphaTarget(0.3).restart();
-                e.subject.fx = e.subject.x;
-                e.subject.fy = e.subject.y;
-            })
-            .on("drag", (e) => {
-                e.subject.fx = transform.invertX(e.x);
-                e.subject.fy = transform.invertY(e.y);
-            })
-            .on("end", (e) => {
-                if (!e.active) simulation.alphaTarget(0);
-                if (!nodesFixed) {
-                    e.subject.fx = null;
-                    e.subject.fy = null;
-                }
-            }));
-
-        // Hover & Click
-        d3Canvas.on("mousemove", (e) => {
-            const x = transform.invertX(e.offsetX);
-            const y = transform.invertY(e.offsetY);
-            let newHover = null;
-            for (const node of activeNodes) {
-                const r = getRadius(node);
-                if ((x - node.x) ** 2 + (y - node.y) ** 2 <= (r + 5) ** 2) {
-                    newHover = node;
-                    break;
-                }
-            }
-            if (hoverNode !== newHover) {
-                hoverNode = newHover;
-                draw();
+            // Label
+            if (transform.k > 0.8 || (hoverNode && opacity === 1)) {
+                ctx.fillStyle = `rgba(51, 65, 85, ${opacity})`;
+                ctx.font = hoverNode && hoverNode.id === n.id ? 'bold 11px Arial' : '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(n.nome || n.id, n.x, n.y + r + 12);
             }
         });
 
-        d3Canvas.on("click", (e) => {
-            if (hoverNode) {
-                selectNode(hoverNode);
-            } else {
-                closePanel();
-            }
-        });
-
-        d3Canvas.on("dblclick.zoom", null); // disable default dblclick zoom
-        d3Canvas.on("dblclick", (e) => {
-            if (hoverNode) {
-                egoNetwork(hoverNode);
-            }
-        });
-    }
-
-    let activeFilters = { 'docente': true, 'discente': true, 'externo': true };
-    let nodesFixed = false;
-
-    function toggleFilter(type) {
-        activeFilters[type] = !activeFilters[type];
-        const btn = document.getElementById('btn-filter-' + type);
-        btn.style.opacity = activeFilters[type] ? '1' : '0.5';
-        applyFilters();
-    }
-
-    function applyFilters() {
-      const search = document.getElementById('search-author').value.toLowerCase();
-
-      activeNodes = graphData.nodes.filter(n => {
-          if(!activeFilters[n.categoria]) return false;
-          if(search && !n.nome.toLowerCase().includes(search)) return false;
-          return true;
-      });
-
-      const activeIds = new Set(activeNodes.map(n => n.id));
-      activeEdges = graphData.edges.filter(e => activeIds.has(e.source.id || e.source) && activeIds.has(e.target.id || e.target));
-
-      // Re-bind to simulation
-      simulation.nodes(activeNodes);
-      simulation.force("link").links(activeEdges);
-      simulation.alpha(0.5).restart();
-
-      closePanel();
-    }
-
-    function resetView() {
-      activeFilters = { 'docente': true, 'discente': true, 'externo': true };
-      document.getElementById('btn-filter-docente').style.opacity = '1';
-      document.getElementById('btn-filter-discente').style.opacity = '1';
-      document.getElementById('btn-filter-externo').style.opacity = '1';
-      document.getElementById('search-author').value = '';
-
-      if (radialMode) {
-          radialMode = false;
-          simulation.force("radial", null);
-          simulation.force("charge", d3.forceManyBody().strength(-300));
-          if(!nodesFixed) {
-              activeNodes.forEach(n => { n.fx = null; n.fy = null; });
-          }
-      }
-
-      d3.select(canvas).transition().duration(750).call(
-          zoomBehavior.transform, d3.zoomIdentity
-      );
-
-      applyFilters();
+        ctx.restore();
+        drawMinimap();
     }
 
     function zoomIn() {

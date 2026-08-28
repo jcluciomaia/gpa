@@ -165,10 +165,10 @@
     </div>
     <nav class="nav-links">
       <a href="index.html">🏛️ Painel da Turma</a>
-      <a href="producoes.html">📚 Produções</a>
-      <a href="rede.html">🕸 Rede de Colaboração</a>
-      <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
       <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
+      <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
+      <a href="producoes.html">📚 Produções</a>
+      <a href="rede.html">🕸️ Rede de Colaboração</a>
       <a href="cadastro.html" class="active">➕ Cadastrar Produção</a>
       <a href="relatorios.html">📑 Relatórios</a>
       <a href="admin.html">⚙️ Administração</a>
@@ -337,7 +337,6 @@
         </div>
 
       </form>
-        <datalist id="externos-list"></datalist>
     </div>
 
     <!-- Seção de Confirmação e Vínculo de Coautores -->
@@ -398,63 +397,48 @@
 
 
 
-        async function fetchDOI() {
-      let rawDoi = document.getElementById('doi-input').value.trim();
-      let cleanDoi = rawDoi.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '').replace(/^doi:\s*/i, '');
+    async function fetchDOI() {
+      const doiRaw = document.getElementById('doi-input').value.trim();
+      if(!doiRaw) return alert("Insira um DOI válido");
 
-      if(!cleanDoi) return alert("Insira um código DOI válido.");
-
-      const btnSearch = document.getElementById('btn-buscar-doi') || document.querySelector('#tab-doi-content button');
-      if (btnSearch) {
-        btnSearch.disabled = true;
-        btnSearch.innerText = 'Buscando metadados...';
-      }
+      const cleanDoi = doiRaw.replace(/^(https?:\/\/)?(dx\.)?doi\.org\//i, '');
 
       document.getElementById('doi-loading').style.display = 'block';
 
       try {
-        const response = await fetch(`https://api.crossref.org/works/${encodeURIComponent(cleanDoi)}`);
+        const response = await fetch(`https://api.crossref.org/works/${cleanDoi}`);
+
         if (!response.ok) {
-          throw new Error(`DOI não encontrado na base Crossref (Status: ${response.status})`);
+           throw new Error("DOI não encontrado ou erro na API");
         }
 
         const data = await response.json();
-        const item = data.message;
+        const msg = data.message;
 
         document.getElementById('doi-loading').style.display = 'none';
 
-        // Extração real dos metadados
-        const title = item.title && item.title.length > 0 ? item.title[0] : '';
-        const journal = (item['container-title'] && item['container-title'].length > 0) ? item['container-title'][0] : (item.publisher || '');
+        document.getElementById('prod-titulo').value = msg.title ? msg.title[0] : "";
+        document.getElementById('prod-veiculo').value = msg['container-title'] ? msg['container-title'][0] : (msg.publisher || "");
 
-        let year = new Date().getFullYear();
-        if (item['published-print'] && item['published-print']['date-parts']) {
-          year = item['published-print']['date-parts'][0][0];
-        } else if (item['published-online'] && item['published-online']['date-parts']) {
-          year = item['published-online']['date-parts'][0][0];
-        } else if (item.created && item.created['date-parts']) {
-          year = item.created['date-parts'][0][0];
+        let ano = new Date().getFullYear();
+        if (msg.published && msg.published['date-parts'] && msg.published['date-parts'][0]) {
+           ano = msg.published['date-parts'][0][0];
+        } else if (msg.created && msg.created['date-parts']) {
+           ano = msg.created['date-parts'][0][0];
         }
+        document.getElementById('prod-ano').value = ano;
 
         let typeVal = "Artigo para periódicos";
-        if (item.type === "proceedings-article") typeVal = "Artigo para eventos";
-        else if (item.type === "book-chapter") typeVal = "Capítulo de livros";
-        else if (item.type === "book") typeVal = "Livro";
-
-        // Preencher formulário
-        document.getElementById('prod-titulo').value = title;
-        document.getElementById('prod-veiculo').value = journal;
-        document.getElementById('prod-ano').value = year;
+        if (msg.type === "proceedings-article") typeVal = "Artigo para eventos";
+        else if (msg.type === "book-chapter") typeVal = "Capítulo de livros";
+        else if (msg.type === "book") typeVal = "Livro";
         document.getElementById('prod-tipo').value = typeVal;
-        if(typeof togglePTTFields === 'function') togglePTTFields();
+        togglePTTFields();
 
-        // Extrair autores
-        const extractedNames = (item.author || []).map(a => `${a.given || ""} ${a.family || ""}`.trim() || a.name || "Autor Desconhecido");
-
-        if (extractedNames.length > 0) {
+        if (msg.author && msg.author.length > 0) {
+           const extractedNames = msg.author.map(a => `${a.given || ""} ${a.family || ""}`.trim() || a.name || "Autor Desconhecido");
            currentAuthors = linkAuthors(extractedNames);
            if (currentAuthors.length > 0) {
-               currentAuthors.forEach(a => a.is_first_author = false);
                currentAuthors[0].is_first_author = true;
            }
         } else {
@@ -465,19 +449,13 @@
         if (currentAuthors.length === 0) addAuthorManual();
         else renderAuthors();
 
-        // Switch to manual view
         const manualBtn = document.querySelector('[data-target="tab-manual-content"]');
         if(manualBtn) manualBtn.click();
 
       } catch(e) {
-        console.error('Erro ao consultar Crossref:', e);
+        console.error(e);
         document.getElementById('doi-loading').style.display = 'none';
-        alert('Não foi possível localizar os dados deste DOI. Verifique o código digitado ou opte pelo preenchimento manual.');
-      } finally {
-        if (btnSearch) {
-          btnSearch.disabled = false;
-          btnSearch.innerText = 'Buscar';
-        }
+        alert("Atenção: Não foi possível carregar os dados deste DOI. Verifique se o código está correto ou tente preencher manualmente.");
       }
     }
 
@@ -491,9 +469,9 @@
       document.getElementById('prod-tipo').value = "Artigo para eventos";
 
       currentAuthors = [
-            { nome: "Autor Extraído 1", categoria: "docente", is_first_author: true },
-        { nome: "Pesquisador Lattes 1", categoria: "docente" },
-        { nome: "Aluno Lattes 2", categoria: "discente" }
+            { nome: "Autor Extraído 1", type: "docente", is_first_author: true },
+        { nome: "Pesquisador Lattes 1", type: "docente" },
+        { nome: "Aluno Lattes 2", type: "discente" }
       ];
 
       document.getElementById('section-autores').style.display = 'block';
@@ -502,7 +480,7 @@
     }
 
     function addAuthorManual() {
-      const isFirst = currentAuthors.length === 0; currentAuthors.push({ nome: "", categoria: "externo", is_first_author: isFirst });
+      const isFirst = currentAuthors.length === 0; currentAuthors.push({ nome: "", type: "externo", is_first_author: isFirst });
       document.getElementById('section-autores').style.display = 'block';
       renderAuthors();
     }
@@ -521,32 +499,9 @@
       currentAuthors[index].nome = val;
     }
 
-    function updateAuthorType(idx, val) {
-        currentAuthors[idx].categoria = val;
-        currentAuthors[idx].nome = "";
-        currentAuthors[idx].id = "";
-
-        // Update DOM surgically instead of full re-render
-        const container = document.getElementById(`author-input-container-${idx}`);
-        if(container) {
-            let inputHtml = '';
-            if(val === 'docente') {
-              const sortedDocentes = [...estruturaData.docentes].sort((x,y) => x.nome.localeCompare(y.nome));
-              inputHtml = `<select onchange="updateAuthorFromSelect(${idx}, this)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
-                <option value="">Selecione o Docente...</option>
-                ${sortedDocentes.map(d => `<option value="${d.id}" data-nome="${d.nome}">${d.nome}</option>`).join('')}
-              </select>`;
-            } else if (val === 'discente') {
-              const sortedDiscentes = [...estruturaData.discentes].sort((x,y) => x.nome.localeCompare(y.nome));
-              inputHtml = `<select onchange="updateAuthorFromSelect(${idx}, this)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
-                <option value="">Selecione o Discente...</option>
-                ${sortedDiscentes.map(d => `<option value="${d.id}" data-nome="${d.nome}">${d.nome}</option>`).join('')}
-              </select>`;
-            } else {
-              inputHtml = `<input type="text" list="externos-list" placeholder="Nome do Externo (Digite ou selecione)" onchange="updateAuthorFromInput(${idx}, this.value)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">`;
-            }
-            container.innerHTML = inputHtml;
-        }
+    function updateAuthorType(index, val) {
+      currentAuthors[index].type = val;
+      renderAuthors(); // re-render to update the linkage select box
     }
 
     function updateAuthorLink(index, val) {
@@ -558,62 +513,40 @@
       container.innerHTML = '';
 
       currentAuthors.forEach((a, i) => {
-        let inputHtml = '';
+        let linkSelectHtml = '';
 
-        if(a.categoria === 'docente') {
-          const sortedDocentes = [...estruturaData.docentes].sort((x,y) => x.nome.localeCompare(y.nome));
-          inputHtml = `<select onchange="updateAuthorFromSelect(${i}, this)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
-            <option value="">Selecione o Docente...</option>
-            ${sortedDocentes.map(d => `<option value="${d.id}" data-nome="${d.nome}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
+        if(a.type === 'docente') {
+          linkSelectHtml = `<select onchange="updateAuthorLink(${i}, this.value)">
+            <option value="">Vincular a Docente...</option>
+            ${estruturaData.docentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
           </select>`;
-        } else if (a.categoria === 'discente') {
-          const sortedDiscentes = [...estruturaData.discentes].sort((x,y) => x.nome.localeCompare(y.nome));
-          inputHtml = `<select onchange="updateAuthorFromSelect(${i}, this)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
-            <option value="">Selecione o Discente...</option>
-            ${sortedDiscentes.map(d => `<option value="${d.id}" data-nome="${d.nome}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
+        } else if (a.type === 'discente') {
+          linkSelectHtml = `<select onchange="updateAuthorLink(${i}, this.value)">
+            <option value="">Vincular a Discente...</option>
+            ${estruturaData.discentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
           </select>`;
         } else {
-          inputHtml = `<input type="text" list="externos-list" value="${a.nome}" placeholder="Nome do Externo (Digite ou selecione)" onchange="updateAuthorFromInput(${i}, this.value)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">`;
+          linkSelectHtml = `<select disabled><option>Externo (Sem Vínculo GPA)</option></select>`;
         }
 
         const div = document.createElement('div');
         div.className = 'author-row';
-        div.style.display = 'grid';
-        div.style.gridTemplateColumns = 'auto 1fr 2fr auto';
-        div.style.gap = '12px';
-        div.style.alignItems = 'center';
-        div.style.background = '#f8fafc';
-        div.style.padding = '12px';
-        div.style.borderRadius = '6px';
-        div.style.border = '1px solid var(--border)';
-
+        div.style.gridTemplateColumns = 'auto 2fr 1fr 1fr auto';
         div.innerHTML = `
           <div style="text-align: center;" title="Marcar como 1º Autor">
              <input type="radio" name="first_author" value="${i}" ${a.is_first_author ? 'checked' : ''} onchange="updateFirstAuthor(${i})">
           </div>
-          <select onchange="updateAuthorType(${i}, this.value)" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
-            <option value="externo" ${a.categoria === 'externo' ? 'selected' : ''}>Externo</option>
-            <option value="docente" ${a.categoria === 'docente' ? 'selected' : ''}>Docente PPG</option>
-            <option value="discente" ${a.categoria === 'discente' ? 'selected' : ''}>Discente PPG</option>
+          <input type="text" value="${a.nome}" placeholder="Nome do Autor" onchange="updateAuthorName(${i}, this.value)">
+          <select onchange="updateAuthorType(${i}, this.value)">
+            <option value="externo" ${a.type === 'externo' ? 'selected' : ''}>Externo</option>
+            <option value="docente" ${a.type === 'docente' ? 'selected' : ''}>Docente PPG</option>
+            <option value="discente" ${a.type === 'discente' ? 'selected' : ''}>Discente PPG</option>
           </select>
-          <div id="author-input-container-${i}" style="width: 100%;">${inputHtml}</div>
-          <button style="background: #fee2e2; color: #ef4444; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;" onclick="removeAuthor(${i})">X</button>
+          ${linkSelectHtml}
+          <button class="btn-remove" onclick="removeAuthor(${i})">X</button>
         `;
         container.appendChild(div);
       });
-    }
-
-    function updateAuthorFromSelect(idx, selectEl) {
-        const option = selectEl.options[selectEl.selectedIndex];
-        currentAuthors[idx].id = option.value;
-        currentAuthors[idx].nome = option.getAttribute('data-nome') || '';
-    }
-
-    function updateAuthorFromInput(idx, val) {
-        if(!val) return;
-        const normalized = typeof capitalizeName === 'function' ? capitalizeName(val) : val;
-        currentAuthors[idx].nome = normalized;
-        currentAuthors[idx].id = "EXT_" + (typeof formatAuthorName === 'function' ? formatAuthorName(normalized) : val.replace(/\s+/g, '_').toLowerCase());
     }
 
     function salvarProducao() {
@@ -672,16 +605,26 @@
         autores: currentAuthors.map((a, idx) => ({
           id: a.id || ("EXT_" + formatAuthorName(a.nome || "")),
           nome: a.nome || "Autor Desconhecido",
-          categoria: a.categoria,
+          categoria: a.type,
           ordem: idx + 1,
           is_first_author: a.is_first_author || false
         }))
       };
 
+      // Retrieve existing, add, save
+      let localProd = localStorage.getItem('gpa_productions');
+      let prodList = [];
+      if(localProd) {
+        prodList = JSON.parse(localProd);
+      } else {
+        // if none in local storage we should ideally fetch data/producoes.json, but for simulation we just create array
+        prodList = [];
+      }
+
       prodList.push(newProd);
       localStorage.setItem('gpa_productions', JSON.stringify(prodList));
 
-      alert("Produção salva com sucesso!");
+      alert("Produção cadastrada e vinculada com sucesso! O Score CAPES será atualizado.");
       window.location.href = 'producoes.html';
     }
 
