@@ -611,10 +611,20 @@
         }))
       };
 
+      // Retrieve existing, add, save
+      let localProd = localStorage.getItem('gpa_productions');
+      let prodList = [];
+      if(localProd) {
+        prodList = JSON.parse(localProd);
+      } else {
+        // if none in local storage we should ideally fetch data/producoes.json, but for simulation we just create array
+        prodList = [];
+      }
+
       prodList.push(newProd);
       localStorage.setItem('gpa_productions', JSON.stringify(prodList));
 
-      alert("Produção salva com sucesso!");
+      alert("Produção cadastrada e vinculada com sucesso! O Score CAPES será atualizado.");
       window.location.href = 'producoes.html';
     }
 
