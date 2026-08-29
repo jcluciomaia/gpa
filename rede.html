@@ -188,7 +188,14 @@
         </div>
     </div>
 
-    <input type="text" id="search-author" placeholder="Buscar autor..." oninput="applyFilters()" style="padding: 6px 12px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px;">
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <label style="font-size:12px; margin-bottom:5px;">Foco da Rede</label>
+      <select id="select-focus-author" onchange="applyEgoNetwork()" style="padding: 6px 12px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px; min-width: 300px;">
+        <option value="ALL">🌐 Visão Geral da Turma (Rede Completa)</option>
+        <optgroup id="opt-docentes" label="👨‍🏫 Docentes"></optgroup>
+        <optgroup id="opt-discentes" label="🎓 Discentes"></optgroup>
+      </select>
+    </div>
 
     <div class="controls" style="display: flex; gap: 5px;">
         <button onclick="zoomIn()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Zoom +</button>
@@ -208,9 +215,18 @@
         <h2 id="panel-title">Detalhes do Autor</h2>
         <button class="close-btn" onclick="closePanel()">✕</button>
       </div>
+
+      <div id="ego-summary" style="display: none; background: #e0f2fe; padding: 10px; border-radius: 6px; margin: 15px; border: 1px solid #bae6fd;">
+        <h4 style="font-size: 12px; color: var(--primary); margin-bottom: 6px;">Resumo da Ego-Rede</h4>
+        <div style="font-size: 11px; color: #334155; display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Coautores Totais:</span> <strong id="ego-total-coauthors">0</strong></div>
+        <div style="font-size: 11px; color: #334155; display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Docentes (PPG):</span> <strong id="ego-docentes">0</strong></div>
+        <div style="font-size: 11px; color: #334155; display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Discentes (PPG):</span> <strong id="ego-discentes">0</strong></div>
+        <div style="font-size: 11px; color: #334155; display: flex; justify-content: space-between;"><span>Externos:</span> <strong id="ego-externos">0</strong></div>
+      </div>
+
       <div class="author-info" id="author-info"></div>
-      <h3 style="font-size: 13px; color: #475569; margin-bottom: 10px;">Produções (<span id="prod-count">0</span>)</h3>
-      <div class="prod-list" id="prod-list"></div>
+      <h3 style="font-size: 13px; color: #475569; margin-bottom: 10px; padding: 0 15px;">Produções (<span id="prod-count">0</span>)</h3>
+      <div class="prod-list" id="prod-list" style="padding: 0 15px;"></div>
     </div>
   </div>
 
@@ -247,6 +263,30 @@
       } catch (e) {
         console.error("Erro ao carregar dados", e);
       }
+    }
+
+    function populateEgoSelectors() {
+        const optDoc = document.getElementById("opt-docentes");
+        const optDisc = document.getElementById("opt-discentes");
+        optDoc.innerHTML = "";
+        optDisc.innerHTML = "";
+
+        const docentes = graphData.nodes.filter(n => n.categoria === 'docente').sort((a,b) => a.nome.localeCompare(b.nome));
+        const discentes = graphData.nodes.filter(n => n.categoria === 'discente').sort((a,b) => a.nome.localeCompare(b.nome));
+
+        docentes.forEach(d => {
+            const opt = document.createElement("option");
+            opt.value = d.id;
+            opt.text = d.nome;
+            optDoc.appendChild(opt);
+        });
+
+        discentes.forEach(d => {
+            const opt = document.createElement("option");
+            opt.value = d.id;
+            opt.text = d.nome;
+            optDisc.appendChild(opt);
+        });
     }
 
     function buildGraphData() {
@@ -358,9 +398,11 @@
       // Prepare edges (D3 expects source and target to be object references or indices, but handles ids string too if configured)
       activeEdges = graphData.edges.map(e => ({...e}));
 
+      populateEgoSelectors();
+
       simulation = d3.forceSimulation(activeNodes)
-        .force("link", d3.forceLink(activeEdges).id(d => d.id).distance(120))
-        .force("charge", d3.forceManyBody().strength(-450))
+        .force("link", d3.forceLink(activeEdges).id(d => d.id).distance(130))
+        .force("charge", d3.forceManyBody().strength(-350))
         .force("center", d3.forceCenter(width / 2, height / 2))
         .force("collide", d3.forceCollide().radius(d => getRadius(d) + 15).iterations(2))
         .on("tick", draw);
@@ -390,6 +432,72 @@
       if(cat === 'docente') return '#005484';
       if(cat === 'discente') return '#00897C';
       return '#718096';
+    }
+
+    let radialMode = false;
+
+    function applyEgoNetwork() {
+        const selectedId = document.getElementById("select-focus-author").value;
+        if(selectedId === "ALL") {
+            radialMode = false;
+            activeNodes = [...graphData.nodes];
+            activeEdges = graphData.edges.map(e => ({...e}));
+            initSimulation();
+            document.getElementById("ego-summary").style.display = "none";
+            return;
+        }
+        const node = graphData.nodes.find(n => n.id === selectedId);
+        if(!node) return;
+        egoNetwork(node);
+    }
+
+    function egoNetwork(node) {
+        if (!node) return;
+
+        radialMode = true;
+
+        // Find connected nodes
+        const connectedNodes = new Set();
+        connectedNodes.add(node.id);
+
+        graphData.edges.forEach(e => {
+            const sourceId = e.source.id || e.source;
+            const targetId = e.target.id || e.target;
+
+            if (sourceId === node.id) connectedNodes.add(targetId);
+            if (targetId === node.id) connectedNodes.add(sourceId);
+        });
+
+        // Filter activeNodes and activeEdges
+        activeNodes = graphData.nodes.filter(n => connectedNodes.has(n.id));
+        activeEdges = graphData.edges.filter(l => {
+            const sourceId = l.source.id || l.source;
+            const targetId = l.target.id || l.target;
+            return connectedNodes.has(sourceId) && connectedNodes.has(targetId);
+        });
+
+        // Update Side Panel Summary
+        document.getElementById("ego-summary").style.display = "block";
+        const egoNodes = activeNodes.filter(n => n.id !== node.id);
+        document.getElementById("ego-total-coauthors").innerText = egoNodes.length;
+        document.getElementById("ego-docentes").innerText = egoNodes.filter(n => n.categoria === "docente").length;
+        document.getElementById("ego-discentes").innerText = egoNodes.filter(n => n.categoria === "discente").length;
+        document.getElementById("ego-externos").innerText = egoNodes.filter(n => n.categoria === "externo").length;
+
+        // Update Dropdown to match
+        const select = document.getElementById("select-focus-author");
+        if(select.value !== node.id) {
+            select.value = node.id;
+        }
+
+        initSimulation();
+
+        // Apply specific ego network forces after initSimulation which resets them
+        simulation
+            .force("charge", d3.forceManyBody().strength(-150))
+            .force("radial", d3.forceRadial(d => connectedNodes.has(d.id) && d.id !== node.id ? 150 : 400, width / 2, height / 2).strength(0.8));
+
+        simulation.alpha(1).restart();
     }
 
     function draw() {
@@ -539,15 +647,14 @@
                 e.subject.fy = e.subject.y;
             })
             .on("drag", (e) => {
-                e.subject.fx = transform.invertX(e.x);
-                e.subject.fy = transform.invertY(e.y);
+                e.subject.fx = transform.invertX(e.sourceEvent.x);
+                e.subject.fy = transform.invertY(e.sourceEvent.y);
+                e.sourceEvent.stopPropagation();
             })
             .on("end", (e) => {
                 if (!e.active) simulation.alphaTarget(0);
-                if (!nodesFixed) {
-                    e.subject.fx = null;
-                    e.subject.fy = null;
-                }
+                e.subject.fx = e.subject.x;
+                e.subject.fy = e.subject.y;
             }));
 
         // Hover & Click
@@ -595,11 +702,8 @@
     }
 
     function applyFilters() {
-      const search = document.getElementById('search-author').value.toLowerCase();
-
       activeNodes = graphData.nodes.filter(n => {
           if(!activeFilters[n.categoria]) return false;
-          if(search && !n.nome.toLowerCase().includes(search)) return false;
           return true;
       });
 
@@ -624,7 +728,7 @@
       if (radialMode) {
           radialMode = false;
           simulation.force("radial", null);
-          simulation.force("charge", d3.forceManyBody().strength(-450));
+          simulation.force("charge", d3.forceManyBody().strength(-300));
           if(!nodesFixed) {
               activeNodes.forEach(n => { n.fx = null; n.fy = null; });
           }
@@ -683,40 +787,6 @@
         draw();
     }
 
-    let radialMode = false;
-    function egoNetwork(node) {
-        if (!node) return;
-
-        radialMode = true;
-
-        // Find connected nodes
-        const connectedNodes = new Set();
-        connectedNodes.add(node.id);
-
-        activeEdges.forEach(e => {
-            const sourceId = e.source.id || e.source;
-            const targetId = e.target.id || e.target;
-
-            if (sourceId === node.id) connectedNodes.add(targetId);
-            if (targetId === node.id) connectedNodes.add(sourceId);
-        });
-
-        // Apply forces
-        simulation
-            .force("charge", d3.forceManyBody().strength(-150))
-            .force("radial", d3.forceRadial(d => connectedNodes.has(d.id) && d.id !== node.id ? 150 : 400, width / 2, height / 2).strength(0.8));
-
-        // Fix the center node to the middle of the screen
-        node.fx = width / 2;
-        node.fy = height / 2;
-
-        simulation.alpha(1).restart();
-
-        // Center viewport
-        d3.select(canvas).transition().duration(750).call(
-            zoomBehavior.transform, d3.zoomIdentity.translate(0, 0).scale(1)
-        );
-    }
 
     function selectNode(node) {
         selectedNode = node;
