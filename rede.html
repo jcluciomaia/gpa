@@ -359,10 +359,10 @@
       activeEdges = graphData.edges.map(e => ({...e}));
 
       simulation = d3.forceSimulation(activeNodes)
-        .force("link", d3.forceLink(activeEdges).id(d => d.id).distance(100))
-        .force("charge", d3.forceManyBody().strength(-300))
+        .force("link", d3.forceLink(activeEdges).id(d => d.id).distance(120))
+        .force("charge", d3.forceManyBody().strength(-450))
         .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("collide", d3.forceCollide().radius(d => getRadius(d) + 2).iterations(2))
+        .force("collide", d3.forceCollide().radius(d => getRadius(d) + 15).iterations(2))
         .on("tick", draw);
 
       setupInteractions();
@@ -387,9 +387,9 @@
 
     function getColor(categoria) {
       const cat = (categoria || '').toLowerCase();
-      if(cat === 'docente') return '#4fa8d4';
-      if(cat === 'discente') return '#00887E';
-      return '#858688';
+      if(cat === 'docente') return '#005484';
+      if(cat === 'discente') return '#00897C';
+      return '#718096';
     }
 
     function draw() {
@@ -624,7 +624,7 @@
       if (radialMode) {
           radialMode = false;
           simulation.force("radial", null);
-          simulation.force("charge", d3.forceManyBody().strength(-300));
+          simulation.force("charge", d3.forceManyBody().strength(-450));
           if(!nodesFixed) {
               activeNodes.forEach(n => { n.fx = null; n.fy = null; });
           }

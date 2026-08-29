@@ -397,7 +397,7 @@
 
 
 
-    async function fetchDOI() {
+    window.fetchDOI = async function fetchDOI() {
       const doiRaw = document.getElementById('doi-input').value.trim();
       if(!doiRaw) return alert("Insira um DOI válido");
 
@@ -553,10 +553,10 @@
       const titulo = document.getElementById('prod-titulo').value;
       if(!titulo) return alert("O título é obrigatório");
 
-      let localProd = localStorage.getItem('gpa_productions');
-      let prodList = localProd ? JSON.parse(localProd) : [];
+      let saveProdRaw = localStorage.getItem('gpa_productions');
+      let currentProdList = saveProdRaw ? JSON.parse(saveProdRaw) : [];
 
-      const duplicate = prodList.find(p => p.titulo.toLowerCase() === titulo.toLowerCase());
+      const duplicate = currentProdList.find(p => p.titulo.toLowerCase() === titulo.toLowerCase());
       if (duplicate) {
         if (!confirm("Aviso: Uma produção com este título já existe na base. Deseja vinculá-la como coautor na produção existente em vez de criar uma duplicata?")) {
            return;
@@ -573,7 +573,7 @@
                    });
                }
            });
-           localStorage.setItem('gpa_productions', JSON.stringify(prodList));
+           localStorage.setItem('gpa_productions', JSON.stringify(currentProdList));
            alert("Coautores vinculados à produção existente com sucesso!");
            window.location.href = 'producoes.html';
            return;
@@ -612,17 +612,17 @@
       };
 
       // Retrieve existing, add, save
-      let localProd = localStorage.getItem('gpa_productions');
-      let prodList = [];
-      if(localProd) {
-        prodList = JSON.parse(localProd);
+      let existingProdRaw = localStorage.getItem('gpa_productions');
+      let finalProdList = [];
+      if(existingProdRaw) {
+        finalProdList = JSON.parse(existingProdRaw);
       } else {
         // if none in local storage we should ideally fetch data/producoes.json, but for simulation we just create array
-        prodList = [];
+        finalProdList = [];
       }
 
-      prodList.push(newProd);
-      localStorage.setItem('gpa_productions', JSON.stringify(prodList));
+      finalProdList.push(newProd);
+      localStorage.setItem('gpa_productions', JSON.stringify(finalProdList));
 
       alert("Produção cadastrada e vinculada com sucesso! O Score CAPES será atualizado.");
       window.location.href = 'producoes.html';
@@ -952,8 +952,8 @@
         return alert("Selecione ao menos uma produção para salvar.");
       }
 
-      let localProd = localStorage.getItem('gpa_productions');
-      let prodList = localProd ? JSON.parse(localProd) : [];
+      let xmlProdRaw = localStorage.getItem('gpa_productions');
+      let prodList = xmlProdRaw ? JSON.parse(xmlProdRaw) : [];
       let adicionadas = 0;
       let duplicadas = 0;
 
