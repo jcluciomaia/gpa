@@ -1,779 +1,856 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Gestão Acadêmica — Rede de Colaboração</title>
-  <!-- D3.js for Force Simulation -->
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    :root {
-      --gray: #848688;
-      --accent: #FDB92E;
-      --secondary: #00897C;
-      --primary-hover: #003e62;
-      --primary: #005484;
-      --docente-color: #005484;
-      --discente-color: #00897C;
-      --externo-color: #848688;
-      --bg: #f4f7fa;
-      --border: #d0dce8;
-      --text: #373435;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-    body { background: var(--bg); color: var(--text); overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
-
-    header {
-      background: var(--primary);
-      color: white;
-      padding: 0 24px 0 0; height: 76px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      z-index: 10;
-    }
-    header h1 { font-size: 16px; font-weight: 600; }
-    header .nav-links a { color: #a8d0e8; text-decoration: none; font-size: 13px; margin-left: 15px; }
-    header .nav-links a:hover { color: #fff; }
-    header .nav-links a.active { color: #fff; font-weight: bold; }
-
-    .toolbar {
-      background: white;
-      border-bottom: 1px solid var(--border);
-      padding: 10px 24px;
-      display: flex;
-      gap: 15px;
-      align-items: center;
-      z-index: 9;
-    }
-    .toolbar select, .toolbar input {
-      padding: 6px 10px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      font-size: 12px;
-      outline: none;
-    }
-
-    .legend {
-      display: flex;
-      gap: 10px;
-      font-size: 12px;
-      margin-left: auto;
-    }
-    .legend-item { display: flex; align-items: center; gap: 4px; }
-    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-
-    .main-area {
-      display: flex;
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-    }
-
-    canvas {
-      flex: 1;
-      cursor: grab;
-      background: #fafcff;
-    }
-    canvas:active { cursor: grabbing; }
-
-    /* Minimap */
-    #minimap {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      width: 150px;
-      height: 150px;
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      cursor: crosshair;
-    }
-
-    /* Side Panel */
-    .side-panel {
-      width: 320px;
-      background: white;
-      border-left: 1px solid var(--border);
-      padding: 20px;
-      overflow-y: auto;
-      box-shadow: -2px 0 5px rgba(0,0,0,0.05);
-      display: flex;
-      flex-direction: column;
-      position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      transform: translateX(100%);
-      transition: transform 0.3s ease-in-out;
-      z-index: 5;
-    }
-    .side-panel.active { transform: translateX(0); }
-
-    .panel-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 10px;
-    }
-    .panel-header h2 { font-size: 16px; color: var(--primary); }
-    .close-btn { cursor: pointer; color: #888; font-weight: bold; border: none; background: none; font-size: 16px; }
-
-    .author-info { margin-bottom: 20px; font-size: 13px; }
-    .author-info p { margin-bottom: 5px; }
-
-    .badge-author {
-      font-size: 11px;
-      padding: 2px 6px;
-      border-radius: 12px;
-      color: #fff;
-      display: inline-block;
-      margin-right: 4px;
-      margin-bottom: 4px;
-    }
-    .badge-docente { background: var(--docente-color); }
-    .badge-discente { background: var(--discente-color); }
-    .badge-externo { background: var(--externo-color); }
-
-    .prod-list { display: flex; flex-direction: column; gap: 10px; }
-    .prod-card {
-      border: 1px solid var(--border);
-      padding: 10px;
-      border-radius: 6px;
-      background: #f8fafc;
-      font-size: 12px;
-    }
-    .prod-card h4 { color: var(--primary); font-size: 12px; margin-bottom: 4px; }
-  </style>
-</head>
-<body>
-
-  <header>
-    <div style="display: flex; align-items: center; height: 100%;">
-      <div style="background: white; padding: 14px 24px; display: flex; align-items: center; justify-content: center; height: 100%; box-sizing: border-box;">
-        <img src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png" alt="UFT" style="height: 48px;">
-      </div>
-      <h1 style="font-size: 22px; font-weight: 600; margin: 0; margin-left: 24px;">Gestão da Produção Acadêmica - GPA</h1>
-    </div>
-    <nav class="nav-links">
-      <a href="index.html">🏛️ Painel da Turma</a>
-      <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
-      <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
-      <a href="producoes.html">📚 Produções</a>
-      <a href="rede.html" class="active">🕸️ Rede de Colaboração</a>
-      <a href="cadastro.html">➕ Cadastrar Produção</a>
-      <a href="relatorios.html">📑 Relatórios</a>
-      <a href="admin.html">⚙️ Administração</a>
-    </nav>
-  </header>
-
-  <div class="toolbar" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 12px 24px; background: white; border-bottom: 1px solid var(--border);">
-    <div class="quick-filters" style="display: flex; gap: 8px; align-items: center;">
-        <button id="btn-filter-docente" onclick="toggleFilter('docente')" style="background: var(--docente-color); color: white; border: none; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 11px; opacity: 1;">Docentes</button>
-        <button id="btn-filter-discente" onclick="toggleFilter('discente')" style="background: var(--discente-color); color: white; border: none; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 11px; opacity: 1;">Discentes</button>
-        <button id="btn-filter-externo" onclick="toggleFilter('externo')" style="background: var(--externo-color); color: white; border: none; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 11px; opacity: 1;">Externos</button>
-
-        <label style="font-size: 12px; margin-left: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-          <input type="checkbox" id="ocultar-externos" onchange="applyFilters()"> Ocultar Autores Externos (Focar PPG)
-        </label>
-
-        <div style="margin-left: 12px; font-size: 12px; display: flex; align-items: center; gap: 4px;">
-          Intensidade mín. colaborações:
-          <input type="number" id="min-degree" value="0" min="0" style="width: 50px; padding: 4px; font-size: 11px; border: 1px solid var(--border); border-radius: 4px;" onchange="applyFilters()">
-        </div>
-    </div>
-
-    <input type="text" id="search-author" placeholder="Buscar autor..." oninput="applyFilters()" style="padding: 6px 12px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px;">
-
-    <div class="controls" style="display: flex; gap: 5px;">
-        <button onclick="zoomIn()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Zoom +</button>
-        <button onclick="zoomOut()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Zoom -</button>
-        <button onclick="resetView()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Resetar</button>
-        <button onclick="toggleFixNodes()" id="btn-fix-nodes" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Fixar Nós</button>
-        <button onclick="exportPNG()" style="padding: 6px 10px; border: 1px solid var(--border); background: var(--primary); color: white; cursor:pointer; border-radius:4px; font-size:12px;">Exportar PNG</button>
-    </div>
-  </div>
-
-  <div class="main-area">
-    <canvas id="network-canvas"></canvas>
-    <canvas id="minimap"></canvas>
-
-    <div class="side-panel" id="side-panel">
-      <div class="panel-header">
-        <h2 id="panel-title">Detalhes do Autor</h2>
-        <button class="close-btn" onclick="closePanel()">✕</button>
-      </div>
-      <div class="author-info" id="author-info"></div>
-      <h3 style="font-size: 13px; color: #475569; margin-bottom: 10px;">Produções (<span id="prod-count">0</span>)</h3>
-      <div class="prod-list" id="prod-list"></div>
-    </div>
-  </div>
-
-  <script>
-    let productionsData = [];
-    let estruturaData = { docentes: [], discentes: [] };
-    let nodes = [];
-    let edges = [];
-
-    // Estrutura de grafos
-    let graphData = { nodes: [], edges: [] };
-
-    async function loadData() {
-      try {
-        // Carrega estrutura GPA
-        const localEst = localStorage.getItem('gta_estrutura');
-        if (localEst) {
-            estruturaData = JSON.parse(localEst);
-        } else {
-            const estRes = await fetch('data/estrutura_gpa.json');
-            if (estRes.ok) estruturaData = await estRes.json();
-        }
-
-        // Tenta carregar do localStorage primeiro
-        const localProd = localStorage.getItem('gpa_productions');
-        if (localProd) {
-          productionsData = JSON.parse(localProd);
-        } else {
-          const prodRes = await fetch('data/producoes.json');
-          if (prodRes.ok) productionsData = await prodRes.json();
-        }
-
-        buildGraphData();
-      } catch (e) {
-        console.error("Erro ao carregar dados", e);
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Gestão Acadêmica — Rede de Colaboração</title>
+    <!-- D3.js for Force Simulation -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      :root {
+        --gray: #848688;
+        --accent: #fdb92e;
+        --secondary: #00897c;
+        --primary-hover: #003e62;
+        --primary: #005484;
+        --docente-color: #005484;
+        --discente-color: #00897c;
+        --externo-color: #848688;
+        --bg: #f4f7fa;
+        --border: #d0dce8;
+        --text: #373435;
       }
-    }
 
-    function buildGraphData() {
-      const nodeMap = new Map();
-      const edgeMap = new Map();
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+          sans-serif;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
 
-      // Primeiro, popula todos os docentes e discentes da estrutura (mesmo sem produção)
-      (estruturaData.docentes || []).forEach(d => {
-          nodeMap.set(d.id, {
-              id: d.id,
-              nome: d.nome,
-              categoria: 'docente',
-              productions: [],
-              weight: 0
-          });
-      });
-      (estruturaData.discentes || []).forEach(d => {
-          nodeMap.set(d.id, {
-              id: d.id,
-              nome: d.nome,
-              categoria: 'discente',
-              productions: [],
-              weight: 0
-          });
-          // Cria aresta de orientação com o professor (peso base 0, aumentará com produções)
-          if(d.orientador_id) {
-              const source = d.id < d.orientador_id ? d.id : d.orientador_id;
-              const target = d.id < d.orientador_id ? d.orientador_id : d.id;
-              edgeMap.set(`${source}-${target}`, { source, target, weight: 1, orientacao: true });
+      header {
+        background: var(--primary);
+        color: white;
+        padding: 0 24px 0 0;
+        height: 76px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        z-index: 10;
+      }
+      header h1 {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      header .nav-links a {
+        color: #a8d0e8;
+        text-decoration: none;
+        font-size: 13px;
+        margin-left: 15px;
+      }
+      header .nav-links a:hover {
+        color: #fff;
+      }
+      header .nav-links a.active {
+        color: #fff;
+        font-weight: bold;
+      }
+
+      .toolbar {
+        background: white;
+        border-bottom: 1px solid var(--border);
+        padding: 10px 24px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        z-index: 9;
+      }
+      .toolbar select,
+      .toolbar input {
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 12px;
+        outline: none;
+      }
+
+      .legend {
+        display: flex;
+        gap: 10px;
+        font-size: 12px;
+        margin-left: auto;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      .main-area {
+        display: flex;
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+      }
+
+      canvas {
+        flex: 1;
+        cursor: grab;
+        background: #fafcff;
+      }
+      canvas:active {
+        cursor: grabbing;
+      }
+
+      /* Minimap */
+      #minimap {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        width: 150px;
+        height: 150px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        cursor: crosshair;
+      }
+
+      /* Side Panel */
+      .side-panel {
+        width: 320px;
+        background: white;
+        border-left: 1px solid var(--border);
+        padding: 20px;
+        overflow-y: auto;
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 5;
+      }
+      .side-panel.active {
+        transform: translateX(0);
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 10px;
+      }
+      .panel-header h2 {
+        font-size: 16px;
+        color: var(--primary);
+      }
+      .close-btn {
+        cursor: pointer;
+        color: #888;
+        font-weight: bold;
+        border: none;
+        background: none;
+        font-size: 16px;
+      }
+
+      .author-info {
+        margin-bottom: 20px;
+        font-size: 13px;
+      }
+      .author-info p {
+        margin-bottom: 5px;
+      }
+
+      .badge-author {
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 12px;
+        color: #fff;
+        display: inline-block;
+        margin-right: 4px;
+        margin-bottom: 4px;
+      }
+      .badge-docente {
+        background: var(--docente-color);
+      }
+      .badge-discente {
+        background: var(--discente-color);
+      }
+      .badge-externo {
+        background: var(--externo-color);
+      }
+
+      .prod-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .prod-card {
+        border: 1px solid var(--border);
+        padding: 10px;
+        border-radius: 6px;
+        background: #f8fafc;
+        font-size: 12px;
+      }
+      .prod-card h4 {
+        color: var(--primary);
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div style="display: flex; align-items: center; height: 100%">
+        <div
+          style="
+            background: white;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            box-sizing: border-box;
+          "
+        >
+          <img
+            src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png"
+            alt="UFT"
+            style="height: 48px"
+          />
+        </div>
+        <h1
+          style="
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+            margin-left: 24px;
+          "
+        >
+          Gestão da Produção Acadêmica - GPA
+        </h1>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html">🏛️ Painel da Turma</a>
+        <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
+        <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
+        <a href="producoes.html">📚 Produções</a>
+        <a href="rede.html" class="active">🕸️ Rede de Colaboração</a>
+        <a href="cadastro.html">➕ Cadastrar Produção</a>
+        <a href="relatorios.html">📑 Relatórios</a>
+        <a href="admin.html">⚙️ Administração</a>
+      </nav>
+    </header>
+
+    <div
+      class="toolbar"
+      style="
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 24px;
+        background: white;
+        border-bottom: 1px solid var(--border);
+      "
+    >
+      <div style="display: flex; gap: 12px; align-items: center; flex: 1">
+        <label
+          for="authorSelect"
+          style="font-size: 13px; font-weight: 600; color: var(--primary)"
+          >Selecionar Autor:</label
+        >
+        <select
+          id="authorSelect"
+          class="form-select"
+          style="
+            min-width: 300px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 13px;
+          "
+          onchange="renderEgoNetwork()"
+        >
+          <option value="">Selecione um autor...</option>
+          <optgroup label="🎓 Discentes" id="opt-discentes"></optgroup>
+          <optgroup label="👨‍🏫 Docentes" id="opt-docentes"></optgroup>
+        </select>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 15px">
+        <div
+          id="network-stats"
+          style="font-size: 12px; display: none; align-items: center; gap: 10px"
+        >
+          <span
+            style="
+              background: #e4eef7;
+              color: var(--primary);
+              padding: 4px 8px;
+              border-radius: 12px;
+            "
+            >👥 <span id="stat-partners">0</span> parceiros</span
+          >
+          <span
+            style="
+              background: #eef2f6;
+              color: #475569;
+              padding: 4px 8px;
+              border-radius: 12px;
+            "
+            >📄 <span id="stat-articles">0</span> artigos em comum</span
+          >
+        </div>
+        <button
+          onclick="exportPNG()"
+          style="
+            padding: 8px 16px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          "
+        >
+          📸 Exportar PNG
+        </button>
+      </div>
+    </div>
+
+    <div class="main-area" id="main-area">
+      <svg
+        id="network-svg"
+        style="width: 100%; height: 100%; cursor: grab; background: #fafcff"
+      ></svg>
+      <div
+        id="empty-state"
+        style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          text-align: center;
+          color: #64748b;
+          font-size: 14px;
+        "
+      >
+        Selecione um autor na barra superior para visualizar sua Ego-Rede.
+      </div>
+
+      <div class="side-panel" id="side-panel">
+        <div class="panel-header">
+          <h2 id="panel-title">Colaboração</h2>
+          <button class="close-btn" onclick="closePanel()">✕</button>
+        </div>
+        <div class="author-info" id="author-info"></div>
+        <h3 style="font-size: 13px; color: #475569; margin-bottom: 10px">
+          Produções Conjuntas (<span id="prod-count">0</span>)
+        </h3>
+        <div class="prod-list" id="prod-list"></div>
+      </div>
+    </div>
+
+    <script>
+      let productionsData = [];
+      let estruturaData = { docentes: [], discentes: [] };
+      let nodes = [];
+      let edges = [];
+
+      // Estado
+      let allAuthors = new Map(); // Mapa de key -> dados do autor
+      let egoData = null; // Dados processados da rede atual
+
+      async function loadData() {
+        try {
+          // Carrega estrutura GPA
+          const localEst = localStorage.getItem("gta_estrutura"); // Note: it might be a typo in original code 'gta_estrutura', keeping it as is or fallback to gpa_structure in case
+          let estStr = localEst || localStorage.getItem("gpa_structure");
+          if (estStr) {
+            estruturaData = JSON.parse(estStr);
+          } else {
+            const estRes = await fetch("data/estrutura_gpa.json");
+            if (estRes.ok) estruturaData = await estRes.json();
           }
-      });
 
-      productionsData.forEach(prod => {
-        if (!prod.autores || prod.autores.length === 0) return;
-
-        // Process Nodes
-        prod.autores.forEach(author => {
-          // Normalize author id or name to use as unique key
-          const nodeKey = author.id || author.nome.toLowerCase();
-
-          if (!nodeMap.has(nodeKey)) {
-            nodeMap.set(nodeKey, {
-              id: nodeKey,
-              nome: author.nome,
-              categoria: author.categoria || author.type || 'externo',
-              productions: [],
-              weight: 0 // Will define node size
-            });
+          // Tenta carregar do localStorage primeiro
+          const localProd = localStorage.getItem("gpa_productions");
+          if (localProd) {
+            productionsData = JSON.parse(localProd);
+          } else {
+            const prodRes = await fetch("data/producoes.json");
+            if (prodRes.ok) productionsData = await prodRes.json();
           }
 
-          const node = nodeMap.get(nodeKey);
-          node.productions.push(prod);
-          node.weight += 1;
+          processAuthors();
+          populateSelect();
+        } catch (e) {
+          console.error("Erro ao carregar dados", e);
+        }
+      }
+
+      function getAuthorKey(author) {
+        return author.id || author.nome.toLowerCase();
+      }
+
+      function processAuthors() {
+        allAuthors.clear();
+
+        // 1. Iniciar com os autores da estrutura
+        (estruturaData.docentes || []).forEach((d) => {
+          const key = getAuthorKey(d);
+          allAuthors.set(key, {
+            ...d,
+            id: key,
+            categoria: "docente",
+            productions: [],
+          });
+        });
+        (estruturaData.discentes || []).forEach((d) => {
+          const key = getAuthorKey(d);
+          allAuthors.set(key, {
+            ...d,
+            id: key,
+            categoria: "discente",
+            productions: [],
+          });
         });
 
-        // Process Edges (Co-authorships)
-        for (let i = 0; i < prod.autores.length; i++) {
-          for (let j = i + 1; j < prod.autores.length; j++) {
-            const keyA = prod.autores[i].id || prod.autores[i].nome.toLowerCase();
-            const keyB = prod.autores[j].id || prod.autores[j].nome.toLowerCase();
-
-            // Ensure consistent edge direction A->B to avoid duplicates
-            const source = keyA < keyB ? keyA : keyB;
-            const target = keyA < keyB ? keyB : keyA;
-            const edgeKey = `${source}-${target}`;
-
-            if (!edgeMap.has(edgeKey)) {
-              edgeMap.set(edgeKey, {
-                source: source,
-                target: target,
-                weight: 0
+        // 2. Processar produções e adicionar autores não estruturados (externos)
+        productionsData.forEach((prod) => {
+          if (!prod.autores || prod.autores.length === 0) return;
+          prod.autores.forEach((author) => {
+            const key = getAuthorKey(author);
+            if (!allAuthors.has(key)) {
+              allAuthors.set(key, {
+                id: key,
+                nome: author.nome,
+                categoria: author.categoria || author.type || "externo",
+                productions: [],
               });
             }
-            edgeMap.get(edgeKey).weight += 1;
-          }
-        }
-      });
-
-      graphData.nodes = Array.from(nodeMap.values());
-      graphData.edges = Array.from(edgeMap.values());
-
-      console.log("Graph Data Built:", graphData.nodes.length, "nodes", graphData.edges.length, "edges");
-
-      initSimulation();
-    }
-
-    // --- Graph Rendering & Physics ---
-
-    let canvas, ctx, minimapCanvas, minimapCtx;
-    let width, height;
-    let simulation;
-    let transform = d3.zoomIdentity;
-    let activeNodes = [];
-    let activeEdges = [];
-    let hoverNode = null;
-    let selectedNode = null;
-
-    function initSimulation() {
-      canvas = document.getElementById('network-canvas');
-      ctx = canvas.getContext('2d');
-      minimapCanvas = document.getElementById('minimap');
-      minimapCtx = minimapCanvas.getContext('2d');
-
-      resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
-
-      activeNodes = [...graphData.nodes];
-
-      // Prepare edges (D3 expects source and target to be object references or indices, but handles ids string too if configured)
-      activeEdges = graphData.edges.map(e => ({...e}));
-
-      simulation = d3.forceSimulation(activeNodes)
-        .force("link", d3.forceLink(activeEdges).id(d => d.id).distance(100))
-        .force("charge", d3.forceManyBody().strength(-300))
-        .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("collide", d3.forceCollide().radius(d => getRadius(d) + 2).iterations(2))
-        .on("tick", draw);
-
-      setupInteractions();
-    }
-
-    function resizeCanvas() {
-      const container = canvas.parentElement;
-      width = container.clientWidth;
-      height = container.clientHeight;
-      canvas.width = width;
-      canvas.height = height;
-
-      if(simulation) {
-          simulation.force("center", d3.forceCenter(width / 2, height / 2));
-          simulation.alpha(0.3).restart();
-      }
-    }
-
-    function getRadius(node) {
-      return 5 + (node.weight * 2); // Base size 5, grows with productions
-    }
-
-    function getColor(categoria) {
-      const cat = (categoria || '').toLowerCase();
-      if(cat === 'docente') return '#4fa8d4';
-      if(cat === 'discente') return '#00887E';
-      return '#858688';
-    }
-
-    function draw() {
-      ctx.save();
-      ctx.clearRect(0, 0, width, height);
-      ctx.translate(transform.x, transform.y);
-      ctx.scale(transform.k, transform.k);
-
-      // Draw Edges
-      ctx.beginPath();
-      activeEdges.forEach(d => {
-        ctx.moveTo(d.source.x, d.source.y);
-        ctx.lineTo(d.target.x, d.target.y);
-      });
-      ctx.strokeStyle = "#cbd5e1";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // Draw Nodes
-      activeNodes.forEach(d => {
-        ctx.beginPath();
-        const r = getRadius(d);
-        ctx.arc(d.x, d.y, r, 0, 2 * Math.PI);
-
-        ctx.fillStyle = getColor(d.categoria);
-
-        if (selectedNode && selectedNode.id === d.id) {
-          ctx.lineWidth = 3;
-          ctx.strokeStyle = "#f59e0b";
-          ctx.stroke();
-        } else if (hoverNode && hoverNode.id === d.id) {
-          ctx.lineWidth = 2;
-          ctx.strokeStyle = "#1e293b";
-          ctx.stroke();
-        } else {
-          ctx.lineWidth = 1.5;
-          ctx.strokeStyle = "#fff";
-          ctx.stroke();
-        }
-
-        ctx.fill();
-
-        // Draw Text
-        if (transform.k > 0.8 || (hoverNode && hoverNode.id === d.id) || (selectedNode && selectedNode.id === d.id)) {
-            ctx.fillStyle = "#334155";
-            ctx.font = `${Math.max(10, 12 / transform.k)}px sans-serif`;
-            ctx.textAlign = "center";
-            ctx.fillText(d.nome, d.x, d.y + r + (14/transform.k));
-        }
-      });
-
-      ctx.restore();
-      drawMinimap();
-    }
-
-    function drawMinimap() {
-        const mw = minimapCanvas.width;
-        const mh = minimapCanvas.height;
-        minimapCtx.clearRect(0, 0, mw, mh);
-
-        minimapCtx.fillStyle = '#f8fafc';
-        minimapCtx.fillRect(0, 0, mw, mh);
-
-        if (activeNodes.length === 0) return;
-
-        // Find bounds
-        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-        activeNodes.forEach(n => {
-            if(n.x < minX) minX = n.x;
-            if(n.x > maxX) maxX = n.x;
-            if(n.y < minY) minY = n.y;
-            if(n.y > maxY) maxY = n.y;
+            // Adiciona produção ao autor
+            allAuthors.get(key).productions.push(prod);
+          });
         });
-
-        // Add padding
-        const pad = 50;
-        minX -= pad; maxX += pad; minY -= pad; maxY += pad;
-
-        const scaleX = mw / (maxX - minX);
-        const scaleY = mh / (maxY - minY);
-        const scale = Math.min(scaleX, scaleY);
-
-        const ox = (mw - (maxX - minX) * scale) / 2;
-        const oy = (mh - (maxY - minY) * scale) / 2;
-
-        minimapCtx.save();
-        minimapCtx.translate(ox, oy);
-        minimapCtx.scale(scale, scale);
-        minimapCtx.translate(-minX, -minY);
-
-        minimapCtx.beginPath();
-        activeNodes.forEach(d => {
-            minimapCtx.moveTo(d.x, d.y);
-            minimapCtx.arc(d.x, d.y, Math.max(10, getRadius(d)), 0, 2 * Math.PI);
-        });
-        minimapCtx.fillStyle = "#94a3b8";
-        minimapCtx.fill();
-        minimapCtx.restore();
-
-        // Viewport rectangle
-        minimapCtx.strokeStyle = "rgba(0, 75, 120, 0.8)";
-        minimapCtx.lineWidth = 2;
-
-        const vx = ((-transform.x / transform.k) - minX) * scale + ox;
-        const vy = ((-transform.y / transform.k) - minY) * scale + oy;
-        const vw = (width / transform.k) * scale;
-        const vh = (height / transform.k) * scale;
-
-        minimapCtx.strokeRect(vx, vy, vw, vh);
-    }
-
-    let zoomBehavior;
-    function setupInteractions() {
-        const d3Canvas = d3.select(canvas);
-
-        zoomBehavior = d3.zoom()
-            .scaleExtent([0.1, 8])
-            .on("zoom", (e) => {
-                transform = e.transform;
-                draw();
-            });
-
-        d3Canvas.call(zoomBehavior);
-
-        // Dragging
-        const dragBehavior = d3.drag()
-            .subject((e) => {
-                const x = transform.invertX(e.x);
-                const y = transform.invertY(e.y);
-                let closest = null;
-                let minDist = Infinity;
-                for (const node of activeNodes) {
-                    const dx = x - node.x;
-                    const dy = y - node.y;
-                    const dist = dx * dx + dy * dy;
-                    if (dist < minDist) {
-                        minDist = dist;
-                        closest = node;
-                    }
-                }
-                const r = closest ? getRadius(closest) : 0;
-                return minDist <= r * r + 100 ? closest : null;
-            })
-            .on("start", (e) => {
-                if (!e.active) simulation.alphaTarget(0.3).restart();
-                e.subject.fx = e.subject.x;
-                e.subject.fy = e.subject.y;
-                if (e.sourceEvent) e.sourceEvent.stopPropagation();
-            })
-            .on("drag", (e) => {
-                e.subject.fx = transform.invertX(e.sourceEvent.offsetX || e.sourceEvent.clientX);
-                e.subject.fy = transform.invertY(e.sourceEvent.offsetY || e.sourceEvent.clientY);
-            })
-            .on("end", (e) => {
-                if (!e.active) simulation.alphaTarget(0);
-                e.subject.fx = e.subject.x;
-                e.subject.fy = e.subject.y;
-            });
-
-        d3Canvas.call(dragBehavior);
-
-        // Hover & Click
-        d3Canvas.on("mousemove", (e) => {
-            const x = transform.invertX(e.offsetX);
-            const y = transform.invertY(e.offsetY);
-            let newHover = null;
-            for (const node of activeNodes) {
-                const r = getRadius(node);
-                if ((x - node.x) ** 2 + (y - node.y) ** 2 <= (r + 5) ** 2) {
-                    newHover = node;
-                    break;
-                }
-            }
-            if (hoverNode !== newHover) {
-                hoverNode = newHover;
-                draw();
-            }
-        });
-
-        d3Canvas.on("click", (e) => {
-            if (hoverNode) {
-                selectNode(hoverNode);
-            } else {
-                closePanel();
-            }
-        });
-
-        d3Canvas.on("dblclick.zoom", null); // disable default dblclick zoom
-        d3Canvas.on("dblclick", (e) => {
-            if (hoverNode) {
-                egoNetwork(hoverNode);
-            }
-        });
-    }
-
-    let activeFilters = { 'docente': true, 'discente': true, 'externo': true };
-    let nodesFixed = false;
-
-    function toggleFilter(type) {
-        activeFilters[type] = !activeFilters[type];
-        const btn = document.getElementById('btn-filter-' + type);
-        btn.style.opacity = activeFilters[type] ? '1' : '0.5';
-        applyFilters();
-    }
-
-    function applyFilters() {
-      const search = document.getElementById('search-author').value.toLowerCase();
-
-      activeNodes = graphData.nodes.filter(n => {
-          if(!activeFilters[n.categoria]) return false;
-          if(search && !n.nome.toLowerCase().includes(search)) return false;
-          return true;
-      });
-
-      const activeIds = new Set(activeNodes.map(n => n.id));
-      activeEdges = graphData.edges.filter(e => activeIds.has(e.source.id || e.source) && activeIds.has(e.target.id || e.target));
-
-      // Re-bind to simulation
-      simulation.nodes(activeNodes);
-      simulation.force("link").links(activeEdges);
-      simulation.alpha(0.5).restart();
-
-      closePanel();
-    }
-
-    function resetView() {
-      activeFilters = { 'docente': true, 'discente': true, 'externo': true };
-      document.getElementById('btn-filter-docente').style.opacity = '1';
-      document.getElementById('btn-filter-discente').style.opacity = '1';
-      document.getElementById('btn-filter-externo').style.opacity = '1';
-      document.getElementById('search-author').value = '';
-
-      if (radialMode) {
-          radialMode = false;
-          simulation.force("radial", null);
-          simulation.force("charge", d3.forceManyBody().strength(-300));
-          if(!nodesFixed) {
-              activeNodes.forEach(n => { n.fx = null; n.fy = null; });
-          }
       }
 
-      d3.select(canvas).transition().duration(750).call(
-          zoomBehavior.transform, d3.zoomIdentity
-      );
+      function populateSelect() {
+        const optDocentes = document.getElementById("opt-docentes");
+        const optDiscentes = document.getElementById("opt-discentes");
 
-      applyFilters();
-    }
+        optDocentes.innerHTML = "";
+        optDiscentes.innerHTML = "";
 
-    function zoomIn() {
-        d3.select(canvas).transition().duration(300).call(zoomBehavior.scaleBy, 1.5);
-    }
+        const docentes = Array.from(allAuthors.values())
+          .filter((a) => a.categoria === "docente")
+          .sort((a, b) => a.nome.localeCompare(b.nome));
+        const discentes = Array.from(allAuthors.values())
+          .filter((a) => a.categoria === "discente")
+          .sort((a, b) => a.nome.localeCompare(b.nome));
 
-    function zoomOut() {
-        d3.select(canvas).transition().duration(300).call(zoomBehavior.scaleBy, 0.66);
-    }
-
-    function toggleFixNodes() {
-        nodesFixed = !nodesFixed;
-        document.getElementById('btn-fix-nodes').textContent = nodesFixed ? 'Liberar Nós' : 'Fixar Nós';
-
-        activeNodes.forEach(n => {
-            if (nodesFixed) {
-                n.fx = n.x;
-                n.fy = n.y;
-            } else {
-                n.fx = null;
-                n.fy = null;
-            }
+        docentes.forEach((d) => {
+          const opt = document.createElement("option");
+          opt.value = d.id;
+          opt.textContent = d.nome;
+          optDocentes.appendChild(opt);
         });
 
-        if (!nodesFixed) {
-            simulation.alpha(0.3).restart();
+        discentes.forEach((d) => {
+          const opt = document.createElement("option");
+          opt.value = d.id;
+          opt.textContent = d.nome;
+          optDiscentes.appendChild(opt);
+        });
+      }
+
+      function renderEgoNetwork() {
+        const authorId = document.getElementById("authorSelect").value;
+        const statsEl = document.getElementById("network-stats");
+
+        if (!authorId) {
+          statsEl.style.display = "none";
+          // TODO: clear SVG
+          return;
         }
-    }
 
-    function exportPNG() {
-        // Redraw without hover/selection highlights to make a clean export
-        const tempSelected = selectedNode;
-        const tempHover = hoverNode;
-        selectedNode = null;
-        hoverNode = null;
-        draw();
+        const egoAuthor = allAuthors.get(authorId);
+        if (!egoAuthor) return;
 
-        const link = document.createElement('a');
-        link.download = 'rede_colaboracao.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+        // Calcular parceiros (coautores) e pesos (número de produções conjuntas)
+        const partnersMap = new Map();
+        let totalSharedArticles = 0;
 
-        // Restore
-        selectedNode = tempSelected;
-        hoverNode = tempHover;
-        draw();
-    }
+        egoAuthor.productions.forEach((prod) => {
+          if (!prod.autores) return;
+          prod.autores.forEach((coauthor) => {
+            const coKey = getAuthorKey(coauthor);
+            if (coKey === authorId) return; // ignora ele mesmo
 
-    let radialMode = false;
-    function egoNetwork(node) {
-        if (!node) return;
-
-        radialMode = true;
-
-        // Find connected nodes
-        const connectedNodes = new Set();
-        connectedNodes.add(node.id);
-
-        activeEdges.forEach(e => {
-            const sourceId = e.source.id || e.source;
-            const targetId = e.target.id || e.target;
-
-            if (sourceId === node.id) connectedNodes.add(targetId);
-            if (targetId === node.id) connectedNodes.add(sourceId);
+            if (!partnersMap.has(coKey)) {
+              partnersMap.set(coKey, {
+                author: allAuthors.get(coKey),
+                weight: 0,
+                sharedProductions: [],
+              });
+            }
+            const pData = partnersMap.get(coKey);
+            // Verifica se a produção já foi contada (caso autor apareça 2x por erro)
+            if (!pData.sharedProductions.includes(prod)) {
+              pData.weight += 1;
+              pData.sharedProductions.push(prod);
+              totalSharedArticles += 1;
+            }
+          });
         });
 
-        // Apply forces
-        simulation
-            .force("charge", d3.forceManyBody().strength(-150))
-            .force("radial", d3.forceRadial(d => connectedNodes.has(d.id) && d.id !== node.id ? 150 : 400, width / 2, height / 2).strength(0.8));
+        const partners = Array.from(partnersMap.values());
 
-        // Fix the center node to the middle of the screen
-        node.fx = width / 2;
-        node.fy = height / 2;
+        // Atualiza Stats
+        statsEl.style.display = "flex";
+        document.getElementById("stat-partners").textContent = partners.length;
+        document.getElementById("stat-articles").textContent =
+          totalSharedArticles;
 
-        simulation.alpha(1).restart();
+        // Prepara estrutura de dados para o SVG
+        egoData = {
+          ego: egoAuthor,
+          satellites: partners,
+        };
 
-        // Center viewport
-        d3.select(canvas).transition().duration(750).call(
-            zoomBehavior.transform, d3.zoomIdentity.translate(0, 0).scale(1)
-        );
-    }
+        drawSVGNetwork();
+      }
 
-    function selectNode(node) {
-        selectedNode = node;
-        draw();
+      // --- SVG Rendering ---
 
-        const panel = document.getElementById('side-panel');
-        if (!panel.classList.contains('active')) {
-            panel.classList.add('active');
-            // Trigger resize to fix canvas aspect ratio when panel opens
-            setTimeout(resizeCanvas, 10);
+      function getColor(categoria) {
+        const cat = (categoria || "").toLowerCase();
+        if (cat === "docente") return "#005484";
+        if (cat === "discente") return "#00897C";
+        return "#718096"; // Externo
+      }
+
+      let currentZoom = d3.zoomIdentity;
+
+      function drawSVGNetwork() {
+        const svgEl = document.getElementById("network-svg");
+        document.getElementById("empty-state").style.display = "none";
+
+        const mainArea = document.getElementById("main-area");
+        const width = mainArea.clientWidth;
+        const height = mainArea.clientHeight;
+
+        const svg = d3.select(svgEl);
+        svg.selectAll("*").remove(); // Clear previous render
+
+        if (!egoData) return;
+
+        // Container for zoom/pan
+        const g = svg.append("g");
+
+        const zoomBehavior = d3
+          .zoom()
+          .scaleExtent([0.2, 5])
+          .on("zoom", (e) => {
+            currentZoom = e.transform;
+            g.attr("transform", e.transform);
+          });
+
+        svg.call(zoomBehavior);
+        // Reseta zoom ao trocar de autor
+        svg.call(zoomBehavior.transform, d3.zoomIdentity);
+
+        const cx = width / 2;
+        const cy = height / 2;
+
+        const { ego, satellites } = egoData;
+        const N = satellites.length;
+
+        // Distribuir satélites em um círculo
+        const nodesData = [];
+        const linksData = [];
+
+        // Ego Node
+        nodesData.push({
+          id: ego.id,
+          nome: ego.nome,
+          categoria: ego.categoria,
+          isEgo: true,
+          x: cx,
+          y: cy,
+          r: 44,
+          data: ego,
+        });
+
+        // Satellite Nodes
+        const baseRadius = 250;
+
+        satellites.forEach((sat, i) => {
+          // Pequena variação no raio para evitar sobreposição de rótulos em redes densas
+          const variacao = (i % 3) * 40;
+          const rDist = baseRadius + variacao;
+          const angle = (i * (2 * Math.PI)) / N - Math.PI / 2; // Começa de cima
+
+          const px = cx + rDist * Math.cos(angle);
+          const py = cy + rDist * Math.sin(angle);
+
+          // Limitamos a espessura da linha
+          const lineWeight = Math.min(Math.max(sat.weight * 2, 2), 15);
+
+          nodesData.push({
+            id: sat.author.id,
+            nome: sat.author.nome,
+            categoria: sat.author.categoria,
+            isEgo: false,
+            x: px,
+            y: py,
+            r: 22,
+            weight: sat.weight,
+            sharedProductions: sat.sharedProductions,
+            data: sat.author,
+          });
+
+          linksData.push({
+            source: cx,
+            sy: cy,
+            target: px,
+            ty: py,
+            weight: sat.weight,
+            lineWeight: lineWeight,
+          });
+        });
+
+        // 1. Draw Links (Lines)
+        const links = g
+          .selectAll(".link")
+          .data(linksData)
+          .enter()
+          .append("g")
+          .attr("class", "link");
+
+        links
+          .append("line")
+          .attr("x1", (d) => d.source)
+          .attr("y1", (d) => d.sy)
+          .attr("x2", (d) => d.target)
+          .attr("y2", (d) => d.ty)
+          .attr("stroke", "#cbd5e1")
+          .attr("stroke-width", (d) => d.lineWeight);
+
+        // Labels nas linhas
+        links
+          .append("circle")
+          .attr("cx", (d) => (d.source + d.target) / 2)
+          .attr("cy", (d) => (d.sy + d.ty) / 2)
+          .attr("r", 10)
+          .attr("fill", "#f8fafc")
+          .attr("stroke", "#94a3b8")
+          .attr("stroke-width", 1);
+
+        links
+          .append("text")
+          .attr("x", (d) => (d.source + d.target) / 2)
+          .attr("y", (d) => (d.sy + d.ty) / 2)
+          .attr("dy", "4px")
+          .attr("text-anchor", "middle")
+          .attr("font-size", "10px")
+          .attr("font-weight", "bold")
+          .attr("fill", "#475569")
+          .text((d) => d.weight);
+
+        // 2. Draw Nodes
+        const nodes = g
+          .selectAll(".node")
+          .data(nodesData)
+          .enter()
+          .append("g")
+          .attr("class", "node")
+          .attr("transform", (d) => `translate(${d.x},${d.y})`)
+          .style("cursor", (d) => (d.isEgo ? "default" : "pointer"))
+          .on("click", (e, d) => {
+            if (!d.isEgo) {
+              selectSatelliteNode(d);
+            }
+          })
+          .on("mouseover", function (e, d) {
+            if (!d.isEgo)
+              d3.select(this)
+                .select("circle")
+                .attr("stroke", "#1e293b")
+                .attr("stroke-width", 3);
+          })
+          .on("mouseout", function (e, d) {
+            if (!d.isEgo)
+              d3.select(this)
+                .select("circle")
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 2);
+          });
+
+        nodes
+          .append("circle")
+          .attr("r", (d) => d.r)
+          .attr("fill", (d) => getColor(d.categoria))
+          .attr("stroke", "#fff")
+          .attr("stroke-width", 2);
+
+        // Iniciais no Ego Node
+        nodes
+          .filter((d) => d.isEgo)
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("dy", "6px")
+          .attr("fill", "white")
+          .attr("font-size", "20px")
+          .attr("font-weight", "bold")
+          .text((d) => d.nome.substring(0, 2).toUpperCase());
+
+        // Labels para os nós
+        nodes
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("y", (d) => d.r + 15)
+          .attr("fill", "#334155")
+          .attr("font-size", (d) => (d.isEgo ? "14px" : "11px"))
+          .attr("font-weight", (d) => (d.isEgo ? "bold" : "normal"))
+          .text((d) => {
+            // Truncate name
+            const parts = d.nome.split(" ");
+            if (parts.length > 2)
+              return `${parts[0]} ${parts[parts.length - 1]}`;
+            return d.nome;
+          });
+
+        // Background for labels
+        nodes.selectAll("text").each(function () {
+          const bbox = this.getBBox();
+          d3.select(this.parentNode)
+            .insert("rect", "text")
+            .attr("x", bbox.x - 2)
+            .attr("y", bbox.y - 2)
+            .attr("width", bbox.width + 4)
+            .attr("height", bbox.height + 4)
+            .attr("fill", "rgba(255,255,255,0.8)")
+            .attr("rx", 3);
+        });
+      }
+
+      function exportPNG() {
+        const svgEl = document.getElementById("network-svg");
+        if (!svgEl || !egoData) {
+          alert("Nenhuma rede selecionada para exportar.");
+          return;
+        }
+
+        const serializer = new XMLSerializer();
+        const svgString = serializer.serializeToString(svgEl);
+        const img = new Image();
+        const blob = new Blob([svgString], {
+          type: "image/svg+xml;charset=utf-8",
+        });
+        const url = URL.createObjectURL(blob);
+
+        img.onload = function () {
+          const canvas = document.createElement("canvas");
+          canvas.width = svgEl.clientWidth * 2; // Alta resolução
+          canvas.height = svgEl.clientHeight * 2;
+          const ctx = canvas.getContext("2d");
+
+          // Fundo branco
+          ctx.fillStyle = "#fafcff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          ctx.scale(2, 2);
+          ctx.drawImage(img, 0, 0);
+
+          const link = document.createElement("a");
+          link.download = `ego_rede_${egoData.ego.nome.replace(/\s+/g, "_")}.png`;
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+          URL.revokeObjectURL(url);
+        };
+        img.src = url;
+      }
+
+      function selectSatelliteNode(satNode) {
+        const panel = document.getElementById("side-panel");
+        if (!panel.classList.contains("active")) {
+          panel.classList.add("active");
         }
 
         // Render Info
-        document.getElementById('author-info').innerHTML = `
-            <p><strong>Nome:</strong> ${node.nome}</p>
-            <p><strong>Tipo:</strong> <span class="badge-author badge-${node.categoria}">${node.categoria}</span></p>
-            <button onclick="egoNetwork(selectedNode)" style="margin-top: 10px; padding: 6px 12px; background: #e4eef7; color: var(--primary); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 12px; width: 100%;">Centralizar nó (Ego-Rede)</button>
+        document.getElementById("author-info").innerHTML = `
+            <p><strong>Coautor:</strong> ${satNode.nome}</p>
+            <p><strong>Tipo:</strong> <span class="badge-author badge-${satNode.categoria}">${satNode.categoria}</span></p>
         `;
 
         // Render Productions
-        document.getElementById('prod-count').textContent = node.productions.length;
+        const prods = satNode.sharedProductions;
+        document.getElementById("prod-count").textContent = prods.length;
 
-        const listEl = document.getElementById('prod-list');
-        if(node.productions.length === 0) {
-            listEl.innerHTML = '<p style="color:#888;">Nenhuma produção registrada.</p>';
+        const listEl = document.getElementById("prod-list");
+        if (prods.length === 0) {
+          listEl.innerHTML =
+            '<p style="color:#888;">Nenhuma produção registrada.</p>';
         } else {
-            listEl.innerHTML = node.productions.map(p => `
+          listEl.innerHTML = prods
+            .map(
+              (p) => `
                 <div class="prod-card">
                     <h4>${p.titulo}</h4>
                     <p style="margin-bottom:3px;">${p.tipo} (${p.ano})</p>
-                    <p style="color:#667;">👥 ${(p.autores || []).map(a => a.nome).join(', ')}</p>
+                    <p style="color:#667;">👥 ${(p.autores || []).map((a) => a.nome).join(", ")}</p>
                 </div>
-            `).join('');
+            `,
+            )
+            .join("");
         }
-    }
+      }
 
-    function closePanel() {
-        selectedNode = null;
-        draw();
-        const panel = document.getElementById('side-panel');
-        if (panel.classList.contains('active')) {
-            panel.classList.remove('active');
-            // Trigger resize to fix canvas aspect ratio when panel closes
-            setTimeout(resizeCanvas, 10);
+      function closePanel() {
+        const panel = document.getElementById("side-panel");
+        if (panel.classList.contains("active")) {
+          panel.classList.remove("active");
         }
-    }
+      }
 
-    // Sync across tabs
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'gpa_productions' || e.key === 'gta_estrutura') {
-            loadData();
+      // Sync across tabs
+      window.addEventListener("storage", (e) => {
+        if (e.key === "gpa_productions" || e.key === "gta_estrutura") {
+          loadData();
         }
-    });
+      });
 
-    // Initialize
-    document.addEventListener('DOMContentLoaded', loadData);
-  </script>
-</body>
+      // Initialize
+      document.addEventListener("DOMContentLoaded", loadData);
+    </script>
+  </body>
 </html>
