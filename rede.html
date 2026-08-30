@@ -515,7 +515,7 @@
         d3Canvas.call(zoomBehavior);
 
         // Dragging
-        d3Canvas.call(d3.drag()
+        const dragBehavior = d3.drag()
             .subject((e) => {
                 const x = transform.invertX(e.x);
                 const y = transform.invertY(e.y);
@@ -537,18 +537,19 @@
                 if (!e.active) simulation.alphaTarget(0.3).restart();
                 e.subject.fx = e.subject.x;
                 e.subject.fy = e.subject.y;
+                if (e.sourceEvent) e.sourceEvent.stopPropagation();
             })
             .on("drag", (e) => {
-                e.subject.fx = transform.invertX(e.x);
-                e.subject.fy = transform.invertY(e.y);
+                e.subject.fx = transform.invertX(e.sourceEvent.offsetX || e.sourceEvent.clientX);
+                e.subject.fy = transform.invertY(e.sourceEvent.offsetY || e.sourceEvent.clientY);
             })
             .on("end", (e) => {
                 if (!e.active) simulation.alphaTarget(0);
-                if (!nodesFixed) {
-                    e.subject.fx = null;
-                    e.subject.fy = null;
-                }
-            }));
+                e.subject.fx = e.subject.x;
+                e.subject.fy = e.subject.y;
+            });
+
+        d3Canvas.call(dragBehavior);
 
         // Hover & Click
         d3Canvas.on("mousemove", (e) => {
@@ -683,6 +684,40 @@
         draw();
     }
 
+    let radialMode = false;
+    function egoNetwork(node) {
+        if (!node) return;
+
+        radialMode = true;
+
+        // Find connected nodes
+        const connectedNodes = new Set();
+        connectedNodes.add(node.id);
+
+        activeEdges.forEach(e => {
+            const sourceId = e.source.id || e.source;
+            const targetId = e.target.id || e.target;
+
+            if (sourceId === node.id) connectedNodes.add(targetId);
+            if (targetId === node.id) connectedNodes.add(sourceId);
+        });
+
+        // Apply forces
+        simulation
+            .force("charge", d3.forceManyBody().strength(-150))
+            .force("radial", d3.forceRadial(d => connectedNodes.has(d.id) && d.id !== node.id ? 150 : 400, width / 2, height / 2).strength(0.8));
+
+        // Fix the center node to the middle of the screen
+        node.fx = width / 2;
+        node.fy = height / 2;
+
+        simulation.alpha(1).restart();
+
+        // Center viewport
+        d3.select(canvas).transition().duration(750).call(
+            zoomBehavior.transform, d3.zoomIdentity.translate(0, 0).scale(1)
+        );
+    }
 
     function selectNode(node) {
         selectedNode = node;
