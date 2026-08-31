@@ -279,8 +279,32 @@
     >
       <div style="display: flex; gap: 12px; align-items: center; flex: 1">
         <label
-          for="authorSelect"
+          for="filterTurma"
           style="font-size: 13px; font-weight: 600; color: var(--primary)"
+          >Turma:</label
+        >
+        <select
+          id="filterTurma"
+          class="form-select"
+          style="
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 13px;
+          "
+          onchange="populateSelect()"
+        >
+          <option value="">Todas as Turmas</option>
+        </select>
+
+        <label
+          for="authorSelect"
+          style="
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-left: 12px;
+          "
           >Selecionar Autor:</label
         >
         <select
@@ -410,6 +434,15 @@
             if (prodRes.ok) productionsData = await prodRes.json();
           }
 
+          // Populate Turmas filter
+          const turmaSel = document.getElementById("filterTurma");
+          (estruturaData.turmas || []).forEach((t) => {
+            const opt = document.createElement("option");
+            opt.value = t.id;
+            opt.textContent = t.nome;
+            turmaSel.appendChild(opt);
+          });
+
           processAuthors();
           populateSelect();
         } catch (e) {
@@ -466,6 +499,7 @@
       function populateSelect() {
         const optDocentes = document.getElementById("opt-docentes");
         const optDiscentes = document.getElementById("opt-discentes");
+        const turmaId = document.getElementById("filterTurma").value;
 
         optDocentes.innerHTML = "";
         optDiscentes.innerHTML = "";
@@ -473,9 +507,16 @@
         const docentes = Array.from(allAuthors.values())
           .filter((a) => a.categoria === "docente")
           .sort((a, b) => a.nome.localeCompare(b.nome));
-        const discentes = Array.from(allAuthors.values())
-          .filter((a) => a.categoria === "discente")
-          .sort((a, b) => a.nome.localeCompare(b.nome));
+
+        let discentes = Array.from(allAuthors.values()).filter(
+          (a) => a.categoria === "discente",
+        );
+
+        if (turmaId) {
+          discentes = discentes.filter((a) => a.turma_id === turmaId);
+        }
+
+        discentes.sort((a, b) => a.nome.localeCompare(b.nome));
 
         docentes.forEach((d) => {
           const opt = document.createElement("option");
@@ -490,6 +531,8 @@
           opt.textContent = d.nome;
           optDiscentes.appendChild(opt);
         });
+
+        renderEgoNetwork(); // Re-render in case selected author was filtered out
       }
 
       function renderEgoNetwork() {
