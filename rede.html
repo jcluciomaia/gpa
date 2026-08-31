@@ -1,39 +1,79 @@
 <!doctype html>
 <html lang="pt-BR">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GPA — Rede de Colaboração</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="css/style.css" />
     <style>
       :root {
-        --bg: #f8fafc;
-        --panel: rgba(255, 255, 255, 0.96);
-        --text: #1e293b;
-        --muted: #64748b;
-        --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-        --radius: 12px;
-        --primary: #005484;
+        --gray: #848688;
+        --accent: #fdb92e;
         --secondary: #00897c;
-        --externo: #718096;
+        --primary: #005484;
+        --primary-hover: #003e62;
+        --docente-color: #005484;
+        --discente-color: #00897c;
+        --externo-color: #848688;
+        --bg: #f4f7fa;
+        --card-bg: #ffffff;
+        --border: #d0dce8;
+        --text: #373435;
+        --panel: rgba(255, 255, 255, 0.96);
+        --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        --radius: 10px;
       }
-      *,
-      *::before,
-      *::after {
+      * {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+          sans-serif;
       }
       body {
         background: var(--bg);
+        color: var(--text);
         overflow: hidden;
         height: 100vh;
         display: flex;
         flex-direction: column;
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       }
 
+      /* Header Padrão do Sistema */
+      header {
+        background: var(--primary);
+        color: white;
+        padding: 0 24px 0 0;
+        height: 76px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        flex-shrink: 0;
+        z-index: 100;
+      }
+      header h1 {
+        font-size: 22px;
+        font-weight: 600;
+        margin: 0;
+        margin-left: 24px;
+      }
+      header .nav-links a {
+        color: #a8d0e8;
+        text-decoration: none;
+        font-size: 13px;
+        margin-left: 15px;
+        transition: color 0.15s;
+      }
+      header .nav-links a:hover {
+        color: #fff;
+      }
+      header .nav-links a.active {
+        color: #fff;
+        font-weight: bold;
+      }
+
+      /* Canvas e Painéis */
       #canvas-container {
         position: relative;
         flex: 1;
@@ -60,7 +100,7 @@
         padding: 10px 14px;
         font-size: 13px;
         color: var(--text);
-        border: 1px solid rgba(226, 232, 240, 0.8);
+        border: 1px solid var(--border);
         backdrop-filter: blur(8px);
       }
 
@@ -80,20 +120,21 @@
         align-items: center;
       }
       .form-select-sm {
-        padding: 6px 10px;
+        padding: 6px 12px;
         font-size: 13px;
-        border-radius: 8px;
-        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        border: 1px solid var(--border);
         background: #fff;
         outline: none;
+        color: var(--text);
       }
       .btn-tool {
         appearance: none;
-        border: 1px solid #cbd5e1;
+        border: 1px solid var(--border);
         background: #fff;
-        color: #0f172a;
+        color: var(--text);
         padding: 6px 12px;
-        border-radius: 8px;
+        border-radius: 6px;
         cursor: pointer;
         font-size: 13px;
         font-weight: 500;
@@ -104,14 +145,14 @@
       }
       .btn-tool:hover {
         background: #f1f5f9;
-        border-color: #94a3b8;
+        border-color: var(--primary);
       }
 
       #legend-panel {
         bottom: 16px;
         left: 16px;
         display: flex;
-        gap: 12px;
+        gap: 14px;
         align-items: center;
         font-size: 12px;
       }
@@ -148,14 +189,14 @@
         right: 0;
         bottom: 0;
         z-index: 20;
-        width: min(400px, 100vw);
+        width: min(420px, 100vw);
         background: rgba(255, 255, 255, 0.98);
         box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
         transform: translateX(100%);
         transition: transform 0.25s ease;
         overflow-y: auto;
         padding: 22px 20px;
-        border-left: 1px solid #e2e8f0;
+        border-left: 1px solid var(--border);
       }
       #sidebar.open {
         transform: translateX(0);
@@ -167,9 +208,9 @@
       }
       #sidebar .meta-row {
         font-size: 12px;
-        color: var(--muted);
+        color: var(--gray);
         margin-bottom: 14px;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--border);
         padding-bottom: 8px;
       }
       #sidebar h3 {
@@ -190,7 +231,7 @@
       #closeSidebar {
         float: right;
         background: #f1f5f9;
-        border: 1px solid #cbd5e1;
+        border: 1px solid var(--border);
         border-radius: 6px;
         padding: 4px 8px;
         cursor: pointer;
@@ -199,74 +240,41 @@
     </style>
   </head>
   <body>
-    <header
-      style="
-        background: #005484;
-        color: white;
-        padding: 0 24px;
-        height: 76px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      "
-    >
-      <div style="display: flex; align-items: center; gap: 16px">
+    <!-- Header Oficial Padronizado -->
+    <header>
+      <div style="display: flex; align-items: center; height: 100%">
         <div
           style="
             background: white;
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
+            padding: 14px 24px;
             display: flex;
             align-items: center;
             justify-content: center;
+            height: 100%;
+            box-sizing: border-box;
           "
         >
-          <span style="font-size: 24px">🏛️</span>
+          <img
+            src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png"
+            alt="UFT"
+            style="height: 48px"
+          />
         </div>
-        <div>
-          <h1 style="font-size: 18px; margin: 0; font-weight: bold">
-            Gestão da Produção Acadêmica - GPA
-          </h1>
-          <small style="color: #e0f2fe; font-size: 12px"
-            >PPGGTD / UFT — Governança e Transformação Digital</small
-          >
-        </div>
+        <h1>Gestão da Produção Acadêmica - GPA</h1>
       </div>
-      <nav style="display: flex; gap: 16px; font-size: 13px; font-weight: 500">
-        <a href="index.html" style="color: white; text-decoration: none"
-          >🏛️ Painel da Turma</a
-        >
-        <a
-          href="painel_estudantil.html"
-          style="color: white; text-decoration: none"
-          >🎓 Painel de Estudantes</a
-        >
-        <a
-          href="painel_docente.html"
-          style="color: white; text-decoration: none"
-          >👨‍🏫 Painel de Docentes</a
-        >
-        <a href="producoes.html" style="color: white; text-decoration: none"
-          >📚 Produções</a
-        >
-        <a
-          href="rede.html"
-          style="color: #38bdf8; font-weight: bold; text-decoration: none"
-          >🕸️ Rede de Colaboração</a
-        >
-        <a href="cadastro.html" style="color: white; text-decoration: none"
-          >➕ Cadastrar</a
-        >
-        <a href="relatorios.html" style="color: white; text-decoration: none"
-          >📄 Relatórios</a
-        >
-        <a href="admin.html" style="color: white; text-decoration: none"
-          >⚙️ Administração</a
-        >
+      <nav class="nav-links">
+        <a href="index.html">🏛️ Painel da Turma</a>
+        <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
+        <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
+        <a href="producoes.html">📚 Produções</a>
+        <a href="rede.html" class="active">🕸️ Rede de Colaboração</a>
+        <a href="cadastro.html">➕ Cadastrar Produção</a>
+        <a href="relatorios.html">📑 Relatórios</a>
+        <a href="admin.html">⚙️ Administração</a>
       </nav>
     </header>
 
+    <!-- Visualizador da Rede -->
     <div id="canvas-container">
       <canvas id="canvas"></canvas>
 
@@ -296,7 +304,7 @@
         <div class="ctrl-group">
           <span
             id="badgeStats"
-            style="font-size: 12px; color: var(--muted); margin-right: 8px"
+            style="font-size: 12px; color: var(--gray); margin-right: 8px"
             >Carregando dados...</span
           >
           <button
@@ -315,17 +323,17 @@
       </div>
 
       <div class="panel-float" id="legend-panel">
-        <span style="font-weight: 600; color: var(--muted)">Categorias:</span>
+        <span style="font-weight: 600; color: var(--gray)">Categorias:</span>
         <div class="leg-item">
-          <div class="leg-dot" style="background: var(--primary)"></div>
+          <div class="leg-dot" style="background: var(--docente-color)"></div>
           Docente
         </div>
         <div class="leg-item">
-          <div class="leg-dot" style="background: var(--secondary)"></div>
+          <div class="leg-dot" style="background: var(--discente-color)"></div>
           Discente
         </div>
         <div class="leg-item">
-          <div class="leg-dot" style="background: var(--externo)"></div>
+          <div class="leg-dot" style="background: var(--externo-color)"></div>
           Externo
         </div>
       </div>
@@ -373,7 +381,7 @@
             rawStructure = JSON.parse(structLocal);
           } else {
             const res = await fetch("data/estrutura_gpa.json");
-            rawStructure = await res.json();
+            if (res.ok) rawStructure = await res.json();
           }
 
           const prodLocal = localStorage.getItem("gpa_productions");
@@ -381,7 +389,7 @@
             rawProductions = JSON.parse(prodLocal);
           } else {
             const res = await fetch("data/producoes.json");
-            rawProductions = await res.json();
+            if (res.ok) rawProductions = await res.json();
           }
 
           populateTurmaSelect();
@@ -468,7 +476,7 @@
 
             if (!nodeMap.has(auth)) {
               let role = "externo";
-              let color = "#718096";
+              let color = "#848688";
               if (docSet.has(auth)) {
                 role = "docente";
                 color = "#005484";
@@ -508,24 +516,69 @@
         });
       }
 
-      // Algoritmo de dispersão equilibrada da visão geral para evitar sobreposições
-      function layoutGlobalNodes(nodes) {
+      // Algoritmo de dispersão orgânica natural para a Visão Geral
+      function computeOrganicGlobalLayout(nodes, edges) {
         const n = nodes.length;
         if (n === 0) return;
 
-        // Ordena nós por grau para colocar os mais conectados nos anéis centrais
-        const sorted = [...nodes].sort((a, b) => b.degree - a.degree);
-
-        sorted.forEach((node, idx) => {
-          // Distribuição em múltiplos anéis concêntricos
-          const ring = Math.floor(Math.sqrt(idx * 2.8));
-          const radius = 90 + ring * 110;
-          const totalInRing = Math.max(6, Math.floor(radius / 24));
-          const angle = idx * ((2 * Math.PI) / totalInRing) + ring * 0.45;
-
-          node.x = radius * Math.cos(angle);
-          node.y = radius * Math.sin(angle);
+        // Posição inicial circular com leve ruído determinístico
+        nodes.forEach((node, i) => {
+          const angle = (i / n) * 2 * Math.PI;
+          const r = 240 + (i % 5) * 25;
+          node.x = r * Math.cos(angle);
+          node.y = r * Math.sin(angle);
+          node.vx = 0;
+          node.vy = 0;
         });
+
+        const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+
+        // 60 iterações instantâneas de relaxamento físico (executadas em < 5ms)
+        for (let iter = 0; iter < 60; iter++) {
+          // Repulsão entre todos os nós (anti-sobreposição)
+          for (let i = 0; i < n; i++) {
+            for (let j = i + 1; j < n; j++) {
+              const u = nodes[i],
+                v = nodes[j];
+              const dx = v.x - u.x;
+              const dy = v.y - u.y;
+              const distSq = dx * dx + dy * dy || 1;
+              const dist = Math.sqrt(distSq);
+              const minDist = 90; // Distância mínima confortável entre nós
+
+              if (dist < minDist) {
+                const force = ((minDist - dist) / dist) * 0.45;
+                u.x -= dx * force;
+                u.y -= dy * force;
+                v.x += dx * force;
+                v.y += dy * force;
+              }
+            }
+          }
+
+          // Atração das arestas (traz colaboradores para perto)
+          edges.forEach((e) => {
+            const u = nodeMap.get(e.source);
+            const v = nodeMap.get(e.target);
+            if (u && v) {
+              const dx = v.x - u.x;
+              const dy = v.y - u.y;
+              const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+              const targetDist = 130;
+              const force = (dist - targetDist) * 0.035;
+              u.x += (dx / dist) * force;
+              u.y += (dy / dist) * force;
+              v.x -= (dx / dist) * force;
+              v.y -= (dy / dist) * force;
+            }
+          });
+
+          // Leve atração ao centro para manter o grafo coeso
+          nodes.forEach((node) => {
+            node.x *= 0.985;
+            node.y *= 0.985;
+          });
+        }
       }
 
       function applyFilters() {
@@ -568,6 +621,7 @@
             (e) => e.source === selectedAuthor || e.target === selectedAuthor,
           );
 
+          // Dispersão em Estrela (Ego-Rede)
           const centerNode = nodesToRender.find((n) => n.id === selectedAuthor);
           if (centerNode) {
             centerNode.x = 0;
@@ -577,7 +631,7 @@
             );
             const step = (2 * Math.PI) / (satellites.length || 1);
             satellites.forEach((sat, i) => {
-              const r = 240 + (i % 2 === 0 ? 35 : -25);
+              const r = 250 + (i % 2 === 0 ? 35 : -30);
               sat.x = r * Math.cos(i * step + 0.1);
               sat.y = r * Math.sin(i * step + 0.1);
             });
@@ -589,7 +643,7 @@
           edgesToRender = allEdges.filter(
             (e) => renderedIds.has(e.source) && renderedIds.has(e.target),
           );
-          layoutGlobalNodes(nodesToRender);
+          computeOrganicGlobalLayout(nodesToRender, edgesToRender);
         }
 
         activeNodes = nodesToRender;
@@ -657,7 +711,7 @@
         const activeMap = new Map(activeNodes.map((n) => [n.id, n]));
         const hovered = hoveredNode;
 
-        // 1. Desenhar Linhas de Conexão
+        // 1. Linhas de Conexão
         activeEdges.forEach((e) => {
           const u = activeMap.get(e.source),
             v = activeMap.get(e.target);
@@ -682,7 +736,7 @@
                 : "rgba(148,163,184,0.38)";
           ctx.stroke();
 
-          // Badge com Número na Linha (Renderizado permanentemente no modo Ego ou ao passar o mouse)
+          // Badge Numérico nas Linhas
           if (isEgoMode || isHighlight) {
             const midX = (x1 + x2) / 2,
               midY = (y1 + y2) / 2;
@@ -700,7 +754,7 @@
           }
         });
 
-        // 2. Desenhar Nós
+        // 2. Nós
         activeNodes.forEach((n) => {
           const [cx, cy] = w2s(n.x, n.y);
           const r =
@@ -719,7 +773,7 @@
           ctx.strokeStyle = isSelected ? "#f59e0b" : "#ffffff";
           ctx.stroke();
 
-          // Rótulo de Texto
+          // Rótulo
           const fs = isSelected ? 12 : 11;
           ctx.font = `${isSelected ? "700" : "500"} ${fs}px sans-serif`;
           ctx.textAlign = "center";
@@ -802,7 +856,6 @@
         const n = getNodeAt(wx, wy);
         hoveredNode = n ? n.id : null;
         if (n) {
-          // Tooltip posicionado sem obstruir o centro
           const prods = (productionsMap[n.id] || []).length;
           tip.innerHTML = `<strong>${n.label}</strong><br><span style="font-size:11px;color:#94a3b8;">${n.role.toUpperCase()}</span><br>Colaborações: ${n.degree} | Produções: ${prods}`;
           tip.style.left = sx + "px";
