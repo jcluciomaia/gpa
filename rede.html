@@ -11,7 +11,7 @@
         --panel: rgba(255, 255, 255, 0.96);
         --text: #1e293b;
         --muted: #64748b;
-        --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
         --radius: 12px;
         --primary: #005484;
         --secondary: #00897c;
@@ -51,7 +51,6 @@
         cursor: grabbing;
       }
 
-      /* Painéis Flutuantes */
       .panel-float {
         position: absolute;
         z-index: 10;
@@ -65,7 +64,6 @@
         backdrop-filter: blur(8px);
       }
 
-      /* Controles Superiores */
       #controls-bar {
         top: 14px;
         left: 16px;
@@ -109,7 +107,6 @@
         border-color: #94a3b8;
       }
 
-      /* Legenda Inferior Esquerda */
       #legend-panel {
         bottom: 16px;
         left: 16px;
@@ -130,7 +127,6 @@
         border-radius: 50%;
       }
 
-      /* Tooltip */
       #tip {
         position: absolute;
         z-index: 30;
@@ -142,11 +138,10 @@
         font-size: 12px;
         line-height: 1.4;
         visibility: hidden;
-        transform: translate(-50%, -120%);
+        transform: translate(-50%, -130%);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
 
-      /* Sidebar Lateral */
       #sidebar {
         position: absolute;
         top: 0;
@@ -204,7 +199,6 @@
     </style>
   </head>
   <body>
-    <!-- Barra Superior do Sistema -->
     <header
       style="
         background: #005484;
@@ -273,11 +267,9 @@
       </nav>
     </header>
 
-    <!-- Container do Gráfico -->
     <div id="canvas-container">
       <canvas id="canvas"></canvas>
 
-      <!-- Controles Integrados -->
       <div class="panel-float" id="controls-bar">
         <div class="ctrl-group">
           <label><strong>Turma:</strong></label>
@@ -322,7 +314,6 @@
         </div>
       </div>
 
-      <!-- Legenda -->
       <div class="panel-float" id="legend-panel">
         <span style="font-weight: 600; color: var(--muted)">Categorias:</span>
         <div class="leg-item">
@@ -339,10 +330,8 @@
         </div>
       </div>
 
-      <!-- Tooltip Flutuante -->
       <div id="tip"></div>
 
-      <!-- Sidebar de Detalhes -->
       <div id="sidebar">
         <button id="closeSidebar" onclick="closeSidebar()">✖ Fechar</button>
         <div id="sideContent"></div>
@@ -375,8 +364,8 @@
         dragOffX = 0,
         dragOffY = 0;
       let hoveredNode = null;
+      let isEgoMode = false;
 
-      // ── 1. CARREGAMENTO DOS DADOS ──────────────────────────────────────────────
       async function loadData() {
         try {
           const structLocal = localStorage.getItem("gpa_structure");
@@ -452,7 +441,6 @@
           sel.value = curVal;
       }
 
-      // ── 2. CONSTRUÇÃO DO GRAFO ────────────────────────────────────────────────
       function buildMasterGraph() {
         allNodes = [];
         allEdges = [];
@@ -495,13 +483,12 @@
                 role: role,
                 color: color,
                 degree: 0,
-                x: (Math.random() - 0.5) * 600,
-                y: (Math.random() - 0.5) * 450,
+                x: 0,
+                y: 0,
               });
             }
           });
 
-          // Conexões Coautorias
           for (let i = 0; i < authors.length; i++) {
             for (let j = i + 1; j < authors.length; j++) {
               const u = authors[i],
@@ -521,7 +508,26 @@
         });
       }
 
-      // ── 3. FILTRAGEM DINÂMICA / EGO-REDE ───────────────────────────────────────
+      // Algoritmo de dispersão equilibrada da visão geral para evitar sobreposições
+      function layoutGlobalNodes(nodes) {
+        const n = nodes.length;
+        if (n === 0) return;
+
+        // Ordena nós por grau para colocar os mais conectados nos anéis centrais
+        const sorted = [...nodes].sort((a, b) => b.degree - a.degree);
+
+        sorted.forEach((node, idx) => {
+          // Distribuição em múltiplos anéis concêntricos
+          const ring = Math.floor(Math.sqrt(idx * 2.8));
+          const radius = 90 + ring * 110;
+          const totalInRing = Math.max(6, Math.floor(radius / 24));
+          const angle = idx * ((2 * Math.PI) / totalInRing) + ring * 0.45;
+
+          node.x = radius * Math.cos(angle);
+          node.y = radius * Math.sin(angle);
+        });
+      }
+
       function applyFilters() {
         const selectedTurma = document.getElementById("filterTurma").value;
         const selectedAuthor = document.getElementById("filterAuthor").value;
@@ -532,7 +538,6 @@
         let nodesToRender = [];
         let edgesToRender = [];
 
-        // Filtro por Turma
         if (selectedTurma !== "all") {
           const turmaDiscentes = new Set(
             (rawStructure.discentes || [])
@@ -550,8 +555,8 @@
           allNodes.forEach((n) => visibleNodes.add(n.id));
         }
 
-        // Filtro Ego-Rede
         if (selectedAuthor !== "all") {
+          isEgoMode = true;
           const egoNeighbors = new Set([selectedAuthor]);
           allEdges.forEach((e) => {
             if (e.source === selectedAuthor) egoNeighbors.add(e.target);
@@ -563,7 +568,6 @@
             (e) => e.source === selectedAuthor || e.target === selectedAuthor,
           );
 
-          // Dispersão Radial da Ego-Rede
           const centerNode = nodesToRender.find((n) => n.id === selectedAuthor);
           if (centerNode) {
             centerNode.x = 0;
@@ -573,17 +577,19 @@
             );
             const step = (2 * Math.PI) / (satellites.length || 1);
             satellites.forEach((sat, i) => {
-              const r = 220 + (i % 2 === 0 ? 30 : -25);
+              const r = 240 + (i % 2 === 0 ? 35 : -25);
               sat.x = r * Math.cos(i * step + 0.1);
               sat.y = r * Math.sin(i * step + 0.1);
             });
           }
         } else {
+          isEgoMode = false;
           nodesToRender = allNodes.filter((n) => visibleNodes.has(n.id));
           const renderedIds = new Set(nodesToRender.map((n) => n.id));
           edgesToRender = allEdges.filter(
             (e) => renderedIds.has(e.source) && renderedIds.has(e.target),
           );
+          layoutGlobalNodes(nodesToRender);
         }
 
         activeNodes = nodesToRender;
@@ -602,7 +608,6 @@
         draw();
       }
 
-      // ── 4. RENDERIZAÇÃO NO CANVAS ──────────────────────────────────────────────
       function w2s(x, y) {
         return [panX + x * scale, panY + y * scale];
       }
@@ -639,7 +644,7 @@
           h = maxY - minY || 200;
         const vw = canvas.clientWidth,
           vh = canvas.clientHeight;
-        scale = Math.min(vw / (w * 1.3), vh / (h * 1.3), 1.6);
+        scale = Math.min(vw / (w * 1.35), vh / (h * 1.35), 1.5);
         panX = vw / 2 - ((minX + maxX) / 2) * scale;
         panY = vh / 2 - ((minY + maxY) / 2) * scale;
       }
@@ -652,7 +657,7 @@
         const activeMap = new Map(activeNodes.map((n) => [n.id, n]));
         const hovered = hoveredNode;
 
-        // Desenhar Arestas
+        // 1. Desenhar Linhas de Conexão
         activeEdges.forEach((e) => {
           const u = activeMap.get(e.source),
             v = activeMap.get(e.target);
@@ -665,38 +670,43 @@
           ctx.beginPath();
           ctx.moveTo(x1, y1);
           ctx.lineTo(x2, y2);
-          ctx.lineWidth = isHighlight
-            ? Math.min(2 + e.weight * 0.8, 8)
-            : Math.min(1 + e.weight * 0.4, 4);
-          ctx.strokeStyle = isHighlight
-            ? "rgba(0, 84, 132, 0.85)"
-            : hovered
-              ? "rgba(148,163,184,0.15)"
-              : "rgba(148,163,184,0.4)";
+          ctx.lineWidth =
+            isHighlight || isEgoMode
+              ? Math.min(2 + e.weight * 0.8, 8)
+              : Math.min(0.8 + e.weight * 0.35, 3.5);
+          ctx.strokeStyle =
+            isHighlight || isEgoMode
+              ? "rgba(0, 84, 132, 0.80)"
+              : hovered
+                ? "rgba(148,163,184,0.12)"
+                : "rgba(148,163,184,0.38)";
           ctx.stroke();
 
-          // Badge do Peso
-          if (isHighlight || activeNodes.length < 20) {
+          // Badge com Número na Linha (Renderizado permanentemente no modo Ego ou ao passar o mouse)
+          if (isEgoMode || isHighlight) {
             const midX = (x1 + x2) / 2,
               midY = (y1 + y2) / 2;
             ctx.beginPath();
-            ctx.arc(midX, midY, 8, 0, Math.PI * 2);
+            ctx.arc(midX, midY, 9, 0, Math.PI * 2);
             ctx.fillStyle = "#ffffff";
             ctx.fill();
             ctx.strokeStyle = "#cbd5e1";
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 1.2;
             ctx.stroke();
-            ctx.fillStyle = "#334155";
-            ctx.font = "10px sans-serif";
+            ctx.fillStyle = "#1e293b";
+            ctx.font = "bold 10px sans-serif";
             ctx.textAlign = "center";
             ctx.fillText(e.weight, midX, midY + 3.5);
           }
         });
 
-        // Desenhar Nós
+        // 2. Desenhar Nós
         activeNodes.forEach((n) => {
           const [cx, cy] = w2s(n.x, n.y);
-          const r = Math.max(12, Math.min(28, 12 + n.degree * 0.8));
+          const r =
+            isEgoMode && n.x === 0 && n.y === 0
+              ? 32
+              : Math.max(13, Math.min(26, 12 + n.degree * 0.7));
           const isSelected = hovered === n.id;
           const isNeighbor = hovered && neighborsMap.get(hovered)?.has(n.id);
           const fade = hovered && !isSelected && !isNeighbor;
@@ -709,7 +719,7 @@
           ctx.strokeStyle = isSelected ? "#f59e0b" : "#ffffff";
           ctx.stroke();
 
-          // Rótulo
+          // Rótulo de Texto
           const fs = isSelected ? 12 : 11;
           ctx.font = `${isSelected ? "700" : "500"} ${fs}px sans-serif`;
           ctx.textAlign = "center";
@@ -719,18 +729,17 @@
               : n.label;
           const tw = ctx.measureText(label).width;
 
-          ctx.fillStyle = "rgba(255,255,255,0.85)";
+          ctx.fillStyle = "rgba(255,255,255,0.9)";
           ctx.fillRect(cx - tw / 2 - 3, cy + r + 3, tw + 6, fs + 4);
           ctx.fillStyle = fade ? "#94a3b8" : "#1e293b";
           ctx.fillText(label, cx, cy + r + fs + 3);
         });
       }
 
-      // ── 5. INTERATIVIDADE DO MOUSE ────────────────────────────────────────────
       function getNodeAt(wx, wy) {
         for (const n of activeNodes) {
           const r =
-            (Math.max(12, Math.min(28, 12 + n.degree * 0.8)) + 4) / scale;
+            (Math.max(13, Math.min(26, 12 + n.degree * 0.7)) + 6) / scale;
           const dx = n.x - wx,
             dy = n.y - wy;
           if (dx * dx + dy * dy <= r * r) return n;
@@ -793,10 +802,11 @@
         const n = getNodeAt(wx, wy);
         hoveredNode = n ? n.id : null;
         if (n) {
+          // Tooltip posicionado sem obstruir o centro
           const prods = (productionsMap[n.id] || []).length;
-          tip.innerHTML = `<strong>${n.label}</strong><br><small>${n.role.toUpperCase()}</small><br>Colaborações: ${n.degree} | Produções: ${prods}`;
+          tip.innerHTML = `<strong>${n.label}</strong><br><span style="font-size:11px;color:#94a3b8;">${n.role.toUpperCase()}</span><br>Colaborações: ${n.degree} | Produções: ${prods}`;
           tip.style.left = sx + "px";
-          tip.style.top = sy + "px";
+          tip.style.top = sy - 15 + "px";
           tip.style.visibility = "visible";
         } else {
           tip.style.visibility = "hidden";
@@ -820,7 +830,7 @@
         const prods = productionsMap[n.id] || [];
         const nbList = [...(neighborsMap.get(n.id) || [])].sort();
         let html = `<h2>${n.label}</h2>
-      <div class="meta-row">${n.role.toUpperCase()} &nbsp;|&nbsp; <b>${prods.length}</b> produções &nbsp;|&nbsp; <b>${nbList.length}</b> coautores diretos</div>`;
+      <div class="meta-row">${n.role.toUpperCase()} &nbsp;|&nbsp; <b>${prods.length}</b> produções &nbsp;|&nbsp; <b>${nbList.length}</b> coautores</div>`;
         if (prods.length) {
           html += `<h3>Produções Vinculadas (${prods.length})</h3><ul>`;
           prods.forEach((p) => {
