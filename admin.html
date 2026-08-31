@@ -1,153 +1,1321 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GPA — Administração da Estrutura</title>
-  <style>
-    :root {
-      --externo-color: #848688;
-      --discente-color: #00897C;
-      --docente-color: #005484;
-      --gray: #848688;
-      --accent: #FDB92E;
-      --secondary: #00897C;
-      --primary: #005484;
-      --primary-hover: #003e62;
-      --bg: #f4f7fa;
-      --card-bg: #ffffff;
-      --border: #d0dce8;
-      --text: #373435;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 40px; }
-    header {
-      background: var(--primary);
-      color: white;
-      padding: 0 24px 0 0; height: 76px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    header h1 { font-size: 16px; font-weight: 600; }
-    header .nav-links a { color: #a8d0e8; text-decoration: none; font-size: 13px; margin-left: 15px; }
-    header .nav-links a:hover { color: #fff; }
-    header .nav-links a.active { color: #fff; font-weight: bold; }
-    .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
-    .tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-    .tab-btn { padding: 10px 18px; border: none; background: none; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; }
-    .tab-btn.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
-    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
-    th { background-color: #f8fafc; font-weight: 600; color: #475569; }
-    .btn-export { background: var(--primary); color: white; padding: 8px 16px; border: none; border-radius: 5px; font-size: 13px; font-weight: 600; cursor: pointer; float: right; }
-  </style>
-</head>
-<body>
-  <header>
-    <div style="display: flex; align-items: center; height: 100%;">
-      <div style="background: white; padding: 14px 24px; display: flex; align-items: center; justify-content: center; height: 100%; box-sizing: border-box;">
-        <img src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png" alt="UFT" style="height: 48px;">
-      </div>
-      <h1 style="font-size: 22px; font-weight: 600; margin: 0; margin-left: 24px;">Gestão da Produção Acadêmica - GPA</h1>
-    </div>
-    <nav class="nav-links">
-      <a href="index.html">🏛️ Painel da Turma</a>
-      <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
-      <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
-      <a href="producoes.html">📚 Produções</a>
-      <a href="rede.html">🕸️ Rede de Colaboração</a>
-      <a href="cadastro.html">➕ Cadastrar Produção</a>
-      <a href="relatorios.html">📑 Relatórios</a>
-      <a href="admin.html" class="active">⚙️ Administração</a>
-    </nav>
-  </header>
-  <div class="container">
-    <h2 style="color: var(--primary); margin-bottom: 24px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; display: inline-block;">Administração do Sistema</h2>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-
-      <!-- Gestão de Turmas -->
-      <div class="card">
-        <div class="card-title" style="font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 16px;">📚 Gestão de Turmas</div>
-        <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px;">Configure as turmas ativas, níveis (Mestrado/Doutorado) e anos de vigência.</p>
-        <button style="background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer;">+ Nova Turma</button>
-        <div style="margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px;">
-          <div style="font-size: 13px; font-weight: bold;">Turma 2023/2024 — Convênio TRE-GO</div>
-          <div style="font-size: 12px; color: var(--gray);">Mestrado Profissional • 15 discentes</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GPA — Administração da Estrutura</title>
+    <style>
+      :root {
+        --externo-color: #848688;
+        --discente-color: #00897c;
+        --docente-color: #005484;
+        --gray: #848688;
+        --accent: #fdb92e;
+        --secondary: #00897c;
+        --primary: #005484;
+        --primary-hover: #003e62;
+        --bg: #f4f7fa;
+        --card-bg: #ffffff;
+        --border: #d0dce8;
+        --text: #373435;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+          sans-serif;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        padding-bottom: 40px;
+      }
+      header {
+        background: var(--primary);
+        color: white;
+        padding: 0 24px 0 0;
+        height: 76px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+      header h1 {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      header .nav-links a {
+        color: #a8d0e8;
+        text-decoration: none;
+        font-size: 13px;
+        margin-left: 15px;
+      }
+      header .nav-links a:hover {
+        color: #fff;
+      }
+      header .nav-links a.active {
+        color: #fff;
+        font-weight: bold;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+      }
+      .tabs {
+        display: flex;
+        gap: 8px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+      }
+      .tab-btn {
+        padding: 10px 18px;
+        border: none;
+        background: none;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+      }
+      .tab-btn.active {
+        color: var(--primary);
+        border-bottom: 2px solid var(--primary);
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        margin-top: 12px;
+      }
+      th,
+      td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+      th {
+        background-color: #f8fafc;
+        font-weight: 600;
+        color: #475569;
+      }
+      .btn-export {
+        background: var(--primary);
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 5px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        float: right;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div style="display: flex; align-items: center; height: 100%">
+        <div
+          style="
+            background: white;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            box-sizing: border-box;
+          "
+        >
+          <img
+            src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png"
+            alt="UFT"
+            style="height: 48px"
+          />
         </div>
+        <h1
+          style="
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+            margin-left: 24px;
+          "
+        >
+          Gestão da Produção Acadêmica - GPA
+        </h1>
       </div>
+      <nav class="nav-links">
+        <a href="index.html">🏛️ Painel da Turma</a>
+        <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
+        <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
+        <a href="producoes.html">📚 Produções</a>
+        <a href="rede.html">🕸️ Rede de Colaboração</a>
+        <a href="cadastro.html">➕ Cadastrar Produção</a>
+        <a href="relatorios.html">📑 Relatórios</a>
+        <a href="admin.html" class="active">⚙️ Administração</a>
+      </nav>
+    </header>
+    <div class="container">
+      <h2
+        style="
+          color: var(--primary);
+          margin-bottom: 24px;
+          border-bottom: 2px solid var(--accent);
+          padding-bottom: 8px;
+          display: inline-block;
+        "
+      >
+        Administração do Sistema
+      </h2>
 
-      <!-- Cadastro de Membros -->
-      <div class="card">
-        <div class="card-title" style="font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 16px;">👥 Cadastro de Membros</div>
-        <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px;">Gerencie Docentes e Discentes. Lattes e ORCID são obrigatórios para importação.</p>
-        <div style="display: flex; gap: 12px;">
-          <button style="background: var(--docente-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer;">+ Docente</button>
-          <button style="background: var(--discente-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer;">+ Discente</button>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px">
+        <!-- Gestão de Turmas -->
+        <div class="card">
+          <div
+            class="card-title"
+            style="
+              font-size: 16px;
+              font-weight: bold;
+              color: var(--primary);
+              margin-bottom: 16px;
+            "
+          >
+            📚 Gestão de Turmas
+          </div>
+          <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px">
+            Configure as turmas ativas, níveis (Mestrado/Doutorado) e anos de
+            vigência.
+          </p>
+          <button
+            onclick="openTurmaModal()"
+            style="
+              background: white;
+              border: 1px solid var(--border);
+              padding: 8px 16px;
+              border-radius: 4px;
+              font-size: 13px;
+              cursor: pointer;
+            "
+          >
+            + Nova Turma
+          </button>
+          <div
+            id="turmas-list"
+            style="
+              margin-top: 16px;
+              border-top: 1px solid var(--border);
+              padding-top: 12px;
+            "
+          >
+            <!-- Renderizado via JS -->
+          </div>
         </div>
-      </div>
 
-      <!-- Parametrização de Metas -->
-      <div class="card" style="grid-column: 1 / -1;">
-        <div class="card-title" style="font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 16px;">⚙️ Parametrização de Metas (Prazos e CAPES)</div>
+        <!-- Cadastro de Membros -->
+        <div class="card">
+          <div
+            class="card-title"
+            style="
+              font-size: 16px;
+              font-weight: bold;
+              color: var(--primary);
+              margin-bottom: 16px;
+            "
+          >
+            👥 Cadastro de Membros
+          </div>
+          <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px">
+            Gerencie Docentes e Discentes. Lattes e ORCID são obrigatórios para
+            importação.
+          </p>
+          <div style="display: flex; gap: 12px; margin-bottom: 16px">
+            <button
+              onclick="openDocenteModal()"
+              style="
+                background: var(--docente-color);
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-size: 13px;
+                cursor: pointer;
+              "
+            >
+              + Docente
+            </button>
+            <button
+              onclick="openDiscenteModal()"
+              style="
+                background: var(--discente-color);
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-size: 13px;
+                cursor: pointer;
+              "
+            >
+              + Discente
+            </button>
+          </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-          <div>
-            <h4 style="font-size: 14px; margin-bottom: 12px;">Metas de Coprodução (Score CAPES)</h4>
-            <div style="margin-bottom: 12px;">
-              <label style="font-size: 13px; display: block; margin-bottom: 4px;">Meta Mínima Docente-Discente (%)</label>
-              <input type="number" value="70" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100px;">
+          <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('docentes')">
+              👨‍🏫 Docentes
+            </button>
+            <button class="tab-btn" onclick="switchTab('discentes')">
+              🎓 Discentes
+            </button>
+          </div>
+
+          <div
+            id="tab-docentes"
+            class="tab-content active"
+            style="overflow-x: auto"
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Categoria</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="docentes-table-body">
+                <!-- Renderizado via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="tab-discentes" class="tab-content" style="overflow-x: auto">
+            <input
+              type="text"
+              id="search-discentes"
+              placeholder="Buscar discente..."
+              style="
+                width: 100%;
+                padding: 8px;
+                margin-bottom: 10px;
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                font-size: 13px;
+              "
+              oninput="renderDiscentes()"
+            />
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Turma</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="discentes-table-body">
+                <!-- Renderizado via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Parametrização de Metas -->
+        <div class="card" style="grid-column: 1 / -1">
+          <div
+            class="card-title"
+            style="
+              font-size: 16px;
+              font-weight: bold;
+              color: var(--primary);
+              margin-bottom: 16px;
+            "
+          >
+            ⚙️ Parametrização de Metas (Prazos e CAPES)
+          </div>
+
+          <div
+            style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px"
+          >
+            <div>
+              <h4 style="font-size: 14px; margin-bottom: 12px">
+                Metas de Coprodução (Score CAPES)
+              </h4>
+              <div style="margin-bottom: 12px">
+                <label
+                  style="font-size: 13px; display: block; margin-bottom: 4px"
+                  >Meta Mínima Docente-Discente (%)</label
+                >
+                <input
+                  type="number"
+                  id="setting-coprod"
+                  value="70"
+                  style="
+                    padding: 8px;
+                    border: 1px solid var(--border);
+                    border-radius: 4px;
+                    width: 100px;
+                  "
+                />
+              </div>
+            </div>
+            <div>
+              <h4 style="font-size: 14px; margin-bottom: 12px">
+                Prazos Regulamentares (Meses)
+              </h4>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 12px;
+                  margin-bottom: 12px;
+                "
+              >
+                <div>
+                  <label
+                    style="font-size: 13px; display: block; margin-bottom: 4px"
+                    >Mestrado - Qualificação</label
+                  >
+                  <input
+                    type="number"
+                    id="setting-mestrado-qual"
+                    value="12"
+                    style="
+                      padding: 8px;
+                      border: 1px solid var(--border);
+                      border-radius: 4px;
+                      width: 100%;
+                    "
+                  />
+                </div>
+                <div>
+                  <label
+                    style="font-size: 13px; display: block; margin-bottom: 4px"
+                    >Mestrado - Defesa</label
+                  >
+                  <input
+                    type="number"
+                    id="setting-mestrado-def"
+                    value="24"
+                    style="
+                      padding: 8px;
+                      border: 1px solid var(--border);
+                      border-radius: 4px;
+                      width: 100%;
+                    "
+                  />
+                </div>
+              </div>
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px"
+              >
+                <div>
+                  <label
+                    style="font-size: 13px; display: block; margin-bottom: 4px"
+                    >Doutorado - Qualificação</label
+                  >
+                  <input
+                    type="number"
+                    id="setting-doutorado-qual"
+                    value="24"
+                    style="
+                      padding: 8px;
+                      border: 1px solid var(--border);
+                      border-radius: 4px;
+                      width: 100%;
+                    "
+                  />
+                </div>
+                <div>
+                  <label
+                    style="font-size: 13px; display: block; margin-bottom: 4px"
+                    >Doutorado - Defesa</label
+                  >
+                  <input
+                    type="number"
+                    id="setting-doutorado-def"
+                    value="48"
+                    style="
+                      padding: 8px;
+                      border: 1px solid var(--border);
+                      border-radius: 4px;
+                      width: 100%;
+                    "
+                  />
+                </div>
+              </div>
             </div>
           </div>
-          <div>
-            <h4 style="font-size: 14px; margin-bottom: 12px;">Prazos Regulamentares (Meses)</h4>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-              <div>
-                <label style="font-size: 13px; display: block; margin-bottom: 4px;">Mestrado - Qualificação</label>
-                <input type="number" value="12" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
-              </div>
-              <div>
-                <label style="font-size: 13px; display: block; margin-bottom: 4px;">Mestrado - Defesa</label>
-                <input type="number" value="24" style="padding: 8px; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
-              </div>
-            </div>
+
+          <div style="margin-top: 20px; text-align: right">
+            <button
+              onclick="saveSettings()"
+              style="
+                background: var(--secondary);
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 4px;
+                font-size: 14px;
+                font-weight: bold;
+                cursor: pointer;
+              "
+            >
+              Salvar Configurações
+            </button>
           </div>
         </div>
 
-        <div style="margin-top: 20px; text-align: right;">
-          <button style="background: var(--secondary); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;">Salvar Configurações</button>
+        <!-- Persistência de Dados -->
+        <div class="card" style="grid-column: 1 / -1">
+          <div
+            class="card-title"
+            style="
+              font-size: 16px;
+              font-weight: bold;
+              color: var(--primary);
+              margin-bottom: 16px;
+            "
+          >
+            💾 Exportação e Persistência de Dados
+          </div>
+          <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px">
+            Gere o arquivo consolidado de produções e estrutura para commit no
+            repositório.
+          </p>
+          <button
+            onclick="downloadConsolidatedJSON()"
+            style="
+              background: var(--docente-color);
+              color: white;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 4px;
+              font-size: 14px;
+              font-weight: bold;
+              cursor: pointer;
+            "
+          >
+            Baixar base consolidada (producoes.json)
+          </button>
         </div>
       </div>
-
-
-      <!-- Persistência de Dados -->
-      <div class="card" style="grid-column: 1 / -1;">
-        <div class="card-title" style="font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 16px;">💾 Exportação e Persistência de Dados</div>
-        <p style="font-size: 13px; color: var(--gray); margin-bottom: 16px;">Gere o arquivo consolidado de produções e estrutura para commit no repositório.</p>
-        <button onclick="downloadConsolidatedJSON()" style="background: var(--docente-color); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;">Baixar base consolidada (producoes.json)</button>
-      </div>
-
     </div>
 
-  </div>
-  <script>
+    <!-- Modals -->
+    <style>
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-overlay.active {
+        display: flex;
+      }
+      .modal {
+        background: white;
+        width: 100%;
+        max-width: 500px;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 12px;
+      }
+      .modal-header h3 {
+        font-size: 16px;
+        color: var(--primary);
+      }
+      .btn-close {
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        color: #888;
+      }
+      .form-group {
+        margin-bottom: 16px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #475569;
+      }
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 13px;
+        outline: none;
+      }
+      .form-group input:focus,
+      .form-group select:focus {
+        border-color: var(--primary);
+      }
+      .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 24px;
+      }
+      .btn-cancel {
+        padding: 10px 16px;
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: bold;
+      }
+      .btn-save {
+        padding: 10px 16px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: bold;
+      }
+    </style>
 
-    function downloadConsolidatedJSON() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(productionsData, null, 2));
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", "producoes.json");
-      document.body.appendChild(downloadAnchorNode); // required for firefox
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
-    }
+    <!-- Modal Nova Turma -->
+    <div class="modal-overlay" id="modal-turma">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="modal-turma-title">Nova Turma</h3>
+          <button class="btn-close" onclick="closeTurmaModal()">✕</button>
+        </div>
+        <form id="form-turma" onsubmit="saveTurma(event)">
+          <input type="hidden" id="turma-id" />
+          <div class="form-group">
+            <label>Nome da Turma / Convênio</label>
+            <input
+              type="text"
+              id="turma-nome"
+              placeholder="Ex.: Turma 2023/2024 — Convênio TRE-GO"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>Nível / Modalidade</label>
+            <select id="turma-nivel" required>
+              <option value="Mestrado Profissional">
+                Mestrado Profissional
+              </option>
+              <option value="Doutorado Profissional">
+                Doutorado Profissional
+              </option>
+            </select>
+          </div>
+          <div style="display: flex; gap: 12px">
+            <div class="form-group" style="flex: 1">
+              <label>Ano de Ingresso</label>
+              <input
+                type="number"
+                id="turma-inicio"
+                min="2000"
+                max="2100"
+                required
+              />
+            </div>
+            <div class="form-group" style="flex: 1">
+              <label>Ano de Fim (Vigência)</label>
+              <input
+                type="number"
+                id="turma-fim"
+                min="2000"
+                max="2100"
+                required
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn-cancel"
+              onclick="closeTurmaModal()"
+            >
+              Cancelar
+            </button>
+            <button type="submit" class="btn-save">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
-    let productionsData = JSON.parse(localStorage.getItem("gpa_productions") || "[]");
-  </script>
-</body>
+    <!-- Modal Novo Docente -->
+    <div class="modal-overlay" id="modal-docente">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="modal-docente-title">Novo Docente</h3>
+          <button class="btn-close" onclick="closeDocenteModal()">✕</button>
+        </div>
+        <form id="form-docente" onsubmit="saveDocente(event)">
+          <input type="hidden" id="docente-id" />
+          <div class="form-group">
+            <label>Nome Completo do Docente</label>
+            <input type="text" id="docente-nome" required />
+          </div>
+          <div class="form-group">
+            <label>Categoria</label>
+            <select id="docente-categoria" required>
+              <option value="Permanente">Permanente</option>
+              <option value="Colaborador">Colaborador</option>
+              <option value="Visitante">Visitante</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Link / ID do Currículo Lattes (Opcional)</label>
+            <input type="text" id="docente-lattes" />
+          </div>
+          <div class="form-group">
+            <label>ORCID (Opcional)</label>
+            <input type="text" id="docente-orcid" />
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn-cancel"
+              onclick="closeDocenteModal()"
+            >
+              Cancelar
+            </button>
+            <button type="submit" class="btn-save">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Novo Discente -->
+    <div class="modal-overlay" id="modal-discente">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="modal-discente-title">Novo Discente</h3>
+          <button class="btn-close" onclick="closeDiscenteModal()">✕</button>
+        </div>
+        <form id="form-discente" onsubmit="saveDiscente(event)">
+          <input type="hidden" id="discente-id" />
+          <div class="form-group">
+            <label>Nome Completo do Discente</label>
+            <input type="text" id="discente-nome" required />
+          </div>
+          <div class="form-group">
+            <label>Vínculo com Turma</label>
+            <select
+              id="discente-turma"
+              required
+              onchange="autoFillDiscenteNivel()"
+            >
+              <!-- Populated via JS -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Nível / Modalidade</label>
+            <select id="discente-nivel" required>
+              <option value="Mestrando">Mestrando(a) Profissional</option>
+              <option value="Doutorando">Doutorando(a) Profissional</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Orientador(a)</label>
+            <select id="discente-orientador">
+              <option value="">Sem orientador(a) definido</option>
+              <!-- Populated via JS -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status Atual</label>
+            <select id="discente-status" required>
+              <option value="em_curso">Em curso</option>
+              <option value="qualificado">Qualificado(a)</option>
+              <option value="defesa_agendada">Defesa agendada</option>
+              <option value="titulado">Titulado(a)</option>
+            </select>
+          </div>
+          <div style="display: flex; gap: 12px">
+            <div class="form-group" style="flex: 1">
+              <label>Data de Ingresso (Opcional)</label>
+              <input type="date" id="discente-ingresso" />
+            </div>
+            <div class="form-group" style="flex: 1">
+              <label>Data de Defesa (Opcional)</label>
+              <input type="date" id="discente-defesa" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Link / ID do Currículo Lattes (Opcional)</label>
+            <input type="text" id="discente-lattes" />
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn-cancel"
+              onclick="closeDiscenteModal()"
+            >
+              Cancelar
+            </button>
+            <button type="submit" class="btn-save">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      function switchTab(tabId) {
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((btn) => btn.classList.remove("active"));
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((content) => content.classList.remove("active"));
+        event.target.classList.add("active");
+        document.getElementById("tab-" + tabId).classList.add("active");
+      }
+
+      function downloadConsolidatedJSON() {
+        const exportData = {
+          estrutura: estruturaData,
+          producoes: productionsData,
+        };
+        const dataStr =
+          "data:text/json;charset=utf-8," +
+          encodeURIComponent(JSON.stringify(exportData, null, 2));
+        const downloadAnchorNode = document.createElement("a");
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "gpa_consolidado.json");
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+      }
+
+      let productionsData = JSON.parse(
+        localStorage.getItem("gpa_productions") || "[]",
+      );
+      let estruturaData = { turmas: [], docentes: [], discentes: [] };
+
+      async function initializeApp() {
+        try {
+          const localStructure = localStorage.getItem("gpa_structure");
+          if (localStructure) {
+            estruturaData = JSON.parse(localStructure);
+          } else {
+            const response = await fetch("data/estrutura_gpa.json");
+            if (response.ok) {
+              estruturaData = await response.json();
+              // Normalize in case some keys are missing
+              if (!estruturaData.turmas) estruturaData.turmas = [];
+              if (!estruturaData.docentes) estruturaData.docentes = [];
+              if (!estruturaData.discentes) estruturaData.discentes = [];
+              saveStructure();
+            }
+          }
+        } catch (error) {
+          console.error("Failed to load gpa_structure:", error);
+        }
+
+        // Initialize view
+        renderTurmas();
+        renderDocentes();
+        renderDiscentes();
+        populateSelects();
+        loadSettings();
+      }
+
+      function saveStructure() {
+        localStorage.setItem("gpa_structure", JSON.stringify(estruturaData));
+        // Dispatch storage event so other tabs sync immediately (though standard storage event only fires on OTHER tabs, dispatching a custom one can help local updates if needed, here we just call renders)
+        window.dispatchEvent(new Event("storage"));
+
+        renderTurmas();
+        renderDocentes();
+        renderDiscentes();
+        populateSelects();
+      }
+
+      // --- Gestão de Turmas ---
+      function openTurmaModal(id = null) {
+        const modal = document.getElementById("modal-turma");
+        document.getElementById("form-turma").reset();
+
+        if (id) {
+          document.getElementById("modal-turma-title").innerText =
+            "Editar Turma";
+          const turma = estruturaData.turmas.find((t) => t.id === id);
+          if (turma) {
+            document.getElementById("turma-id").value = turma.id;
+            document.getElementById("turma-nome").value = turma.nome;
+            document.getElementById("turma-nivel").value = turma.nivel;
+            document.getElementById("turma-inicio").value = turma.ano_inicio;
+            document.getElementById("turma-fim").value = turma.ano_fim;
+          }
+        } else {
+          document.getElementById("modal-turma-title").innerText = "Nova Turma";
+          document.getElementById("turma-id").value = "";
+        }
+        modal.classList.add("active");
+      }
+
+      function closeTurmaModal() {
+        document.getElementById("modal-turma").classList.remove("active");
+      }
+
+      function saveTurma(event) {
+        event.preventDefault();
+        const id = document.getElementById("turma-id").value;
+        const nome = document.getElementById("turma-nome").value;
+        const nivel = document.getElementById("turma-nivel").value;
+        const ano_inicio = parseInt(
+          document.getElementById("turma-inicio").value,
+        );
+        const ano_fim = parseInt(document.getElementById("turma-fim").value);
+
+        if (id) {
+          const index = estruturaData.turmas.findIndex((t) => t.id === id);
+          if (index !== -1) {
+            estruturaData.turmas[index] = {
+              ...estruturaData.turmas[index],
+              nome,
+              nivel,
+              ano_inicio,
+              ano_fim,
+            };
+          }
+        } else {
+          const newId = "turma_" + Date.now();
+          estruturaData.turmas.push({
+            id: newId,
+            nome,
+            nivel,
+            ano_inicio,
+            ano_fim,
+          });
+        }
+
+        saveStructure();
+        closeTurmaModal();
+      }
+
+      function deleteTurma(id) {
+        if (confirm("Tem certeza que deseja excluir esta turma?")) {
+          estruturaData.turmas = estruturaData.turmas.filter(
+            (t) => t.id !== id,
+          );
+          // Also remove references from discentes? (Not requested, but safe to leave as is or clear them).
+          saveStructure();
+        }
+      }
+
+      function renderTurmas() {
+        const listDiv = document.getElementById("turmas-list");
+        if (!listDiv) return;
+        listDiv.innerHTML = "";
+
+        if (!estruturaData.turmas || estruturaData.turmas.length === 0) {
+          listDiv.innerHTML =
+            '<p style="font-size:13px; color:#888;">Nenhuma turma cadastrada.</p>';
+          return;
+        }
+
+        estruturaData.turmas.forEach((turma) => {
+          // Count discentes
+          const count = (estruturaData.discentes || []).filter(
+            (d) => d.turma_id === turma.id,
+          ).length;
+
+          const div = document.createElement("div");
+          div.style.cssText =
+            "display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);";
+          div.innerHTML = `
+          <div>
+            <div style="font-size: 13px; font-weight: bold; color: var(--primary);">${turma.nome} (${turma.ano_inicio} - ${turma.ano_fim})</div>
+            <div style="font-size: 12px; color: var(--gray); margin-top: 4px;">${turma.nivel} • ${count} discente(s)</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button onclick="openTurmaModal('${turma.id}')" style="background:none; border:1px solid #cbd5e1; padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;">Editar</button>
+            <button onclick="deleteTurma('${turma.id}')" style="background:none; border:1px solid #fecdd3; color:#e11d48; padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;">Excluir</button>
+          </div>
+        `;
+          listDiv.appendChild(div);
+        });
+      }
+
+      // --- Gestão de Docentes ---
+      function openDocenteModal(id = null) {
+        const modal = document.getElementById("modal-docente");
+        document.getElementById("form-docente").reset();
+
+        if (id) {
+          document.getElementById("modal-docente-title").innerText =
+            "Editar Docente";
+          const doc = estruturaData.docentes.find((d) => d.id === id);
+          if (doc) {
+            document.getElementById("docente-id").value = doc.id;
+            document.getElementById("docente-nome").value = doc.nome;
+            document.getElementById("docente-categoria").value =
+              doc.categoria || "Permanente";
+            document.getElementById("docente-lattes").value = doc.lattes || "";
+            document.getElementById("docente-orcid").value = doc.orcid || "";
+          }
+        } else {
+          document.getElementById("modal-docente-title").innerText =
+            "Novo Docente";
+          document.getElementById("docente-id").value = "";
+        }
+        modal.classList.add("active");
+      }
+
+      function closeDocenteModal() {
+        document.getElementById("modal-docente").classList.remove("active");
+      }
+
+      function saveDocente(event) {
+        event.preventDefault();
+        const id = document.getElementById("docente-id").value;
+        const nome = document.getElementById("docente-nome").value;
+        const categoria = document.getElementById("docente-categoria").value;
+        const lattes = document.getElementById("docente-lattes").value;
+        const orcid = document.getElementById("docente-orcid").value;
+
+        if (id) {
+          const index = estruturaData.docentes.findIndex((d) => d.id === id);
+          if (index !== -1) {
+            estruturaData.docentes[index] = {
+              ...estruturaData.docentes[index],
+              nome,
+              categoria,
+              lattes,
+              orcid,
+            };
+          }
+        } else {
+          const newId = "doc_" + Date.now();
+          estruturaData.docentes.push({
+            id: newId,
+            nome,
+            categoria,
+            lattes,
+            orcid,
+          });
+        }
+
+        saveStructure();
+        closeDocenteModal();
+      }
+
+      function deleteDocente(id) {
+        if (confirm("Tem certeza que deseja excluir este docente?")) {
+          estruturaData.docentes = estruturaData.docentes.filter(
+            (d) => d.id !== id,
+          );
+          saveStructure();
+        }
+      }
+
+      function renderDocentes() {
+        const tbody = document.getElementById("docentes-table-body");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        if (!estruturaData.docentes || estruturaData.docentes.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="3" style="text-align:center; color:#888;">Nenhum docente cadastrado.</td></tr>';
+          return;
+        }
+
+        estruturaData.docentes
+          .sort((a, b) => a.nome.localeCompare(b.nome))
+          .forEach((doc) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+          <td style="font-weight: 600; color: var(--primary);">${doc.nome}</td>
+          <td>${doc.categoria || "-"}</td>
+          <td>
+            <div style="display: flex; gap: 8px;">
+              <button onclick="openDocenteModal('${doc.id}')" style="background:none; border:1px solid #cbd5e1; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Editar</button>
+              <button onclick="deleteDocente('${doc.id}')" style="background:none; border:1px solid #fecdd3; color:#e11d48; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Excluir</button>
+            </div>
+          </td>
+        `;
+            tbody.appendChild(tr);
+          });
+      }
+
+      // --- Gestão de Discentes ---
+      function openDiscenteModal(id = null) {
+        const modal = document.getElementById("modal-discente");
+        document.getElementById("form-discente").reset();
+        populateSelects(); // ensure up to date
+
+        if (id) {
+          document.getElementById("modal-discente-title").innerText =
+            "Editar Discente";
+          const disc = estruturaData.discentes.find((d) => d.id === id);
+          if (disc) {
+            document.getElementById("discente-id").value = disc.id;
+            document.getElementById("discente-nome").value = disc.nome;
+            document.getElementById("discente-turma").value =
+              disc.turma_id || "";
+            document.getElementById("discente-nivel").value =
+              disc.titulacao || "Mestrando";
+            document.getElementById("discente-orientador").value =
+              disc.orientador_id || "";
+            document.getElementById("discente-status").value =
+              disc.status || "em_curso";
+            document.getElementById("discente-ingresso").value =
+              disc.data_ingresso || "";
+            document.getElementById("discente-defesa").value =
+              disc.data_defesa || "";
+            document.getElementById("discente-lattes").value =
+              disc.lattes || "";
+          }
+        } else {
+          document.getElementById("modal-discente-title").innerText =
+            "Novo Discente";
+          document.getElementById("discente-id").value = "";
+        }
+        modal.classList.add("active");
+      }
+
+      function closeDiscenteModal() {
+        document.getElementById("modal-discente").classList.remove("active");
+      }
+
+      function autoFillDiscenteNivel() {
+        const turmaId = document.getElementById("discente-turma").value;
+        const turma = estruturaData.turmas.find((t) => t.id === turmaId);
+        if (turma) {
+          const nivelSelect = document.getElementById("discente-nivel");
+          if (turma.nivel && turma.nivel.toLowerCase().includes("doutorado")) {
+            nivelSelect.value = "Doutorando";
+          } else {
+            nivelSelect.value = "Mestrando";
+          }
+        }
+      }
+
+      function saveDiscente(event) {
+        event.preventDefault();
+        const id = document.getElementById("discente-id").value;
+        const nome = document.getElementById("discente-nome").value;
+        const turma_id = document.getElementById("discente-turma").value;
+        const titulacao = document.getElementById("discente-nivel").value;
+        const orientador_id = document.getElementById(
+          "discente-orientador",
+        ).value;
+        const status = document.getElementById("discente-status").value;
+        const data_ingresso =
+          document.getElementById("discente-ingresso").value;
+        const data_defesa = document.getElementById("discente-defesa").value;
+        const lattes = document.getElementById("discente-lattes").value;
+
+        if (id) {
+          const index = estruturaData.discentes.findIndex((d) => d.id === id);
+          if (index !== -1) {
+            estruturaData.discentes[index] = {
+              ...estruturaData.discentes[index],
+              nome,
+              turma_id,
+              titulacao,
+              orientador_id,
+              status,
+              data_ingresso,
+              data_defesa,
+              lattes,
+            };
+          }
+        } else {
+          const newId = "disc_" + Date.now();
+          estruturaData.discentes.push({
+            id: newId,
+            nome,
+            turma_id,
+            titulacao,
+            orientador_id,
+            status,
+            data_ingresso,
+            data_defesa,
+            lattes,
+          });
+        }
+
+        saveStructure();
+        closeDiscenteModal();
+      }
+
+      function deleteDiscente(id) {
+        if (confirm("Tem certeza que deseja excluir este discente?")) {
+          estruturaData.discentes = estruturaData.discentes.filter(
+            (d) => d.id !== id,
+          );
+          saveStructure();
+        }
+      }
+
+      function renderDiscentes() {
+        const tbody = document.getElementById("discentes-table-body");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        const search = (
+          document.getElementById("search-discentes")?.value || ""
+        ).toLowerCase();
+
+        let discentes = estruturaData.discentes || [];
+        if (search) {
+          discentes = discentes.filter((d) =>
+            d.nome.toLowerCase().includes(search),
+          );
+        }
+
+        if (discentes.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="4" style="text-align:center; color:#888;">Nenhum discente encontrado.</td></tr>';
+          return;
+        }
+
+        discentes
+          .sort((a, b) => a.nome.localeCompare(b.nome))
+          .forEach((disc) => {
+            const turma = estruturaData.turmas.find(
+              (t) => t.id === disc.turma_id,
+            );
+            const turmaNome = turma ? turma.nome : "Sem Turma";
+
+            let statusText = "Desconhecido";
+            if (disc.status === "em_curso") statusText = "Em curso";
+            else if (disc.status === "qualificado") statusText = "Qualificado";
+            else if (disc.status === "defesa_agendada")
+              statusText = "Defesa agend.";
+            else if (disc.status === "titulado") statusText = "Titulado";
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+          <td style="font-weight: 600; color: var(--primary);">${disc.nome}</td>
+          <td>${turmaNome}</td>
+          <td><span style="background: #e4eef7; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${statusText}</span></td>
+          <td>
+            <div style="display: flex; gap: 8px;">
+              <button onclick="openDiscenteModal('${disc.id}')" style="background:none; border:1px solid #cbd5e1; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Editar</button>
+              <button onclick="deleteDiscente('${disc.id}')" style="background:none; border:1px solid #fecdd3; color:#e11d48; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Excluir</button>
+            </div>
+          </td>
+        `;
+            tbody.appendChild(tr);
+          });
+      }
+
+      function populateSelects() {
+        const turmaSelect = document.getElementById("discente-turma");
+        if (turmaSelect) {
+          const currentVal = turmaSelect.value;
+          turmaSelect.innerHTML =
+            '<option value="">Selecione a Turma...</option>';
+          (estruturaData.turmas || []).forEach((t) => {
+            const opt = document.createElement("option");
+            opt.value = t.id;
+            opt.textContent = t.nome;
+            turmaSelect.appendChild(opt);
+          });
+          turmaSelect.value = currentVal;
+        }
+
+        const orientadorSelect = document.getElementById("discente-orientador");
+        if (orientadorSelect) {
+          const currentVal = orientadorSelect.value;
+          orientadorSelect.innerHTML =
+            '<option value="">Sem orientador(a) definido</option>';
+          (estruturaData.docentes || [])
+            .sort((a, b) => a.nome.localeCompare(b.nome))
+            .forEach((d) => {
+              const opt = document.createElement("option");
+              opt.value = d.id;
+              opt.textContent = d.nome;
+              orientadorSelect.appendChild(opt);
+            });
+          orientadorSelect.value = currentVal;
+        }
+      }
+
+      // --- Parametrização de Metas ---
+      function loadSettings() {
+        const localSettings = localStorage.getItem("gpa_settings");
+        if (localSettings) {
+          try {
+            const s = JSON.parse(localSettings);
+            if (s.coprod !== undefined)
+              document.getElementById("setting-coprod").value = s.coprod;
+            if (s.mestrado_qual !== undefined)
+              document.getElementById("setting-mestrado-qual").value =
+                s.mestrado_qual;
+            if (s.mestrado_def !== undefined)
+              document.getElementById("setting-mestrado-def").value =
+                s.mestrado_def;
+            if (s.doutorado_qual !== undefined)
+              document.getElementById("setting-doutorado-qual").value =
+                s.doutorado_qual;
+            if (s.doutorado_def !== undefined)
+              document.getElementById("setting-doutorado-def").value =
+                s.doutorado_def;
+          } catch (e) {
+            console.error("Error parsing settings", e);
+          }
+        }
+      }
+
+      function saveSettings() {
+        const settings = {
+          coprod: parseInt(document.getElementById("setting-coprod").value),
+          mestrado_qual: parseInt(
+            document.getElementById("setting-mestrado-qual").value,
+          ),
+          mestrado_def: parseInt(
+            document.getElementById("setting-mestrado-def").value,
+          ),
+          doutorado_qual: parseInt(
+            document.getElementById("setting-doutorado-qual").value,
+          ),
+          doutorado_def: parseInt(
+            document.getElementById("setting-doutorado-def").value,
+          ),
+        };
+        localStorage.setItem("gpa_settings", JSON.stringify(settings));
+        window.dispatchEvent(new Event("storage"));
+        alert("Configurações salvas com sucesso!");
+      }
+
+      document.addEventListener("DOMContentLoaded", initializeApp);
+    </script>
+  </body>
 </html>
