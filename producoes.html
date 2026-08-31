@@ -1,420 +1,857 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Gestão Acadêmica — Produções</title>
-  <style>
-    :root {
-      --gray: #848688;
-      --accent: #FDB92E;
-      --secondary: #00897C;
-      --primary: #005484;
-      --primary-hover: #003e62;
-      --docente-color: #005484;
-      --discente-color: #00897C;
-      --externo-color: #848688;
-      --bg: #f4f7fa;
-      --card-bg: #ffffff;
-      --border: #d0dce8;
-      --text: #373435;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 40px; }
-    header {
-      background: var(--primary);
-      color: white;
-      padding: 0 24px 0 0; height: 76px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    header h1 { font-size: 16px; font-weight: 600; }
-    header .nav-links a { color: #a8d0e8; text-decoration: none; font-size: 13px; margin-left: 15px; }
-    header .nav-links a:hover { color: #fff; }
-    header .nav-links a.active { color: #fff; font-weight: bold; }
-    .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
-    .card-title { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-    .btn-new { background: var(--secondary); color: white; text-decoration: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; font-weight: 600; transition: background 0.2s; }
-    .btn-new:hover { background: #006b61; }
-    .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border); }
-    .filters input, .filters select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 5px; font-size: 13px; outline: none; min-width: 200px; flex: 1; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
-    th { background-color: #f8fafc; font-weight: 600; color: #475569; }
-    tr:hover { background-color: #f1f5f9; }
-    .badge-author { font-size: 11px; padding: 2px 6px; border-radius: 12px; color: #fff; display: inline-block; margin-right: 4px; margin-bottom: 4px; }
-    .badge-docente { background: var(--docente-color); }
-    .badge-discente { background: var(--discente-color); }
-    .badge-externo { background: var(--externo-color); }
-  </style>
-</head>
-<body>
-  <header>
-    <div style="display: flex; align-items: center; height: 100%;">
-      <div style="background: white; padding: 14px 24px; display: flex; align-items: center; justify-content: center; height: 100%; box-sizing: border-box;">
-        <img src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png" alt="UFT" style="height: 48px;">
-      </div>
-      <h1 style="font-size: 22px; font-weight: 600; margin: 0; margin-left: 24px;">Gestão da Produção Acadêmica - GPA</h1>
-    </div>
-    <nav class="nav-links">
-      <a href="index.html">🏛️ Painel da Turma</a>
-      <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
-      <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
-      <a href="producoes.html" class="active">📚 Produções</a>
-      <a href="rede.html">🕸️ Rede de Colaboração</a>
-      <a href="cadastro.html">➕ Cadastrar Produção</a>
-      <a href="relatorios.html">📑 Relatórios</a>
-      <a href="admin.html">⚙️ Administração</a>
-    </nav>
-  </header>
-
-  <div class="container">
-    <div class="card">
-      <div class="card-title">
-        Acervo de Produções Acadêmicas
-        <button onclick="downloadConsolidatedJSON()" style="background: var(--docente-color); color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer; margin-right: 12px;">💾 Baixar base consolidada (producoes.json)</button>
-        <a href="cadastro.html" class="btn-new">➕ Cadastrar Nova Produção</a>
-      </div>
-
-      <div class="filters">
-        <input type="text" id="search-text" placeholder="Buscar por título ou autor..." oninput="filterTable()">
-        <select id="filter-type" onchange="filterTable()">
-          <option value="">Todos os tipos</option>
-          <option value="Artigo para periódicos">Artigo para Periódicos</option>
-          <option value="Artigo para eventos">Artigo para Eventos</option>
-          <option value="Capítulo de livros">Capítulo de Livro</option>
-          <option value="PTTs">Produto Técnico / Tecnológico (PTT)</option>
-        </select>
-        <select id="filter-year" onchange="filterTable()">
-          <option value="">Todos os anos</option>
-          <option value="2025">2025</option>
-          <option value="2024">2024</option>
-          <option value="2023">2023</option>
-        </select>
-        <select id="filter-inst" onchange="filterTable()">
-          <option value="">Todas as Instituições</option>
-          <option value="TRE-GO">TRE-GO</option>
-          <option value="UFT">UFT</option>
-        </select>
-      </div>
-
-      <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>Título / Veículo</th>
-              <th>Tipo</th>
-              <th>Ano</th>
-              <th>Inst. Beneficiada</th>
-              <th>Autores</th>
-              <th style='width: 100px; text-align: center;'>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="table-body"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- Modal de Edição -->
-  <div id="modal-edicao" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: white; width: 600px; max-width: 90%; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-      <h3 style="color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">✏️ Editar Produção</h3>
-      <input type="hidden" id="edit-id">
-
-      <div style="margin-bottom: 12px;">
-        <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Título</label>
-        <input type="text" id="edit-titulo" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-        <div>
-          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Veículo</label>
-          <input type="text" id="edit-veiculo" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Gestão Acadêmica — Produções</title>
+    <style>
+      :root {
+        --gray: #848688;
+        --accent: #fdb92e;
+        --secondary: #00897c;
+        --primary: #005484;
+        --primary-hover: #003e62;
+        --docente-color: #005484;
+        --discente-color: #00897c;
+        --externo-color: #848688;
+        --bg: #f4f7fa;
+        --card-bg: #ffffff;
+        --border: #d0dce8;
+        --text: #373435;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+          sans-serif;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        padding-bottom: 40px;
+      }
+      header {
+        background: var(--primary);
+        color: white;
+        padding: 0 24px 0 0;
+        height: 76px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+      header h1 {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      header .nav-links a {
+        color: #a8d0e8;
+        text-decoration: none;
+        font-size: 13px;
+        margin-left: 15px;
+      }
+      header .nav-links a:hover {
+        color: #fff;
+      }
+      header .nav-links a.active {
+        color: #fff;
+        font-weight: bold;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+      }
+      .card-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .btn-new {
+        background: var(--secondary);
+        color: white;
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: background 0.2s;
+      }
+      .btn-new:hover {
+        background: #006b61;
+      }
+      .filters {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        background: #f8fafc;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+      .filters input,
+      .filters select {
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        font-size: 13px;
+        outline: none;
+        min-width: 200px;
+        flex: 1;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+      th {
+        background-color: #f8fafc;
+        font-weight: 600;
+        color: #475569;
+      }
+      tr:hover {
+        background-color: #f1f5f9;
+      }
+      .badge-author {
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 12px;
+        color: #fff;
+        display: inline-block;
+        margin-right: 4px;
+        margin-bottom: 4px;
+      }
+      .badge-docente {
+        background: var(--docente-color);
+      }
+      .badge-discente {
+        background: var(--discente-color);
+      }
+      .badge-externo {
+        background: var(--externo-color);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div style="display: flex; align-items: center; height: 100%">
+        <div
+          style="
+            background: white;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            box-sizing: border-box;
+          "
+        >
+          <img
+            src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png"
+            alt="UFT"
+            style="height: 48px"
+          />
         </div>
-        <div>
-          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Tipo</label>
-          <select id="edit-tipo" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
-            <option value="Artigo para periódicos">Artigo para Periódicos</option>
+        <h1
+          style="
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+            margin-left: 24px;
+          "
+        >
+          Gestão da Produção Acadêmica - GPA
+        </h1>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html">🏛️ Painel da Turma</a>
+        <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
+        <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
+        <a href="producoes.html" class="active">📚 Produções</a>
+        <a href="rede.html">🕸️ Rede de Colaboração</a>
+        <a href="cadastro.html">➕ Cadastrar Produção</a>
+        <a href="relatorios.html">📑 Relatórios</a>
+        <a href="admin.html">⚙️ Administração</a>
+      </nav>
+    </header>
+
+    <div class="container">
+      <div class="card">
+        <div class="card-title">
+          Acervo de Produções Acadêmicas
+          <button
+            onclick="downloadConsolidatedJSON()"
+            style="
+              background: var(--docente-color);
+              color: white;
+              border: none;
+              padding: 8px 16px;
+              border-radius: 4px;
+              font-size: 14px;
+              font-weight: bold;
+              cursor: pointer;
+              margin-right: 12px;
+            "
+          >
+            💾 Baixar base consolidada (producoes.json)
+          </button>
+          <a href="cadastro.html" class="btn-new">➕ Cadastrar Nova Produção</a>
+        </div>
+
+        <div class="filters">
+          <select id="filterTurma" onchange="filterTable()">
+            <option value="">Todas as Turmas</option>
+          </select>
+          <input
+            type="text"
+            id="search-text"
+            placeholder="Buscar por título ou autor..."
+            oninput="filterTable()"
+          />
+          <select id="filter-type" onchange="filterTable()">
+            <option value="">Todos os tipos</option>
+            <option value="Artigo para periódicos">
+              Artigo para Periódicos
+            </option>
             <option value="Artigo para eventos">Artigo para Eventos</option>
             <option value="Capítulo de livros">Capítulo de Livro</option>
-            <option value="Livro">Livro</option>
             <option value="PTTs">Produto Técnico / Tecnológico (PTT)</option>
           </select>
-        </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-        <div>
-          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Ano</label>
-          <input type="number" id="edit-ano" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
-        </div>
-        <div>
-          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Situação</label>
-          <select id="edit-situacao" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
-            <option value="Publicado">Publicado</option>
-            <option value="Aceito">Aceito</option>
-            <option value="Submetido">Submetido</option>
+          <select id="filter-year" onchange="filterTable()">
+            <option value="">Todos os anos</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
           </select>
-        </div>
-        <div>
-          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Inst. Beneficiada</label>
-          <select id="edit-inst" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px;">
-            <option value="Geral">Geral</option>
+          <select id="filter-inst" onchange="filterTable()">
+            <option value="">Todas as Instituições</option>
             <option value="TRE-GO">TRE-GO</option>
             <option value="UFT">UFT</option>
           </select>
         </div>
-      </div>
 
-      <div style="margin-bottom: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <label style="font-size: 12px; font-weight: bold;">Coautores</label>
-          <button onclick="adicionarCoautorEdicao()" style="background: none; border: 1px dashed var(--secondary); color: var(--secondary); padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">+ Adicionar</button>
+        <div style="overflow-x: auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Título / Veículo</th>
+                <th>Tipo</th>
+                <th>Ano</th>
+                <th>Inst. Beneficiada</th>
+                <th>Autores</th>
+                <th style="width: 100px; text-align: center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
         </div>
-        <div id="edit-autores-list" style="display: flex; flex-direction: column; gap: 8px;">
-          <!-- JS injects authors -->
-        </div>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border); padding-top: 16px;">
-        <button onclick="fecharModalEdicao()" style="background: white; border: 1px solid var(--border); padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px;">Cancelar</button>
-        <button onclick="salvarEdicao()" style="background: var(--secondary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;">Salvar Alterações</button>
       </div>
     </div>
-  </div>
 
-  <script>
+    <!-- Modal de Edição -->
+    <div
+      id="modal-edicao"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+      "
+    >
+      <div
+        style="
+          background: white;
+          width: 600px;
+          max-width: 90%;
+          max-height: 90vh;
+          overflow-y: auto;
+          border-radius: 8px;
+          padding: 24px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        "
+      >
+        <h3
+          style="
+            color: var(--primary);
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+          "
+        >
+          ✏️ Editar Produção
+        </h3>
+        <input type="hidden" id="edit-id" />
 
-    function renderAutores(autores) {
-      if (!autores || !Array.isArray(autores)) return '';
-      return autores.map((a, index) => {
-        const cat = (a.categoria || a.type || 'externo').toLowerCase();
-        const isFirst = a.is_first_author || index === 0;
-        const badgeFirst = isFirst ? '<span class="badge-first" title="Primeiro Autor">⭐</span> ' : '';
-        return `<span class="badge-author badge-${cat}">${badgeFirst}${a.nome}</span>`;
-      }).join(' ');
-    }
+        <div style="margin-bottom: 12px">
+          <label
+            style="
+              font-size: 12px;
+              font-weight: bold;
+              display: block;
+              margin-bottom: 4px;
+            "
+            >Título</label
+          >
+          <input
+            type="text"
+            id="edit-titulo"
+            style="
+              width: 100%;
+              padding: 8px;
+              border: 1px solid var(--border);
+              border-radius: 4px;
+            "
+          />
+        </div>
 
-    let productionsData = [];
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+          "
+        >
+          <div>
+            <label
+              style="
+                font-size: 12px;
+                font-weight: bold;
+                display: block;
+                margin-bottom: 4px;
+              "
+              >Veículo</label
+            >
+            <input
+              type="text"
+              id="edit-veiculo"
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid var(--border);
+                border-radius: 4px;
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                font-size: 12px;
+                font-weight: bold;
+                display: block;
+                margin-bottom: 4px;
+              "
+              >Tipo</label
+            >
+            <select
+              id="edit-tipo"
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid var(--border);
+                border-radius: 4px;
+              "
+            >
+              <option value="Artigo para periódicos">
+                Artigo para Periódicos
+              </option>
+              <option value="Artigo para eventos">Artigo para Eventos</option>
+              <option value="Capítulo de livros">Capítulo de Livro</option>
+              <option value="Livro">Livro</option>
+              <option value="PTTs">Produto Técnico / Tecnológico (PTT)</option>
+            </select>
+          </div>
+        </div>
 
-    let estruturaData = { docentes: [], discentes: [] };
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+          "
+        >
+          <div>
+            <label
+              style="
+                font-size: 12px;
+                font-weight: bold;
+                display: block;
+                margin-bottom: 4px;
+              "
+              >Ano</label
+            >
+            <input
+              type="number"
+              id="edit-ano"
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid var(--border);
+                border-radius: 4px;
+              "
+            />
+          </div>
+          <div>
+            <label
+              style="
+                font-size: 12px;
+                font-weight: bold;
+                display: block;
+                margin-bottom: 4px;
+              "
+              >Situação</label
+            >
+            <select
+              id="edit-situacao"
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid var(--border);
+                border-radius: 4px;
+              "
+            >
+              <option value="Publicado">Publicado</option>
+              <option value="Aceito">Aceito</option>
+              <option value="Submetido">Submetido</option>
+            </select>
+          </div>
+          <div>
+            <label
+              style="
+                font-size: 12px;
+                font-weight: bold;
+                display: block;
+                margin-bottom: 4px;
+              "
+              >Inst. Beneficiada</label
+            >
+            <select
+              id="edit-inst"
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid var(--border);
+                border-radius: 4px;
+              "
+            >
+              <option value="Geral">Geral</option>
+              <option value="TRE-GO">TRE-GO</option>
+              <option value="UFT">UFT</option>
+            </select>
+          </div>
+        </div>
 
+        <div style="margin-bottom: 16px">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 8px;
+            "
+          >
+            <label style="font-size: 12px; font-weight: bold">Coautores</label>
+            <button
+              onclick="adicionarCoautorEdicao()"
+              style="
+                background: none;
+                border: 1px dashed var(--secondary);
+                color: var(--secondary);
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 11px;
+                cursor: pointer;
+              "
+            >
+              + Adicionar
+            </button>
+          </div>
+          <div
+            id="edit-autores-list"
+            style="display: flex; flex-direction: column; gap: 8px"
+          >
+            <!-- JS injects authors -->
+          </div>
+        </div>
 
-    function formatAuthorName(str) {
-      if(!str) return "";
-      let n = str.trim();
-      // Handle "LASTNAME, FIRSTNAME" format explicitly
-      if (n.includes(",")) {
-        const parts = n.split(",");
-        if (parts.length === 2) {
-          n = parts[1].trim() + " " + parts[0].trim();
+        <div
+          style="
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+          "
+        >
+          <button
+            onclick="fecharModalEdicao()"
+            style="
+              background: white;
+              border: 1px solid var(--border);
+              padding: 8px 16px;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 13px;
+            "
+          >
+            Cancelar
+          </button>
+          <button
+            onclick="salvarEdicao()"
+            style="
+              background: var(--secondary);
+              color: white;
+              border: none;
+              padding: 8px 16px;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 13px;
+              font-weight: bold;
+            "
+          >
+            Salvar Alterações
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function renderAutores(autores) {
+        if (!autores || !Array.isArray(autores)) return "";
+        return autores
+          .map((a, index) => {
+            const cat = (a.categoria || a.type || "externo").toLowerCase();
+            const isFirst = a.is_first_author || index === 0;
+            const badgeFirst = isFirst
+              ? '<span class="badge-first" title="Primeiro Autor">⭐</span> '
+              : "";
+            return `<span class="badge-author badge-${cat}">${badgeFirst}${a.nome}</span>`;
+          })
+          .join(" ");
+      }
+
+      let productionsData = [];
+
+      let estruturaData = { docentes: [], discentes: [] };
+
+      function formatAuthorName(str) {
+        if (!str) return "";
+        let n = str.trim();
+        // Handle "LASTNAME, FIRSTNAME" format explicitly
+        if (n.includes(",")) {
+          const parts = n.split(",");
+          if (parts.length === 2) {
+            n = parts[1].trim() + " " + parts[0].trim();
+          }
+        }
+        return n
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[.,;]/g, " ")
+          .replace(/\s+/g, "_")
+          .toLowerCase();
+      }
+
+      function normalizeString(str) {
+        if (!str) return "";
+        return str
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[.,;]/g, " ")
+          .replace(/\s+/g, " ")
+          .toLowerCase()
+          .trim();
+      }
+
+      let editAuthorsCache = [];
+
+      // Tentar carregar estrutura para o select de coautores e filtro de turma
+      const storedEstrutura = localStorage.getItem("gpa_structure");
+      if (storedEstrutura) {
+        estruturaData = JSON.parse(storedEstrutura);
+        populateTurmas();
+      } else {
+        fetch("data/estrutura_gpa.json")
+          .then((r) => r.json())
+          .then((d) => {
+            estruturaData = d;
+            populateTurmas();
+          })
+          .catch((e) => console.error(e));
+      }
+
+      function populateTurmas() {
+        const turmaSelect = document.getElementById("filterTurma");
+        if (!turmaSelect || !estruturaData.turmas) return;
+
+        estruturaData.turmas.forEach((turma) => {
+          const option = document.createElement("option");
+          option.value = turma.id;
+          option.textContent = turma.nome;
+          turmaSelect.appendChild(option);
+        });
+      }
+
+      function excluirProducao(id) {
+        if (confirm("Tem certeza que deseja excluir esta produção?")) {
+          productionsData = productionsData.filter((p) => p.id !== id);
+          localStorage.setItem(
+            "gpa_productions",
+            JSON.stringify(productionsData),
+          );
+          filterTable(); // re-render
         }
       }
-      return n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.,;]/g, " ").replace(/\s+/g, "_").toLowerCase();
-    }
 
-    function normalizeString(str) {
-      if (!str) return "";
-      return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.,;]/g, " ").replace(/\s+/g, " ").toLowerCase().trim();
-    }
+      function abrirModalEdicao(id) {
+        const prod = productionsData.find((p) => p.id === id);
+        if (!prod) return;
 
-    let editAuthorsCache = [];
+        document.getElementById("edit-id").value = prod.id;
+        document.getElementById("edit-titulo").value = prod.titulo || "";
+        document.getElementById("edit-veiculo").value = prod.veiculo || "";
+        document.getElementById("edit-tipo").value =
+          prod.tipo || "Artigo para periódicos";
+        document.getElementById("edit-ano").value =
+          prod.ano || new Date().getFullYear();
+        document.getElementById("edit-situacao").value =
+          prod.situacao || "Publicado";
+        document.getElementById("edit-inst").value =
+          prod.instituicao_beneficiada || "Geral";
 
-    // Tentar carregar estrutura para o select de coautores
-    fetch('data/estrutura_gpa.json').then(r => r.json()).then(d => estruturaData = d).catch(e => console.error(e));
+        editAuthorsCache = JSON.parse(JSON.stringify(prod.autores || [])); // clone
+        renderEditAuthors();
 
-    function excluirProducao(id) {
-      if(confirm("Tem certeza que deseja excluir esta produção?")) {
-        productionsData = productionsData.filter(p => p.id !== id);
-        localStorage.setItem('gpa_productions', JSON.stringify(productionsData));
-        filterTable(); // re-render
+        document.getElementById("modal-edicao").style.display = "flex";
       }
-    }
 
-    function abrirModalEdicao(id) {
-      const prod = productionsData.find(p => p.id === id);
-      if(!prod) return;
+      function fecharModalEdicao() {
+        document.getElementById("modal-edicao").style.display = "none";
+      }
 
-      document.getElementById('edit-id').value = prod.id;
-      document.getElementById('edit-titulo').value = prod.titulo || "";
-      document.getElementById('edit-veiculo').value = prod.veiculo || "";
-      document.getElementById('edit-tipo').value = prod.tipo || "Artigo para periódicos";
-      document.getElementById('edit-ano').value = prod.ano || new Date().getFullYear();
-      document.getElementById('edit-situacao').value = prod.situacao || "Publicado";
-      document.getElementById('edit-inst').value = prod.instituicao_beneficiada || "Geral";
+      function renderEditAuthors() {
+        const list = document.getElementById("edit-autores-list");
+        list.innerHTML = "";
 
-      editAuthorsCache = JSON.parse(JSON.stringify(prod.autores || [])); // clone
-      renderEditAuthors();
+        editAuthorsCache.forEach((a, i) => {
+          const div = document.createElement("div");
+          div.style.display = "grid";
+          div.style.gridTemplateColumns = "2fr 1fr 1fr auto";
+          div.style.gap = "8px";
+          div.style.alignItems = "center";
+          div.style.background = "#f8fafc";
+          div.style.padding = "8px";
+          div.style.borderRadius = "4px";
+          div.style.border = "1px solid var(--border)";
 
-      document.getElementById('modal-edicao').style.display = 'flex';
-    }
-
-    function fecharModalEdicao() {
-      document.getElementById('modal-edicao').style.display = 'none';
-    }
-
-    function renderEditAuthors() {
-      const list = document.getElementById('edit-autores-list');
-      list.innerHTML = '';
-
-      editAuthorsCache.forEach((a, i) => {
-        const div = document.createElement('div');
-        div.style.display = 'grid';
-        div.style.gridTemplateColumns = '2fr 1fr 1fr auto';
-        div.style.gap = '8px';
-        div.style.alignItems = 'center';
-        div.style.background = '#f8fafc';
-        div.style.padding = '8px';
-        div.style.borderRadius = '4px';
-        div.style.border = '1px solid var(--border)';
-
-        // Combo de vinculo de membros reais
-        let linkSelectHtml = '';
-        if(a.categoria === 'docente') {
-          linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
+          // Combo de vinculo de membros reais
+          let linkSelectHtml = "";
+          if (a.categoria === "docente") {
+            linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
             <option value="">Selecione...</option>
-            ${estruturaData.docentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
+            ${estruturaData.docentes.map((d) => `<option value="${d.id}" ${a.id === d.id ? "selected" : ""}>${d.nome}</option>`).join("")}
           </select>`;
-        } else if (a.categoria === 'discente') {
-          linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
+          } else if (a.categoria === "discente") {
+            linkSelectHtml = `<select onchange="updateEditAuthorLink(${i}, this.value)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
             <option value="">Selecione...</option>
-            ${estruturaData.discentes.map(d => `<option value="${d.id}" ${a.id === d.id ? 'selected' : ''}>${d.nome}</option>`).join('')}
+            ${estruturaData.discentes.map((d) => `<option value="${d.id}" ${a.id === d.id ? "selected" : ""}>${d.nome}</option>`).join("")}
           </select>`;
-        } else {
-          linkSelectHtml = `<select disabled style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;"><option>Externo</option></select>`;
-        }
+          } else {
+            linkSelectHtml = `<select disabled style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;"><option>Externo</option></select>`;
+          }
 
-        div.innerHTML = `
+          div.innerHTML = `
           <input type="text" value="${a.nome}" onchange="updateEditAuthorName(${i}, this.value)" placeholder="Nome" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
           <select onchange="updateEditAuthorCat(${i}, this.value)" style="font-size: 11px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;">
-            <option value="externo" ${a.categoria === 'externo' ? 'selected' : ''}>Externo</option>
-            <option value="docente" ${a.categoria === 'docente' ? 'selected' : ''}>Docente</option>
-            <option value="discente" ${a.categoria === 'discente' ? 'selected' : ''}>Discente</option>
+            <option value="externo" ${a.categoria === "externo" ? "selected" : ""}>Externo</option>
+            <option value="docente" ${a.categoria === "docente" ? "selected" : ""}>Docente</option>
+            <option value="discente" ${a.categoria === "discente" ? "selected" : ""}>Discente</option>
           </select>
           ${linkSelectHtml}
           <button onclick="removerEditAuthor(${i})" style="background: #fee2e2; color: #ef4444; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold;">X</button>
         `;
-        list.appendChild(div);
-      });
-    }
+          list.appendChild(div);
+        });
+      }
 
-    function updateEditAuthorName(idx, val) { editAuthorsCache[idx].nome = val; }
-    function updateEditAuthorLink(idx, val) { editAuthorsCache[idx].id = val; }
-    function updateEditAuthorCat(idx, val) {
-      editAuthorsCache[idx].categoria = val;
-      renderEditAuthors(); // update the third dropdown
-    }
-    function removerEditAuthor(idx) {
-      editAuthorsCache.splice(idx, 1);
-      renderEditAuthors();
-    }
-    function adicionarCoautorEdicao() {
-      editAuthorsCache.push({ id: "", nome: "", categoria: "externo" });
-      renderEditAuthors();
-    }
+      function updateEditAuthorName(idx, val) {
+        editAuthorsCache[idx].nome = val;
+      }
+      function updateEditAuthorLink(idx, val) {
+        editAuthorsCache[idx].id = val;
+      }
+      function updateEditAuthorCat(idx, val) {
+        editAuthorsCache[idx].categoria = val;
+        renderEditAuthors(); // update the third dropdown
+      }
+      function removerEditAuthor(idx) {
+        editAuthorsCache.splice(idx, 1);
+        renderEditAuthors();
+      }
+      function adicionarCoautorEdicao() {
+        editAuthorsCache.push({ id: "", nome: "", categoria: "externo" });
+        renderEditAuthors();
+      }
 
-    function salvarEdicao() {
-      const id = document.getElementById('edit-id').value;
-      const index = productionsData.findIndex(p => p.id === id);
-      if(index === -1) return;
+      function salvarEdicao() {
+        const id = document.getElementById("edit-id").value;
+        const index = productionsData.findIndex((p) => p.id === id);
+        if (index === -1) return;
 
-      productionsData[index].titulo = document.getElementById('edit-titulo').value;
-      productionsData[index].veiculo = document.getElementById('edit-veiculo').value;
-      productionsData[index].tipo = document.getElementById('edit-tipo').value;
-      productionsData[index].ano = parseInt(document.getElementById('edit-ano').value);
-      productionsData[index].situacao = document.getElementById('edit-situacao').value;
-      productionsData[index].instituicao_beneficiada = document.getElementById('edit-inst').value;
-      productionsData[index].autores = editAuthorsCache.map(a => {
-        if(a.categoria === 'externo' && (!a.id || a.id.startsWith('EXT_'))) {
+        productionsData[index].titulo =
+          document.getElementById("edit-titulo").value;
+        productionsData[index].veiculo =
+          document.getElementById("edit-veiculo").value;
+        productionsData[index].tipo =
+          document.getElementById("edit-tipo").value;
+        productionsData[index].ano = parseInt(
+          document.getElementById("edit-ano").value,
+        );
+        productionsData[index].situacao =
+          document.getElementById("edit-situacao").value;
+        productionsData[index].instituicao_beneficiada =
+          document.getElementById("edit-inst").value;
+        productionsData[index].autores = editAuthorsCache.map((a) => {
+          if (a.categoria === "externo" && (!a.id || a.id.startsWith("EXT_"))) {
             a.id = "EXT_" + formatAuthorName(a.nome || "desconhecido");
+          }
+          return a;
+        });
+
+        localStorage.setItem(
+          "gpa_productions",
+          JSON.stringify(productionsData),
+        );
+        fecharModalEdicao();
+        filterTable(); // Re-render table
+      }
+
+      async function loadData() {
+        try {
+          const localData = localStorage.getItem("gpa_productions");
+          if (localData) {
+            productionsData = JSON.parse(localData);
+            renderTable(productionsData);
+            return;
+          }
+          const response = await fetch("data/producoes.json");
+          if (response.ok) {
+            productionsData = await response.json();
+            renderTable(productionsData);
+          }
+        } catch (e) {
+          console.error(e);
         }
-        return a;
-      });
+      }
 
-      localStorage.setItem('gpa_productions', JSON.stringify(productionsData));
-      fecharModalEdicao();
-      filterTable(); // Re-render table
-    }
-
-
-    async function loadData() {
-      try {
-        const localData = localStorage.getItem('gpa_productions');
-        if (localData) {
-          productionsData = JSON.parse(localData);
-          renderTable(productionsData);
+      function renderTable(data) {
+        const tbody = document.getElementById("table-body");
+        tbody.innerHTML = "";
+        if (data.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="5" style="text-align: center; color: #888;">Nenhuma produção encontrada.</td></tr>';
           return;
         }
-        const response = await fetch('data/producoes.json');
-        if (response.ok) {
-          productionsData = await response.json();
-          renderTable(productionsData);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    function renderTable(data) {
-      const tbody = document.getElementById('table-body');
-      tbody.innerHTML = '';
-      if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Nenhuma produção encontrada.</td></tr>';
-        return;
-      }
-      data.forEach(prod => {
-        const tr = document.createElement('tr');
-        const authorsHtml = renderAutores(prod.autores);
-        tr.innerHTML = `
-          <td><strong>${prod.titulo}</strong><br><small style="color: #667;">${prod.veiculo || ''}</small></td>
+        data.forEach((prod) => {
+          const tr = document.createElement("tr");
+          const authorsHtml = renderAutores(prod.autores);
+          tr.innerHTML = `
+          <td><strong>${prod.titulo}</strong><br><small style="color: #667;">${prod.veiculo || ""}</small></td>
           <td>${prod.tipo}</td>
           <td>${prod.ano}</td>
-          <td><span style="background:#e2e8f0; padding: 2px 6px; border-radius: 4px; font-size:11px;">${prod.instituicao_beneficiada || '-'}</span></td>
+          <td><span style="background:#e2e8f0; padding: 2px 6px; border-radius: 4px; font-size:11px;">${prod.instituicao_beneficiada || "-"}</span></td>
           <td>${authorsHtml}</td>
           <td style='text-align: center;'>
             <button onclick='abrirModalEdicao("${prod.id}")' style='background: none; border: none; cursor: pointer; font-size: 16px; margin-right: 8px;' title='Editar'>✏️</button>
             <button onclick='excluirProducao("${prod.id}")' style='background: none; border: none; cursor: pointer; font-size: 16px;' title='Excluir'>🗑️</button>
           </td>
         `;
-        tbody.appendChild(tr);
-      });
-    }
+          tbody.appendChild(tr);
+        });
+      }
 
-    function filterTable() {
-      const q = document.getElementById('search-text').value.toLowerCase();
-      const type = document.getElementById('filter-type').value.toLowerCase();
-      const year = document.getElementById('filter-year').value;
-      const inst = document.getElementById('filter-inst').value.toLowerCase();
+      function filterTable() {
+        const turmaId = document.getElementById("filterTurma").value;
+        const q = document.getElementById("search-text").value.toLowerCase();
+        const type = document.getElementById("filter-type").value.toLowerCase();
+        const year = document.getElementById("filter-year").value;
+        const inst = document.getElementById("filter-inst").value.toLowerCase();
 
-      const filtered = productionsData.filter(p => {
-        const matchType = !type || (p.tipo || '').toLowerCase().includes(type);
-        const matchYear = !year || String(p.ano) === year;
-        const matchInst = !inst || (p.instituicao_beneficiada || '').toLowerCase().includes(inst);
-        const matchQ = !q ||
-                       (p.titulo || '').toLowerCase().includes(q) ||
-                       (p.autores && p.autores.some(a => a.nome.toLowerCase().includes(q)));
-        return matchType && matchYear && matchInst && matchQ;
-      });
-      renderTable(filtered);
-    }
+        let validStudentIds = null;
+        if (turmaId && estruturaData && estruturaData.discentes) {
+          validStudentIds = new Set(
+            estruturaData.discentes
+              .filter((d) => d.turma_id === turmaId)
+              .map((d) => d.id),
+          );
+        }
 
+        const filtered = productionsData.filter((p) => {
+          const matchType =
+            !type || (p.tipo || "").toLowerCase().includes(type);
+          const matchYear = !year || String(p.ano) === year;
+          const matchInst =
+            !inst ||
+            (p.instituicao_beneficiada || "").toLowerCase().includes(inst);
+          const matchQ =
+            !q ||
+            (p.titulo || "").toLowerCase().includes(q) ||
+            (p.autores &&
+              p.autores.some((a) => a.nome.toLowerCase().includes(q)));
 
-    function downloadConsolidatedJSON() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(productionsData, null, 2));
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", "producoes.json");
-      document.body.appendChild(downloadAnchorNode); // required for firefox
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
-    }
+          let matchTurma = true;
+          if (validStudentIds) {
+            matchTurma = false;
+            if (p.autores) {
+              matchTurma = p.autores.some((a) => validStudentIds.has(a.id));
+            }
+          }
 
-    document.addEventListener('DOMContentLoaded', loadData);
-  </script>
-</body>
+          return matchType && matchYear && matchInst && matchQ && matchTurma;
+        });
+        renderTable(filtered);
+      }
+
+      function downloadConsolidatedJSON() {
+        const dataStr =
+          "data:text/json;charset=utf-8," +
+          encodeURIComponent(JSON.stringify(productionsData, null, 2));
+        const downloadAnchorNode = document.createElement("a");
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "producoes.json");
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+      }
+
+      document.addEventListener("DOMContentLoaded", loadData);
+    </script>
+  </body>
 </html>
