@@ -1,919 +1,779 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GPA — Rede de Colaboração</title>
-    <style>
-      :root {
-        --gray: #848688;
-        --accent: #fdb92e;
-        --secondary: #00897c;
-        --primary: #005484;
-        --primary-hover: #003e62;
-        --docente-color: #005484;
-        --discente-color: #00897c;
-        --externo-color: #848688;
-        --bg: #f4f7fa;
-        --card-bg: #ffffff;
-        --border: #d0dce8;
-        --text: #373435;
-        --panel: rgba(255, 255, 255, 0.96);
-        --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-        --radius: 10px;
-      }
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
-          sans-serif;
-      }
-      body {
-        background: var(--bg);
-        color: var(--text);
-        overflow: hidden;
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestão Acadêmica — Rede de Colaboração</title>
+  <!-- D3.js for Force Simulation -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    :root {
+      --gray: #848688;
+      --accent: #FDB92E;
+      --secondary: #00897C;
+      --primary-hover: #003e62;
+      --primary: #005484;
+      --docente-color: #005484;
+      --discente-color: #00897C;
+      --externo-color: #848688;
+      --bg: #f4f7fa;
+      --border: #d0dce8;
+      --text: #373435;
+    }
 
-      /* Header Padrão do Sistema */
-      header {
-        background: var(--primary);
-        color: white;
-        padding: 0 24px 0 0;
-        height: 76px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        flex-shrink: 0;
-        z-index: 100;
-      }
-      header h1 {
-        font-size: 22px;
-        font-weight: 600;
-        margin: 0;
-        margin-left: 24px;
-      }
-      header .nav-links a {
-        color: #a8d0e8;
-        text-decoration: none;
-        font-size: 13px;
-        margin-left: 15px;
-        transition: color 0.15s;
-      }
-      header .nav-links a:hover {
-        color: #fff;
-      }
-      header .nav-links a.active {
-        color: #fff;
-        font-weight: bold;
-      }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
 
-      /* Canvas e Painéis */
-      #canvas-container {
-        position: relative;
-        flex: 1;
-        width: 100vw;
-        height: calc(100vh - 76px);
-        overflow: hidden;
-      }
-      #canvas {
-        width: 100%;
-        height: 100%;
-        display: block;
-        cursor: grab;
-      }
-      #canvas:active {
-        cursor: grabbing;
-      }
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 0 24px 0 0; height: 76px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 10;
+    }
+    header h1 { font-size: 16px; font-weight: 600; }
+    header .nav-links a { color: #a8d0e8; text-decoration: none; font-size: 13px; margin-left: 15px; }
+    header .nav-links a:hover { color: #fff; }
+    header .nav-links a.active { color: #fff; font-weight: bold; }
 
-      .panel-float {
-        position: absolute;
-        z-index: 10;
-        background: var(--panel);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        padding: 10px 14px;
-        font-size: 13px;
-        color: var(--text);
-        border: 1px solid var(--border);
-        backdrop-filter: blur(8px);
-      }
+    .toolbar {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      z-index: 9;
+    }
+    .toolbar select, .toolbar input {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 12px;
+      outline: none;
+    }
 
-      #controls-bar {
-        top: 14px;
-        left: 16px;
-        right: 16px;
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-      }
-      .ctrl-group {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-      }
-      .form-select-sm {
-        padding: 6px 12px;
-        font-size: 13px;
-        border-radius: 6px;
-        border: 1px solid var(--border);
-        background: #fff;
-        outline: none;
-        color: var(--text);
-      }
-      .btn-tool {
-        appearance: none;
-        border: 1px solid var(--border);
-        background: #fff;
-        color: var(--text);
-        padding: 6px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        transition: all 0.15s;
-      }
-      .btn-tool:hover {
-        background: #f1f5f9;
-        border-color: var(--primary);
-      }
+    .legend {
+      display: flex;
+      gap: 10px;
+      font-size: 12px;
+      margin-left: auto;
+    }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
 
-      #legend-panel {
-        bottom: 16px;
-        left: 16px;
-        display: flex;
-        gap: 14px;
-        align-items: center;
-        font-size: 12px;
-      }
-      .leg-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-weight: 500;
-      }
-      .leg-dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-      }
+    .main-area {
+      display: flex;
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
 
-      #tip {
-        position: absolute;
-        z-index: 30;
-        pointer-events: none;
-        background: rgba(15, 23, 42, 0.92);
-        color: #fff;
-        padding: 8px 12px;
-        border-radius: 8px;
-        font-size: 12px;
-        line-height: 1.4;
-        visibility: hidden;
-        transform: translate(-50%, -130%);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      }
+    canvas {
+      flex: 1;
+      cursor: grab;
+      background: #fafcff;
+    }
+    canvas:active { cursor: grabbing; }
 
-      #sidebar {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 20;
-        width: min(420px, 100vw);
-        background: rgba(255, 255, 255, 0.98);
-        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
-        transform: translateX(100%);
-        transition: transform 0.25s ease;
-        overflow-y: auto;
-        padding: 22px 20px;
-        border-left: 1px solid var(--border);
-      }
-      #sidebar.open {
-        transform: translateX(0);
-      }
-      #sidebar h2 {
-        font-size: 16px;
-        color: var(--primary);
-        margin-bottom: 4px;
-      }
-      #sidebar .meta-row {
-        font-size: 12px;
-        color: var(--gray);
-        margin-bottom: 14px;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 8px;
-      }
-      #sidebar h3 {
-        font-size: 13px;
-        font-weight: 600;
-        margin: 14px 0 6px;
-        color: #334155;
-      }
-      #sidebar ul {
-        padding-left: 18px;
-        font-size: 12px;
-        line-height: 1.6;
-        color: #475569;
-      }
-      #sidebar li {
-        margin-bottom: 6px;
-      }
-      #closeSidebar {
-        float: right;
-        background: #f1f5f9;
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        padding: 4px 8px;
-        cursor: pointer;
-        font-size: 12px;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Header Oficial Padronizado -->
-    <header>
-      <div style="display: flex; align-items: center; height: 100%">
-        <div
-          style="
-            background: white;
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            box-sizing: border-box;
-          "
-        >
-          <img
-            src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png"
-            alt="UFT"
-            style="height: 48px"
-          />
-        </div>
-        <h1>Gestão da Produção Acadêmica - GPA</h1>
+    /* Minimap */
+    #minimap {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      width: 150px;
+      height: 150px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      cursor: crosshair;
+    }
+
+    /* Side Panel */
+    .side-panel {
+      width: 320px;
+      background: white;
+      border-left: 1px solid var(--border);
+      padding: 20px;
+      overflow-y: auto;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      transform: translateX(100%);
+      transition: transform 0.3s ease-in-out;
+      z-index: 5;
+    }
+    .side-panel.active { transform: translateX(0); }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .panel-header h2 { font-size: 16px; color: var(--primary); }
+    .close-btn { cursor: pointer; color: #888; font-weight: bold; border: none; background: none; font-size: 16px; }
+
+    .author-info { margin-bottom: 20px; font-size: 13px; }
+    .author-info p { margin-bottom: 5px; }
+
+    .badge-author {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 12px;
+      color: #fff;
+      display: inline-block;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+    .badge-docente { background: var(--docente-color); }
+    .badge-discente { background: var(--discente-color); }
+    .badge-externo { background: var(--externo-color); }
+
+    .prod-list { display: flex; flex-direction: column; gap: 10px; }
+    .prod-card {
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: 6px;
+      background: #f8fafc;
+      font-size: 12px;
+    }
+    .prod-card h4 { color: var(--primary); font-size: 12px; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div style="display: flex; align-items: center; height: 100%;">
+      <div style="background: white; padding: 14px 24px; display: flex; align-items: center; justify-content: center; height: 100%; box-sizing: border-box;">
+        <img src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png" alt="UFT" style="height: 48px;">
       </div>
-      <nav class="nav-links">
-        <a href="index.html">🏛️ Painel da Turma</a>
-        <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
-        <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
-        <a href="producoes.html">📚 Produções</a>
-        <a href="rede.html" class="active">🕸️ Rede de Colaboração</a>
-        <a href="cadastro.html">➕ Cadastrar Produção</a>
-        <a href="relatorios.html">📑 Relatórios</a>
-        <a href="admin.html">⚙️ Administração</a>
-      </nav>
-    </header>
+      <h1 style="font-size: 22px; font-weight: 600; margin: 0; margin-left: 24px;">Gestão da Produção Acadêmica - GPA</h1>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">🏛️ Painel da Turma</a>
+      <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
+      <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
+      <a href="producoes.html">📚 Produções</a>
+      <a href="rede.html" class="active">🕸️ Rede de Colaboração</a>
+      <a href="cadastro.html">➕ Cadastrar Produção</a>
+      <a href="relatorios.html">📑 Relatórios</a>
+      <a href="admin.html">⚙️ Administração</a>
+    </nav>
+  </header>
 
-    <!-- Visualizador da Rede -->
-    <div id="canvas-container">
-      <canvas id="canvas"></canvas>
+  <div class="toolbar" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 12px 24px; background: white; border-bottom: 1px solid var(--border);">
+    <div class="quick-filters" style="display: flex; gap: 8px; align-items: center;">
+        <button id="btn-filter-docente" onclick="toggleFilter('docente')" style="background: var(--docente-color); color: white; border: none; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 11px; opacity: 1;">Docentes</button>
+        <button id="btn-filter-discente" onclick="toggleFilter('discente')" style="background: var(--discente-color); color: white; border: none; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 11px; opacity: 1;">Discentes</button>
+        <button id="btn-filter-externo" onclick="toggleFilter('externo')" style="background: var(--externo-color); color: white; border: none; padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 11px; opacity: 1;">Externos</button>
 
-      <div class="panel-float" id="controls-bar">
-        <div class="ctrl-group">
-          <label><strong>Turma:</strong></label>
-          <select
-            id="filterTurma"
-            class="form-select-sm"
-            onchange="applyFilters()"
-          >
-            <option value="all">Todas as Turmas</option>
-          </select>
+        <label style="font-size: 12px; margin-left: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+          <input type="checkbox" id="ocultar-externos" onchange="applyFilters()"> Ocultar Autores Externos (Focar PPG)
+        </label>
 
-          <label style="margin-left: 8px"
-            ><strong>Pesquisador(a):</strong></label
-          >
-          <select
-            id="filterAuthor"
-            class="form-select-sm"
-            onchange="applyFilters()"
-          >
-            <option value="all">🌐 Visão Geral da Rede</option>
-          </select>
+        <div style="margin-left: 12px; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+          Intensidade mín. colaborações:
+          <input type="number" id="min-degree" value="0" min="0" style="width: 50px; padding: 4px; font-size: 11px; border: 1px solid var(--border); border-radius: 4px;" onchange="applyFilters()">
         </div>
-
-        <div class="ctrl-group">
-          <span
-            id="badgeStats"
-            style="font-size: 12px; color: var(--gray); margin-right: 8px"
-            >Carregando dados...</span
-          >
-          <button
-            class="btn-tool"
-            onclick="
-              fit();
-              draw();
-            "
-          >
-            🎯 Centralizar
-          </button>
-          <button class="btn-tool" onclick="exportPNG()">
-            📸 Exportar Imagem
-          </button>
-        </div>
-      </div>
-
-      <div class="panel-float" id="legend-panel">
-        <span style="font-weight: 600; color: var(--gray)">Categorias:</span>
-        <div class="leg-item">
-          <div class="leg-dot" style="background: var(--docente-color)"></div>
-          Docente
-        </div>
-        <div class="leg-item">
-          <div class="leg-dot" style="background: var(--discente-color)"></div>
-          Discente
-        </div>
-        <div class="leg-item">
-          <div class="leg-dot" style="background: var(--externo-color)"></div>
-          Externo
-        </div>
-      </div>
-
-      <div id="tip"></div>
-
-      <div id="sidebar">
-        <button id="closeSidebar" onclick="closeSidebar()">✖ Fechar</button>
-        <div id="sideContent"></div>
-      </div>
     </div>
 
-    <script>
-      let rawStructure = { turmas: [], docentes: [], discentes: [] };
-      let rawProductions = [];
+    <input type="text" id="search-author" placeholder="Buscar autor..." oninput="applyFilters()" style="padding: 6px 12px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px;">
 
-      let allNodes = [];
-      let allEdges = [];
-      let activeNodes = [];
-      let activeEdges = [];
-      let productionsMap = {};
-      let neighborsMap = new Map();
+    <div class="controls" style="display: flex; gap: 5px;">
+        <button onclick="zoomIn()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Zoom +</button>
+        <button onclick="zoomOut()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Zoom -</button>
+        <button onclick="resetView()" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Resetar</button>
+        <button onclick="toggleFixNodes()" id="btn-fix-nodes" style="padding: 6px 10px; border: 1px solid var(--border); background: white; cursor:pointer; border-radius:4px; font-size:12px;">Fixar Nós</button>
+        <button onclick="exportPNG()" style="padding: 6px 10px; border: 1px solid var(--border); background: var(--primary); color: white; cursor:pointer; border-radius:4px; font-size:12px;">Exportar PNG</button>
+    </div>
+  </div>
 
-      const canvas = document.getElementById("canvas");
-      const ctx = canvas.getContext("2d");
-      const tip = document.getElementById("tip");
+  <div class="main-area">
+    <canvas id="network-canvas"></canvas>
+    <canvas id="minimap"></canvas>
 
-      let dpr = 1,
-        scale = 1,
-        panX = 0,
-        panY = 0;
-      let isPanning = false,
-        panLastX = 0,
-        panLastY = 0;
-      let draggingNode = null,
-        dragOffX = 0,
-        dragOffY = 0;
-      let hoveredNode = null;
-      let isEgoMode = false;
+    <div class="side-panel" id="side-panel">
+      <div class="panel-header">
+        <h2 id="panel-title">Detalhes do Autor</h2>
+        <button class="close-btn" onclick="closePanel()">✕</button>
+      </div>
+      <div class="author-info" id="author-info"></div>
+      <h3 style="font-size: 13px; color: #475569; margin-bottom: 10px;">Produções (<span id="prod-count">0</span>)</h3>
+      <div class="prod-list" id="prod-list"></div>
+    </div>
+  </div>
 
-      async function loadData() {
-        try {
-          const structLocal = localStorage.getItem("gpa_structure");
-          if (structLocal) {
-            rawStructure = JSON.parse(structLocal);
-          } else {
-            const res = await fetch("data/estrutura_gpa.json");
-            if (res.ok) rawStructure = await res.json();
-          }
+  <script>
+    let productionsData = [];
+    let estruturaData = { docentes: [], discentes: [] };
+    let nodes = [];
+    let edges = [];
 
-          const prodLocal = localStorage.getItem("gpa_productions");
-          if (prodLocal) {
-            rawProductions = JSON.parse(prodLocal);
-          } else {
-            const res = await fetch("data/producoes.json");
-            if (res.ok) rawProductions = await res.json();
-          }
+    // Estrutura de grafos
+    let graphData = { nodes: [], edges: [] };
 
-          populateTurmaSelect();
-          buildMasterGraph();
-          populateAuthorSelect();
-          applyFilters();
-          resize();
-        } catch (e) {
-          console.error("Erro ao carregar dados:", e);
-        }
-      }
-
-      function populateTurmaSelect() {
-        const sel = document.getElementById("filterTurma");
-        sel.innerHTML = '<option value="all">Todas as Turmas</option>';
-        (rawStructure.turmas || []).forEach((t) => {
-          const opt = document.createElement("option");
-          opt.value = t.nome || t.id;
-          opt.textContent = t.nome;
-          sel.appendChild(opt);
-        });
-      }
-
-      function populateAuthorSelect() {
-        const sel = document.getElementById("filterAuthor");
-        const curVal = sel.value;
-        sel.innerHTML = '<option value="all">🌐 Visão Geral da Rede</option>';
-
-        const selTurma = document.getElementById("filterTurma").value;
-
-        const docGroup = document.createElement("optgroup");
-        docGroup.label = "👨‍🏫 Docentes";
-        (rawStructure.docentes || [])
-          .sort((a, b) => a.nome.localeCompare(b.nome))
-          .forEach((d) => {
-            const opt = document.createElement("option");
-            opt.value = d.nome;
-            opt.textContent = d.nome;
-            docGroup.appendChild(opt);
-          });
-        sel.appendChild(docGroup);
-
-        const discGroup = document.createElement("optgroup");
-        discGroup.label = "🎓 Discentes";
-        (rawStructure.discentes || [])
-          .filter((d) => selTurma === "all" || d.turma === selTurma)
-          .sort((a, b) => a.nome.localeCompare(b.nome))
-          .forEach((d) => {
-            const opt = document.createElement("option");
-            opt.value = d.nome;
-            opt.textContent = d.nome;
-            discGroup.appendChild(opt);
-          });
-        sel.appendChild(discGroup);
-
-        if ([...sel.options].some((o) => o.value === curVal))
-          sel.value = curVal;
-      }
-
-      function buildMasterGraph() {
-        allNodes = [];
-        allEdges = [];
-        productionsMap = {};
-        const nodeMap = new Map();
-        const edgeTracker = new Map();
-
-        const docSet = new Set(
-          (rawStructure.docentes || []).map((d) => d.nome.trim()),
-        );
-        const discSet = new Set(
-          (rawStructure.discentes || []).map((d) => d.nome.trim()),
-        );
-
-        rawProductions.forEach((prod) => {
-          const authors = (prod.autores || [])
-            .map((a) =>
-              typeof a === "string" ? a.trim() : (a.nome || "").trim(),
-            )
-            .filter(Boolean);
-
-          authors.forEach((auth) => {
-            if (!productionsMap[auth]) productionsMap[auth] = [];
-            productionsMap[auth].push(prod.titulo || "Produção sem título");
-
-            if (!nodeMap.has(auth)) {
-              let role = "externo";
-              let color = "#848688";
-              if (docSet.has(auth)) {
-                role = "docente";
-                color = "#005484";
-              } else if (discSet.has(auth)) {
-                role = "discente";
-                color = "#00897C";
-              }
-
-              nodeMap.set(auth, {
-                id: auth,
-                label: auth,
-                role: role,
-                color: color,
-                degree: 0,
-                x: 0,
-                y: 0,
-              });
-            }
-          });
-
-          for (let i = 0; i < authors.length; i++) {
-            for (let j = i + 1; j < authors.length; j++) {
-              const u = authors[i],
-                v = authors[j];
-              const pairKey = [u, v].sort().join("---|---");
-              edgeTracker.set(pairKey, (edgeTracker.get(pairKey) || 0) + 1);
-              nodeMap.get(u).degree += 1;
-              nodeMap.get(v).degree += 1;
-            }
-          }
-        });
-
-        allNodes = Array.from(nodeMap.values());
-        edgeTracker.forEach((weight, key) => {
-          const [source, target] = key.split("---|---");
-          allEdges.push({ source, target, weight });
-        });
-      }
-
-      // Algoritmo de dispersão orgânica natural para a Visão Geral
-      function computeOrganicGlobalLayout(nodes, edges) {
-        const n = nodes.length;
-        if (n === 0) return;
-
-        // Posição inicial circular com leve ruído determinístico
-        nodes.forEach((node, i) => {
-          const angle = (i / n) * 2 * Math.PI;
-          const r = 240 + (i % 5) * 25;
-          node.x = r * Math.cos(angle);
-          node.y = r * Math.sin(angle);
-          node.vx = 0;
-          node.vy = 0;
-        });
-
-        const nodeMap = new Map(nodes.map((node) => [node.id, node]));
-
-        // 60 iterações instantâneas de relaxamento físico (executadas em < 5ms)
-        for (let iter = 0; iter < 60; iter++) {
-          // Repulsão entre todos os nós (anti-sobreposição)
-          for (let i = 0; i < n; i++) {
-            for (let j = i + 1; j < n; j++) {
-              const u = nodes[i],
-                v = nodes[j];
-              const dx = v.x - u.x;
-              const dy = v.y - u.y;
-              const distSq = dx * dx + dy * dy || 1;
-              const dist = Math.sqrt(distSq);
-              const minDist = 90; // Distância mínima confortável entre nós
-
-              if (dist < minDist) {
-                const force = ((minDist - dist) / dist) * 0.45;
-                u.x -= dx * force;
-                u.y -= dy * force;
-                v.x += dx * force;
-                v.y += dy * force;
-              }
-            }
-          }
-
-          // Atração das arestas (traz colaboradores para perto)
-          edges.forEach((e) => {
-            const u = nodeMap.get(e.source);
-            const v = nodeMap.get(e.target);
-            if (u && v) {
-              const dx = v.x - u.x;
-              const dy = v.y - u.y;
-              const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-              const targetDist = 130;
-              const force = (dist - targetDist) * 0.035;
-              u.x += (dx / dist) * force;
-              u.y += (dy / dist) * force;
-              v.x -= (dx / dist) * force;
-              v.y -= (dy / dist) * force;
-            }
-          });
-
-          // Leve atração ao centro para manter o grafo coeso
-          nodes.forEach((node) => {
-            node.x *= 0.985;
-            node.y *= 0.985;
-          });
-        }
-      }
-
-      function applyFilters() {
-        const selectedTurma = document.getElementById("filterTurma").value;
-        const selectedAuthor = document.getElementById("filterAuthor").value;
-
-        populateAuthorSelect();
-
-        let visibleNodes = new Set();
-        let nodesToRender = [];
-        let edgesToRender = [];
-
-        if (selectedTurma !== "all") {
-          const turmaDiscentes = new Set(
-            (rawStructure.discentes || [])
-              .filter((d) => d.turma === selectedTurma)
-              .map((d) => d.nome),
-          );
-          allEdges.forEach((e) => {
-            if (turmaDiscentes.has(e.source) || turmaDiscentes.has(e.target)) {
-              visibleNodes.add(e.source);
-              visibleNodes.add(e.target);
-            }
-          });
-          turmaDiscentes.forEach((d) => visibleNodes.add(d));
+    async function loadData() {
+      try {
+        // Carrega estrutura GPA
+        const localEst = localStorage.getItem('gta_estrutura');
+        if (localEst) {
+            estruturaData = JSON.parse(localEst);
         } else {
-          allNodes.forEach((n) => visibleNodes.add(n.id));
+            const estRes = await fetch('data/estrutura_gpa.json');
+            if (estRes.ok) estruturaData = await estRes.json();
         }
 
-        if (selectedAuthor !== "all") {
-          isEgoMode = true;
-          const egoNeighbors = new Set([selectedAuthor]);
-          allEdges.forEach((e) => {
-            if (e.source === selectedAuthor) egoNeighbors.add(e.target);
-            if (e.target === selectedAuthor) egoNeighbors.add(e.source);
+        // Tenta carregar do localStorage primeiro
+        const localProd = localStorage.getItem('gpa_productions');
+        if (localProd) {
+          productionsData = JSON.parse(localProd);
+        } else {
+          const prodRes = await fetch('data/producoes.json');
+          if (prodRes.ok) productionsData = await prodRes.json();
+        }
+
+        buildGraphData();
+      } catch (e) {
+        console.error("Erro ao carregar dados", e);
+      }
+    }
+
+    function buildGraphData() {
+      const nodeMap = new Map();
+      const edgeMap = new Map();
+
+      // Primeiro, popula todos os docentes e discentes da estrutura (mesmo sem produção)
+      (estruturaData.docentes || []).forEach(d => {
+          nodeMap.set(d.id, {
+              id: d.id,
+              nome: d.nome,
+              categoria: 'docente',
+              productions: [],
+              weight: 0
           });
+      });
+      (estruturaData.discentes || []).forEach(d => {
+          nodeMap.set(d.id, {
+              id: d.id,
+              nome: d.nome,
+              categoria: 'discente',
+              productions: [],
+              weight: 0
+          });
+          // Cria aresta de orientação com o professor (peso base 0, aumentará com produções)
+          if(d.orientador_id) {
+              const source = d.id < d.orientador_id ? d.id : d.orientador_id;
+              const target = d.id < d.orientador_id ? d.orientador_id : d.id;
+              edgeMap.set(`${source}-${target}`, { source, target, weight: 1, orientacao: true });
+          }
+      });
 
-          nodesToRender = allNodes.filter((n) => egoNeighbors.has(n.id));
-          edgesToRender = allEdges.filter(
-            (e) => e.source === selectedAuthor || e.target === selectedAuthor,
-          );
+      productionsData.forEach(prod => {
+        if (!prod.autores || prod.autores.length === 0) return;
 
-          // Dispersão em Estrela (Ego-Rede)
-          const centerNode = nodesToRender.find((n) => n.id === selectedAuthor);
-          if (centerNode) {
-            centerNode.x = 0;
-            centerNode.y = 0;
-            const satellites = nodesToRender.filter(
-              (n) => n.id !== selectedAuthor,
-            );
-            const step = (2 * Math.PI) / (satellites.length || 1);
-            satellites.forEach((sat, i) => {
-              const r = 250 + (i % 2 === 0 ? 35 : -30);
-              sat.x = r * Math.cos(i * step + 0.1);
-              sat.y = r * Math.sin(i * step + 0.1);
+        // Process Nodes
+        prod.autores.forEach(author => {
+          // Normalize author id or name to use as unique key
+          const nodeKey = author.id || author.nome.toLowerCase();
+
+          if (!nodeMap.has(nodeKey)) {
+            nodeMap.set(nodeKey, {
+              id: nodeKey,
+              nome: author.nome,
+              categoria: author.categoria || author.type || 'externo',
+              productions: [],
+              weight: 0 // Will define node size
             });
           }
-        } else {
-          isEgoMode = false;
-          nodesToRender = allNodes.filter((n) => visibleNodes.has(n.id));
-          const renderedIds = new Set(nodesToRender.map((n) => n.id));
-          edgesToRender = allEdges.filter(
-            (e) => renderedIds.has(e.source) && renderedIds.has(e.target),
-          );
-          computeOrganicGlobalLayout(nodesToRender, edgesToRender);
-        }
 
-        activeNodes = nodesToRender;
-        activeEdges = edgesToRender;
-
-        neighborsMap.clear();
-        activeNodes.forEach((n) => neighborsMap.set(n.id, new Set()));
-        activeEdges.forEach((e) => {
-          neighborsMap.get(e.source)?.add(e.target);
-          neighborsMap.get(e.target)?.add(e.source);
+          const node = nodeMap.get(nodeKey);
+          node.productions.push(prod);
+          node.weight += 1;
         });
 
-        document.getElementById("badgeStats").textContent =
-          `${activeNodes.length} autores | ${activeEdges.length} conexões`;
-        fit();
-        draw();
-      }
+        // Process Edges (Co-authorships)
+        for (let i = 0; i < prod.autores.length; i++) {
+          for (let j = i + 1; j < prod.autores.length; j++) {
+            const keyA = prod.autores[i].id || prod.autores[i].nome.toLowerCase();
+            const keyB = prod.autores[j].id || prod.autores[j].nome.toLowerCase();
 
-      function w2s(x, y) {
-        return [panX + x * scale, panY + y * scale];
-      }
-      function s2w(x, y) {
-        return [(x - panX) / scale, (y - panY) / scale];
-      }
+            // Ensure consistent edge direction A->B to avoid duplicates
+            const source = keyA < keyB ? keyA : keyB;
+            const target = keyA < keyB ? keyB : keyA;
+            const edgeKey = `${source}-${target}`;
 
-      function resize() {
-        dpr = window.devicePixelRatio || 1;
-        const rect = canvas.parentElement.getBoundingClientRect();
-        canvas.width = Math.floor(rect.width * dpr);
-        canvas.height = Math.floor(rect.height * dpr);
-        canvas.style.width = rect.width + "px";
-        canvas.style.height = rect.height + "px";
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        fit();
-        draw();
-      }
-      window.addEventListener("resize", resize);
-
-      function fit() {
-        if (!activeNodes.length) return;
-        let minX = 1e9,
-          minY = 1e9,
-          maxX = -1e9,
-          maxY = -1e9;
-        activeNodes.forEach((n) => {
-          minX = Math.min(minX, n.x);
-          minY = Math.min(minY, n.y);
-          maxX = Math.max(maxX, n.x);
-          maxY = Math.max(maxY, n.y);
-        });
-        const w = maxX - minX || 200,
-          h = maxY - minY || 200;
-        const vw = canvas.clientWidth,
-          vh = canvas.clientHeight;
-        scale = Math.min(vw / (w * 1.35), vh / (h * 1.35), 1.5);
-        panX = vw / 2 - ((minX + maxX) / 2) * scale;
-        panY = vh / 2 - ((minY + maxY) / 2) * scale;
-      }
-
-      function draw() {
-        const vw = canvas.clientWidth,
-          vh = canvas.clientHeight;
-        ctx.clearRect(0, 0, vw, vh);
-
-        const activeMap = new Map(activeNodes.map((n) => [n.id, n]));
-        const hovered = hoveredNode;
-
-        // 1. Linhas de Conexão
-        activeEdges.forEach((e) => {
-          const u = activeMap.get(e.source),
-            v = activeMap.get(e.target);
-          if (!u || !v) return;
-          const [x1, y1] = w2s(u.x, u.y),
-            [x2, y2] = w2s(v.x, v.y);
-          const isHighlight =
-            hovered && (e.source === hovered || e.target === hovered);
-
-          ctx.beginPath();
-          ctx.moveTo(x1, y1);
-          ctx.lineTo(x2, y2);
-          ctx.lineWidth =
-            isHighlight || isEgoMode
-              ? Math.min(2 + e.weight * 0.8, 8)
-              : Math.min(0.8 + e.weight * 0.35, 3.5);
-          ctx.strokeStyle =
-            isHighlight || isEgoMode
-              ? "rgba(0, 84, 132, 0.80)"
-              : hovered
-                ? "rgba(148,163,184,0.12)"
-                : "rgba(148,163,184,0.38)";
-          ctx.stroke();
-
-          // Badge Numérico nas Linhas
-          if (isEgoMode || isHighlight) {
-            const midX = (x1 + x2) / 2,
-              midY = (y1 + y2) / 2;
-            ctx.beginPath();
-            ctx.arc(midX, midY, 9, 0, Math.PI * 2);
-            ctx.fillStyle = "#ffffff";
-            ctx.fill();
-            ctx.strokeStyle = "#cbd5e1";
-            ctx.lineWidth = 1.2;
-            ctx.stroke();
-            ctx.fillStyle = "#1e293b";
-            ctx.font = "bold 10px sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText(e.weight, midX, midY + 3.5);
+            if (!edgeMap.has(edgeKey)) {
+              edgeMap.set(edgeKey, {
+                source: source,
+                target: target,
+                weight: 0
+              });
+            }
+            edgeMap.get(edgeKey).weight += 1;
           }
-        });
-
-        // 2. Nós
-        activeNodes.forEach((n) => {
-          const [cx, cy] = w2s(n.x, n.y);
-          const r =
-            isEgoMode && n.x === 0 && n.y === 0
-              ? 32
-              : Math.max(13, Math.min(26, 12 + n.degree * 0.7));
-          const isSelected = hovered === n.id;
-          const isNeighbor = hovered && neighborsMap.get(hovered)?.has(n.id);
-          const fade = hovered && !isSelected && !isNeighbor;
-
-          ctx.beginPath();
-          ctx.arc(cx, cy, r, 0, Math.PI * 2);
-          ctx.fillStyle = fade ? n.color + "33" : n.color;
-          ctx.fill();
-          ctx.lineWidth = isSelected ? 3 : 2;
-          ctx.strokeStyle = isSelected ? "#f59e0b" : "#ffffff";
-          ctx.stroke();
-
-          // Rótulo
-          const fs = isSelected ? 12 : 11;
-          ctx.font = `${isSelected ? "700" : "500"} ${fs}px sans-serif`;
-          ctx.textAlign = "center";
-          const label =
-            n.label.length > 20
-              ? n.label.split(" ").slice(0, 2).join(" ") + "…"
-              : n.label;
-          const tw = ctx.measureText(label).width;
-
-          ctx.fillStyle = "rgba(255,255,255,0.9)";
-          ctx.fillRect(cx - tw / 2 - 3, cy + r + 3, tw + 6, fs + 4);
-          ctx.fillStyle = fade ? "#94a3b8" : "#1e293b";
-          ctx.fillText(label, cx, cy + r + fs + 3);
-        });
-      }
-
-      function getNodeAt(wx, wy) {
-        for (const n of activeNodes) {
-          const r =
-            (Math.max(13, Math.min(26, 12 + n.degree * 0.7)) + 6) / scale;
-          const dx = n.x - wx,
-            dy = n.y - wy;
-          if (dx * dx + dy * dy <= r * r) return n;
         }
-        return null;
+      });
+
+      graphData.nodes = Array.from(nodeMap.values());
+      graphData.edges = Array.from(edgeMap.values());
+
+      console.log("Graph Data Built:", graphData.nodes.length, "nodes", graphData.edges.length, "edges");
+
+      initSimulation();
+    }
+
+    // --- Graph Rendering & Physics ---
+
+    let canvas, ctx, minimapCanvas, minimapCtx;
+    let width, height;
+    let simulation;
+    let transform = d3.zoomIdentity;
+    let activeNodes = [];
+    let activeEdges = [];
+    let hoverNode = null;
+    let selectedNode = null;
+
+    function initSimulation() {
+      canvas = document.getElementById('network-canvas');
+      ctx = canvas.getContext('2d');
+      minimapCanvas = document.getElementById('minimap');
+      minimapCtx = minimapCanvas.getContext('2d');
+
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      activeNodes = [...graphData.nodes];
+
+      // Prepare edges (D3 expects source and target to be object references or indices, but handles ids string too if configured)
+      activeEdges = graphData.edges.map(e => ({...e}));
+
+      simulation = d3.forceSimulation(activeNodes)
+        .force("link", d3.forceLink(activeEdges).id(d => d.id).distance(100))
+        .force("charge", d3.forceManyBody().strength(-300))
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("collide", d3.forceCollide().radius(d => getRadius(d) + 2).iterations(2))
+        .on("tick", draw);
+
+      setupInteractions();
+    }
+
+    function resizeCanvas() {
+      const container = canvas.parentElement;
+      width = container.clientWidth;
+      height = container.clientHeight;
+      canvas.width = width;
+      canvas.height = height;
+
+      if(simulation) {
+          simulation.force("center", d3.forceCenter(width / 2, height / 2));
+          simulation.alpha(0.3).restart();
+      }
+    }
+
+    function getRadius(node) {
+      return 5 + (node.weight * 2); // Base size 5, grows with productions
+    }
+
+    function getColor(categoria) {
+      const cat = (categoria || '').toLowerCase();
+      if(cat === 'docente') return '#4fa8d4';
+      if(cat === 'discente') return '#00887E';
+      return '#858688';
+    }
+
+    function draw() {
+      ctx.save();
+      ctx.clearRect(0, 0, width, height);
+      ctx.translate(transform.x, transform.y);
+      ctx.scale(transform.k, transform.k);
+
+      // Draw Edges
+      ctx.beginPath();
+      activeEdges.forEach(d => {
+        ctx.moveTo(d.source.x, d.source.y);
+        ctx.lineTo(d.target.x, d.target.y);
+      });
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Draw Nodes
+      activeNodes.forEach(d => {
+        ctx.beginPath();
+        const r = getRadius(d);
+        ctx.arc(d.x, d.y, r, 0, 2 * Math.PI);
+
+        ctx.fillStyle = getColor(d.categoria);
+
+        if (selectedNode && selectedNode.id === d.id) {
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = "#f59e0b";
+          ctx.stroke();
+        } else if (hoverNode && hoverNode.id === d.id) {
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = "#1e293b";
+          ctx.stroke();
+        } else {
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = "#fff";
+          ctx.stroke();
+        }
+
+        ctx.fill();
+
+        // Draw Text
+        if (transform.k > 0.8 || (hoverNode && hoverNode.id === d.id) || (selectedNode && selectedNode.id === d.id)) {
+            ctx.fillStyle = "#334155";
+            ctx.font = `${Math.max(10, 12 / transform.k)}px sans-serif`;
+            ctx.textAlign = "center";
+            ctx.fillText(d.nome, d.x, d.y + r + (14/transform.k));
+        }
+      });
+
+      ctx.restore();
+      drawMinimap();
+    }
+
+    function drawMinimap() {
+        const mw = minimapCanvas.width;
+        const mh = minimapCanvas.height;
+        minimapCtx.clearRect(0, 0, mw, mh);
+
+        minimapCtx.fillStyle = '#f8fafc';
+        minimapCtx.fillRect(0, 0, mw, mh);
+
+        if (activeNodes.length === 0) return;
+
+        // Find bounds
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        activeNodes.forEach(n => {
+            if(n.x < minX) minX = n.x;
+            if(n.x > maxX) maxX = n.x;
+            if(n.y < minY) minY = n.y;
+            if(n.y > maxY) maxY = n.y;
+        });
+
+        // Add padding
+        const pad = 50;
+        minX -= pad; maxX += pad; minY -= pad; maxY += pad;
+
+        const scaleX = mw / (maxX - minX);
+        const scaleY = mh / (maxY - minY);
+        const scale = Math.min(scaleX, scaleY);
+
+        const ox = (mw - (maxX - minX) * scale) / 2;
+        const oy = (mh - (maxY - minY) * scale) / 2;
+
+        minimapCtx.save();
+        minimapCtx.translate(ox, oy);
+        minimapCtx.scale(scale, scale);
+        minimapCtx.translate(-minX, -minY);
+
+        minimapCtx.beginPath();
+        activeNodes.forEach(d => {
+            minimapCtx.moveTo(d.x, d.y);
+            minimapCtx.arc(d.x, d.y, Math.max(10, getRadius(d)), 0, 2 * Math.PI);
+        });
+        minimapCtx.fillStyle = "#94a3b8";
+        minimapCtx.fill();
+        minimapCtx.restore();
+
+        // Viewport rectangle
+        minimapCtx.strokeStyle = "rgba(0, 75, 120, 0.8)";
+        minimapCtx.lineWidth = 2;
+
+        const vx = ((-transform.x / transform.k) - minX) * scale + ox;
+        const vy = ((-transform.y / transform.k) - minY) * scale + oy;
+        const vw = (width / transform.k) * scale;
+        const vh = (height / transform.k) * scale;
+
+        minimapCtx.strokeRect(vx, vy, vw, vh);
+    }
+
+    let zoomBehavior;
+    function setupInteractions() {
+        const d3Canvas = d3.select(canvas);
+
+        zoomBehavior = d3.zoom()
+            .scaleExtent([0.1, 8])
+            .on("zoom", (e) => {
+                transform = e.transform;
+                draw();
+            });
+
+        d3Canvas.call(zoomBehavior);
+
+        // Dragging
+        const dragBehavior = d3.drag()
+            .subject((e) => {
+                const x = transform.invertX(e.x);
+                const y = transform.invertY(e.y);
+                let closest = null;
+                let minDist = Infinity;
+                for (const node of activeNodes) {
+                    const dx = x - node.x;
+                    const dy = y - node.y;
+                    const dist = dx * dx + dy * dy;
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closest = node;
+                    }
+                }
+                const r = closest ? getRadius(closest) : 0;
+                return minDist <= r * r + 100 ? closest : null;
+            })
+            .on("start", (e) => {
+                if (!e.active) simulation.alphaTarget(0.3).restart();
+                e.subject.fx = e.subject.x;
+                e.subject.fy = e.subject.y;
+                if (e.sourceEvent) e.sourceEvent.stopPropagation();
+            })
+            .on("drag", (e) => {
+                e.subject.fx = transform.invertX(e.sourceEvent.offsetX || e.sourceEvent.clientX);
+                e.subject.fy = transform.invertY(e.sourceEvent.offsetY || e.sourceEvent.clientY);
+            })
+            .on("end", (e) => {
+                if (!e.active) simulation.alphaTarget(0);
+                e.subject.fx = e.subject.x;
+                e.subject.fy = e.subject.y;
+            });
+
+        d3Canvas.call(dragBehavior);
+
+        // Hover & Click
+        d3Canvas.on("mousemove", (e) => {
+            const x = transform.invertX(e.offsetX);
+            const y = transform.invertY(e.offsetY);
+            let newHover = null;
+            for (const node of activeNodes) {
+                const r = getRadius(node);
+                if ((x - node.x) ** 2 + (y - node.y) ** 2 <= (r + 5) ** 2) {
+                    newHover = node;
+                    break;
+                }
+            }
+            if (hoverNode !== newHover) {
+                hoverNode = newHover;
+                draw();
+            }
+        });
+
+        d3Canvas.on("click", (e) => {
+            if (hoverNode) {
+                selectNode(hoverNode);
+            } else {
+                closePanel();
+            }
+        });
+
+        d3Canvas.on("dblclick.zoom", null); // disable default dblclick zoom
+        d3Canvas.on("dblclick", (e) => {
+            if (hoverNode) {
+                egoNetwork(hoverNode);
+            }
+        });
+    }
+
+    let activeFilters = { 'docente': true, 'discente': true, 'externo': true };
+    let nodesFixed = false;
+
+    function toggleFilter(type) {
+        activeFilters[type] = !activeFilters[type];
+        const btn = document.getElementById('btn-filter-' + type);
+        btn.style.opacity = activeFilters[type] ? '1' : '0.5';
+        applyFilters();
+    }
+
+    function applyFilters() {
+      const search = document.getElementById('search-author').value.toLowerCase();
+
+      activeNodes = graphData.nodes.filter(n => {
+          if(!activeFilters[n.categoria]) return false;
+          if(search && !n.nome.toLowerCase().includes(search)) return false;
+          return true;
+      });
+
+      const activeIds = new Set(activeNodes.map(n => n.id));
+      activeEdges = graphData.edges.filter(e => activeIds.has(e.source.id || e.source) && activeIds.has(e.target.id || e.target));
+
+      // Re-bind to simulation
+      simulation.nodes(activeNodes);
+      simulation.force("link").links(activeEdges);
+      simulation.alpha(0.5).restart();
+
+      closePanel();
+    }
+
+    function resetView() {
+      activeFilters = { 'docente': true, 'discente': true, 'externo': true };
+      document.getElementById('btn-filter-docente').style.opacity = '1';
+      document.getElementById('btn-filter-discente').style.opacity = '1';
+      document.getElementById('btn-filter-externo').style.opacity = '1';
+      document.getElementById('search-author').value = '';
+
+      if (radialMode) {
+          radialMode = false;
+          simulation.force("radial", null);
+          simulation.force("charge", d3.forceManyBody().strength(-300));
+          if(!nodesFixed) {
+              activeNodes.forEach(n => { n.fx = null; n.fy = null; });
+          }
       }
 
-      canvas.addEventListener(
-        "wheel",
-        (e) => {
-          e.preventDefault();
-          const f = e.deltaY < 0 ? 1.1 : 0.9;
-          const rect = canvas.getBoundingClientRect();
-          const mx = e.clientX - rect.left,
-            my = e.clientY - rect.top;
-          panX = mx - (mx - panX) * f;
-          panY = my - (my - panY) * f;
-          scale *= f;
-          draw();
-        },
-        { passive: false },
+      d3.select(canvas).transition().duration(750).call(
+          zoomBehavior.transform, d3.zoomIdentity
       );
 
-      canvas.addEventListener("mousedown", (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const [wx, wy] = s2w(e.clientX - rect.left, e.clientY - rect.top);
-        const n = getNodeAt(wx, wy);
-        if (n) {
-          draggingNode = n;
-          dragOffX = wx - n.x;
-          dragOffY = wy - n.y;
-        } else {
-          isPanning = true;
-          panLastX = e.clientX;
-          panLastY = e.clientY;
-        }
-      });
+      applyFilters();
+    }
 
-      canvas.addEventListener("mousemove", (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const sx = e.clientX - rect.left,
-          sy = e.clientY - rect.top;
-        const [wx, wy] = s2w(sx, sy);
+    function zoomIn() {
+        d3.select(canvas).transition().duration(300).call(zoomBehavior.scaleBy, 1.5);
+    }
 
-        if (draggingNode) {
-          draggingNode.x = wx - dragOffX;
-          draggingNode.y = wy - dragOffY;
-          draw();
-          return;
-        }
-        if (isPanning) {
-          panX += e.clientX - panLastX;
-          panY += e.clientY - panLastY;
-          panLastX = e.clientX;
-          panLastY = e.clientY;
-          draw();
-          return;
-        }
+    function zoomOut() {
+        d3.select(canvas).transition().duration(300).call(zoomBehavior.scaleBy, 0.66);
+    }
 
-        const n = getNodeAt(wx, wy);
-        hoveredNode = n ? n.id : null;
-        if (n) {
-          const prods = (productionsMap[n.id] || []).length;
-          tip.innerHTML = `<strong>${n.label}</strong><br><span style="font-size:11px;color:#94a3b8;">${n.role.toUpperCase()}</span><br>Colaborações: ${n.degree} | Produções: ${prods}`;
-          tip.style.left = sx + "px";
-          tip.style.top = sy - 15 + "px";
-          tip.style.visibility = "visible";
-        } else {
-          tip.style.visibility = "hidden";
+    function toggleFixNodes() {
+        nodesFixed = !nodesFixed;
+        document.getElementById('btn-fix-nodes').textContent = nodesFixed ? 'Liberar Nós' : 'Fixar Nós';
+
+        activeNodes.forEach(n => {
+            if (nodesFixed) {
+                n.fx = n.x;
+                n.fy = n.y;
+            } else {
+                n.fx = null;
+                n.fy = null;
+            }
+        });
+
+        if (!nodesFixed) {
+            simulation.alpha(0.3).restart();
         }
+    }
+
+    function exportPNG() {
+        // Redraw without hover/selection highlights to make a clean export
+        const tempSelected = selectedNode;
+        const tempHover = hoverNode;
+        selectedNode = null;
+        hoverNode = null;
         draw();
-      });
 
-      canvas.addEventListener("mouseup", (e) => {
-        const wasDragging = !!draggingNode;
-        draggingNode = null;
-        isPanning = false;
-        if (!wasDragging) {
-          const rect = canvas.getBoundingClientRect();
-          const [wx, wy] = s2w(e.clientX - rect.left, e.clientY - rect.top);
-          const n = getNodeAt(wx, wy);
-          if (n) openSidebar(n);
-        }
-      });
-
-      function openSidebar(n) {
-        const prods = productionsMap[n.id] || [];
-        const nbList = [...(neighborsMap.get(n.id) || [])].sort();
-        let html = `<h2>${n.label}</h2>
-      <div class="meta-row">${n.role.toUpperCase()} &nbsp;|&nbsp; <b>${prods.length}</b> produções &nbsp;|&nbsp; <b>${nbList.length}</b> coautores</div>`;
-        if (prods.length) {
-          html += `<h3>Produções Vinculadas (${prods.length})</h3><ul>`;
-          prods.forEach((p) => {
-            html += `<li>${p}</li>`;
-          });
-          html += `</ul>`;
-        }
-        if (nbList.length) {
-          html += `<h3>Coautores Diretos (${nbList.length})</h3><ul>`;
-          nbList.forEach((nb) => {
-            html += `<li>${nb}</li>`;
-          });
-          html += `</ul>`;
-        }
-        document.getElementById("sideContent").innerHTML = html;
-        document.getElementById("sidebar").classList.add("open");
-      }
-
-      function closeSidebar() {
-        document.getElementById("sidebar").classList.remove("open");
-      }
-
-      function exportPNG() {
-        const link = document.createElement("a");
-        link.download = `rede_colaboracao_gpa_${Date.now()}.png`;
-        link.href = canvas.toDataURL("image/png");
+        const link = document.createElement('a');
+        link.download = 'rede_colaboracao.png';
+        link.href = canvas.toDataURL('image/png');
         link.click();
-      }
 
-      window.onload = loadData;
-    </script>
-  </body>
+        // Restore
+        selectedNode = tempSelected;
+        hoverNode = tempHover;
+        draw();
+    }
+
+    let radialMode = false;
+    function egoNetwork(node) {
+        if (!node) return;
+
+        radialMode = true;
+
+        // Find connected nodes
+        const connectedNodes = new Set();
+        connectedNodes.add(node.id);
+
+        activeEdges.forEach(e => {
+            const sourceId = e.source.id || e.source;
+            const targetId = e.target.id || e.target;
+
+            if (sourceId === node.id) connectedNodes.add(targetId);
+            if (targetId === node.id) connectedNodes.add(sourceId);
+        });
+
+        // Apply forces
+        simulation
+            .force("charge", d3.forceManyBody().strength(-150))
+            .force("radial", d3.forceRadial(d => connectedNodes.has(d.id) && d.id !== node.id ? 150 : 400, width / 2, height / 2).strength(0.8));
+
+        // Fix the center node to the middle of the screen
+        node.fx = width / 2;
+        node.fy = height / 2;
+
+        simulation.alpha(1).restart();
+
+        // Center viewport
+        d3.select(canvas).transition().duration(750).call(
+            zoomBehavior.transform, d3.zoomIdentity.translate(0, 0).scale(1)
+        );
+    }
+
+    function selectNode(node) {
+        selectedNode = node;
+        draw();
+
+        const panel = document.getElementById('side-panel');
+        if (!panel.classList.contains('active')) {
+            panel.classList.add('active');
+            // Trigger resize to fix canvas aspect ratio when panel opens
+            setTimeout(resizeCanvas, 10);
+        }
+
+        // Render Info
+        document.getElementById('author-info').innerHTML = `
+            <p><strong>Nome:</strong> ${node.nome}</p>
+            <p><strong>Tipo:</strong> <span class="badge-author badge-${node.categoria}">${node.categoria}</span></p>
+            <button onclick="egoNetwork(selectedNode)" style="margin-top: 10px; padding: 6px 12px; background: #e4eef7; color: var(--primary); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 12px; width: 100%;">Centralizar nó (Ego-Rede)</button>
+        `;
+
+        // Render Productions
+        document.getElementById('prod-count').textContent = node.productions.length;
+
+        const listEl = document.getElementById('prod-list');
+        if(node.productions.length === 0) {
+            listEl.innerHTML = '<p style="color:#888;">Nenhuma produção registrada.</p>';
+        } else {
+            listEl.innerHTML = node.productions.map(p => `
+                <div class="prod-card">
+                    <h4>${p.titulo}</h4>
+                    <p style="margin-bottom:3px;">${p.tipo} (${p.ano})</p>
+                    <p style="color:#667;">👥 ${(p.autores || []).map(a => a.nome).join(', ')}</p>
+                </div>
+            `).join('');
+        }
+    }
+
+    function closePanel() {
+        selectedNode = null;
+        draw();
+        const panel = document.getElementById('side-panel');
+        if (panel.classList.contains('active')) {
+            panel.classList.remove('active');
+            // Trigger resize to fix canvas aspect ratio when panel closes
+            setTimeout(resizeCanvas, 10);
+        }
+    }
+
+    // Sync across tabs
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'gpa_productions' || e.key === 'gta_estrutura') {
+            loadData();
+        }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</body>
 </html>
