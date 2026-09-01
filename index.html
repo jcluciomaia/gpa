@@ -1,318 +1,716 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Gestão Acadêmica — Dashboard</title>
-  <style>
-    :root {
-      --gray: #848688;
-      --accent: #FDB92E;
-      --secondary: #00897C;
-      --primary: #005484;
-      --primary-hover: #003e62;
-      --docente-color: #005484;
-      --discente-color: #00897C;
-      --externo-color: #848688;
-      --bg: #f4f7fa;
-      --card-bg: #ffffff;
-      --border: #d0dce8;
-      --text: #373435;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 40px; }
-    header {
-      background: var(--primary);
-      color: white;
-      padding: 0 24px 0 0; height: 76px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    header h1 { font-size: 16px; font-weight: 600; }
-    header .nav-links a { color: #a8d0e8; text-decoration: none; font-size: 13px; margin-left: 15px; }
-    header .nav-links a:hover { color: #fff; }
-    header .nav-links a.active { color: #fff; font-weight: bold; }
-    .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
-    .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
-    .stat-card h3 { font-size: 13px; color: #667; margin-bottom: 8px; }
-    .stat-card .value { font-size: 28px; font-weight: 700; color: var(--primary); }
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
-    .card-title { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px; }
-    .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-    .filters input, .filters select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 5px; font-size: 13px; outline: none; min-width: 200px; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
-    th { background-color: #f8fafc; font-weight: 600; color: #475569; }
-    tr:hover { background-color: #f1f5f9; }
-    .badge-author { font-size: 11px; padding: 2px 6px; border-radius: 12px; color: #fff; display: inline-block; margin-right: 4px; margin-bottom: 4px; }
-    .badge-docente { background: var(--docente-color); }
-    .badge-discente { background: var(--discente-color); }
-    .badge-externo { background: var(--externo-color); }
-  </style>
-</head>
-<body>
-  <header>
-    <div style="display: flex; align-items: center; height: 100%;">
-      <div style="background: white; padding: 14px 24px; display: flex; align-items: center; justify-content: center; height: 100%; box-sizing: border-box;">
-        <img src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png" alt="UFT" style="height: 48px;">
-      </div>
-      <h1 style="font-size: 22px; font-weight: 600; margin: 0; margin-left: 24px;">Gestão da Produção Acadêmica - GPA</h1>
-    </div>
-    <nav class="nav-links">
-      <a href="index.html" class="active">🏛️ Painel da Turma</a>
-      <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
-      <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
-      <a href="producoes.html">📚 Produções</a>
-      <a href="rede.html">🕸️ Rede de Colaboração</a>
-      <a href="cadastro.html">➕ Cadastrar Produção</a>
-      <a href="relatorios.html">📑 Relatórios</a>
-      <a href="admin.html">⚙️ Administração</a>
-    </nav>
-  </header>
-
-  <div class="subnav" style="background: white; padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; gap: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-    <a href="index.html" class="active" style="text-decoration: none; color: var(--primary); font-weight: 600; padding: 8px 16px; border-radius: 4px; background: #e0f2fe; border: 1px solid #bae6fd; font-size: 14px;">🏛️ Painel da Turma</a>
-    <a href="painel_estudantil.html" style="text-decoration: none; color: var(--gray); font-weight: 600; padding: 8px 16px; border-radius: 4px; font-size: 14px;">🎓 Painel de Estudantes</a>
-    <a href="painel_docente.html" style="text-decoration: none; color: var(--gray); font-weight: 600; padding: 8px 16px; border-radius: 4px; font-size: 14px;">👨‍🏫 Painel de Docentes</a>
-  </div>
-
-  <div class="container">
-
-  <div style="background: white; border-bottom: 2px solid #FDB92E; padding: 16px 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
-    <div>
-      <h2 style="font-size: 18px; color: #005484; margin: 0;">PPG em Governança e Transformação Digital</h2>
-      <p style="font-size: 13px; color: #848688; margin: 2px 0 0 0;">Programa de Pós-Graduação Stricto Sensu — Universidade Federal do Tocantins (UFT)</p>
-    </div>
-    <div style="display: flex; gap: 12px; align-items: center;">
-      <select id="turma-selector" style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px;" onchange="updateDashboard()">
-        <option value="">Todas as Turmas</option>
-        <option value="tre_go_2023">Turma 2023/2024 — Convênio TRE-GO</option>
-        <option value="TURMA_PPGGTD_2026_MEST">Turma 2026/2027 — Mestrado</option>
-        <option value="TURMA_PPGGTD_2026_DOUT">Turma 2026/2030 — Doutorado</option>
-      </select>
-      <label style="font-size: 13px; display: flex; align-items: center; gap: 6px;">
-        <input type="checkbox" id="meus-orientandos" onchange="updateDashboard()"> Meus Orientandos
-      </label>
-    </div>
-  </div>
-
-    <div class="summary-cards">
-      <div class="stat-card"><h3>📚 Total</h3><div class="value" id="stat-total">0</div></div>
-      <div class="stat-card"><h3>📄 Periódicos</h3><div class="value" id="stat-periodicos">0</div></div>
-      <div class="stat-card"><h3>🎤 Eventos</h3><div class="value" id="stat-eventos">0</div></div>
-      <div class="stat-card"><h3>📖 Capítulos</h3><div class="value" id="stat-livros">0</div></div>
-      <div class="stat-card"><h3>🛠️ PTTs</h3><div class="value" id="stat-ptts">0</div></div>
-    </div>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
-      <!-- Balanço de Produção Técnica -->
-      <div class="card">
-        <div class="card-title">Balanço de Produção Técnica (PTT)</div>
-        <div style="font-size: 13px; color: #667; margin-bottom: 12px;">Percentual de PTTs em relação ao total de produções. (Piso: 25%, Teto: 50%)</div>
-        <div style="background: #e2e8f0; border-radius: 10px; height: 20px; width: 100%; overflow: hidden; margin-bottom: 8px; display: flex;">
-          <div id="ptt-bar" style="background: var(--gray); height: 100%; width: 0%; transition: width 0.5s;"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Gestão Acadêmica — Dashboard</title>
+    <style>
+      :root {
+        --gray: #848688;
+        --accent: #fdb92e;
+        --secondary: #00897c;
+        --primary: #005484;
+        --primary-hover: #003e62;
+        --docente-color: #005484;
+        --discente-color: #00897c;
+        --externo-color: #848688;
+        --bg: #f4f7fa;
+        --card-bg: #ffffff;
+        --border: #d0dce8;
+        --text: #373435;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
+          sans-serif;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        padding-bottom: 40px;
+      }
+      header {
+        background: var(--primary);
+        color: white;
+        padding: 0 24px 0 0;
+        height: 76px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+      header h1 {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      header .nav-links a {
+        color: #a8d0e8;
+        text-decoration: none;
+        font-size: 13px;
+        margin-left: 15px;
+      }
+      header .nav-links a:hover {
+        color: #fff;
+      }
+      header .nav-links a.active {
+        color: #fff;
+        font-weight: bold;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .stat-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+      }
+      .stat-card h3 {
+        font-size: 13px;
+        color: #667;
+        margin-bottom: 8px;
+      }
+      .stat-card .value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--primary);
+      }
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+      }
+      .card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 16px;
+      }
+      .filters {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+      .filters input,
+      .filters select {
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        font-size: 13px;
+        outline: none;
+        min-width: 200px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+      th {
+        background-color: #f8fafc;
+        font-weight: 600;
+        color: #475569;
+      }
+      tr:hover {
+        background-color: #f1f5f9;
+      }
+      .badge-author {
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 12px;
+        color: #fff;
+        display: inline-block;
+        margin-right: 4px;
+        margin-bottom: 4px;
+      }
+      .badge-docente {
+        background: var(--docente-color);
+      }
+      .badge-discente {
+        background: var(--discente-color);
+      }
+      .badge-externo {
+        background: var(--externo-color);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div style="display: flex; align-items: center; height: 100%">
+        <div
+          style="
+            background: white;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            box-sizing: border-box;
+          "
+        >
+          <img
+            src="https://docs.uft.edu.br/share/proxy/alfresco-noauth/api/internal/shared/node/LYSKesFwQMCS1ZQiawrO5A/content/bras%C3%A3oUFT_fundotransparente_RGB.png"
+            alt="UFT"
+            style="height: 48px"
+          />
         </div>
-        <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold;">
-          <span id="ptt-text">0%</span>
-          <span id="ptt-alert" style="color: var(--gray); font-size: 12px;">---</span>
+        <h1
+          style="
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+            margin-left: 24px;
+          "
+        >
+          Gestão da Produção Acadêmica - GPA
+        </h1>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html" class="active">🏛️ Painel da Turma</a>
+        <a href="painel_estudantil.html">🎓 Painel de Estudantes</a>
+        <a href="painel_docente.html">👨‍🏫 Painel de Docentes</a>
+        <a href="producoes.html">📚 Produções</a>
+        <a href="rede.html">🕸️ Rede de Colaboração</a>
+        <a href="cadastro.html">➕ Cadastrar Produção</a>
+        <a href="relatorios.html">📑 Relatórios</a>
+        <a href="admin.html">⚙️ Administração</a>
+      </nav>
+    </header>
+
+    <div
+      class="subnav"
+      style="
+        background: white;
+        padding: 12px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 16px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      "
+    >
+      <a
+        href="index.html"
+        class="active"
+        style="
+          text-decoration: none;
+          color: var(--primary);
+          font-weight: 600;
+          padding: 8px 16px;
+          border-radius: 4px;
+          background: #e0f2fe;
+          border: 1px solid #bae6fd;
+          font-size: 14px;
+        "
+        >🏛️ Painel da Turma</a
+      >
+      <a
+        href="painel_estudantil.html"
+        style="
+          text-decoration: none;
+          color: var(--gray);
+          font-weight: 600;
+          padding: 8px 16px;
+          border-radius: 4px;
+          font-size: 14px;
+        "
+        >🎓 Painel de Estudantes</a
+      >
+      <a
+        href="painel_docente.html"
+        style="
+          text-decoration: none;
+          color: var(--gray);
+          font-weight: 600;
+          padding: 8px 16px;
+          border-radius: 4px;
+          font-size: 14px;
+        "
+        >👨‍🏫 Painel de Docentes</a
+      >
+    </div>
+
+    <div class="container">
+      <div
+        style="
+          background: white;
+          border-bottom: 2px solid #fdb92e;
+          padding: 16px 24px;
+          margin-bottom: 20px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <div>
+          <h2 style="font-size: 18px; color: #005484; margin: 0">
+            PPG em Governança e Transformação Digital
+          </h2>
+          <p style="font-size: 13px; color: #848688; margin: 2px 0 0 0">
+            Programa de Pós-Graduação Stricto Sensu — Universidade Federal do
+            Tocantins (UFT)
+          </p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center">
+          <select
+            id="turma-selector"
+            style="
+              padding: 6px 12px;
+              border: 1px solid var(--border);
+              border-radius: 4px;
+              font-size: 13px;
+            "
+            onchange="updateDashboard()"
+          >
+            <option value="">Todas as Turmas</option>
+          </select>
+          <label
+            style="
+              font-size: 13px;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            "
+          >
+            <input
+              type="checkbox"
+              id="meus-orientandos"
+              onchange="updateDashboard()"
+            />
+            Meus Orientandos
+          </label>
         </div>
       </div>
 
-      <!-- Indicadores de Coprodução CAPES -->
-      <div class="card" style="grid-column: 1 / -1;">
-        <div class="card-title">Indicadores de Coprodução (Área 45)</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-          <div>
-            <div style="font-size: 13px; color: #667; margin-bottom: 8px;">Taxa de Autoria Discente/Egresso (até 5 anos)</div>
-            <div style="display: flex; align-items: baseline; gap: 8px;">
-              <span id="taxa-autoria-discente" style="font-size: 28px; font-weight: bold; color: var(--discente-color);">0%</span>
-              <span style="font-size: 12px; color: var(--gray);" id="taxa-autoria-desc">0 de 0 com publicação</span>
+      <div class="summary-cards">
+        <div class="stat-card">
+          <h3>📚 Total</h3>
+          <div class="value" id="stat-total">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>📄 Periódicos</h3>
+          <div class="value" id="stat-periodicos">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>🎤 Eventos</h3>
+          <div class="value" id="stat-eventos">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>📖 Capítulos</h3>
+          <div class="value" id="stat-livros">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>🛠️ PTTs</h3>
+          <div class="value" id="stat-ptts">0</div>
+        </div>
+      </div>
+
+      <div
+        style="
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          margin-bottom: 24px;
+        "
+      >
+        <!-- Balanço de Produção Técnica -->
+        <div class="card">
+          <div class="card-title">Balanço de Produção Técnica (PTT)</div>
+          <div style="font-size: 13px; color: #667; margin-bottom: 12px">
+            Percentual de PTTs em relação ao total de produções. (Piso: 25%,
+            Teto: 50%)
+          </div>
+          <div
+            style="
+              background: #e2e8f0;
+              border-radius: 10px;
+              height: 20px;
+              width: 100%;
+              overflow: hidden;
+              margin-bottom: 8px;
+              display: flex;
+            "
+          >
+            <div
+              id="ptt-bar"
+              style="
+                background: var(--gray);
+                height: 100%;
+                width: 0%;
+                transition: width 0.5s;
+              "
+            ></div>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              font-size: 14px;
+              font-weight: bold;
+            "
+          >
+            <span id="ptt-text">0%</span>
+            <span id="ptt-alert" style="color: var(--gray); font-size: 12px"
+              >---</span
+            >
+          </div>
+        </div>
+
+        <!-- Indicadores de Coprodução CAPES -->
+        <div class="card" style="grid-column: 1 / -1">
+          <div class="card-title">Indicadores de Coprodução (Área 45)</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px">
+            <div>
+              <div style="font-size: 13px; color: #667; margin-bottom: 8px">
+                Taxa de Autoria Discente/Egresso (até 5 anos)
+              </div>
+              <div style="display: flex; align-items: baseline; gap: 8px">
+                <span
+                  id="taxa-autoria-discente"
+                  style="
+                    font-size: 28px;
+                    font-weight: bold;
+                    color: var(--discente-color);
+                  "
+                  >0%</span
+                >
+                <span
+                  style="font-size: 12px; color: var(--gray)"
+                  id="taxa-autoria-desc"
+                  >0 de 0 com publicação</span
+                >
+              </div>
+            </div>
+            <div>
+              <div style="font-size: 13px; color: #667; margin-bottom: 8px">
+                Média de Coprodução por Docente Permanente (DP)
+              </div>
+              <div style="display: flex; align-items: baseline; gap: 8px">
+                <span
+                  id="media-coproducao-dp"
+                  style="
+                    font-size: 28px;
+                    font-weight: bold;
+                    color: var(--docente-color);
+                  "
+                  >0.0</span
+                >
+                <span
+                  style="font-size: 12px; color: var(--gray)"
+                  id="media-coproducao-desc"
+                  >0 coprods / 0 DPs</span
+                >
+              </div>
             </div>
           </div>
-          <div>
-            <div style="font-size: 13px; color: #667; margin-bottom: 8px;">Média de Coprodução por Docente Permanente (DP)</div>
-            <div style="display: flex; align-items: baseline; gap: 8px;">
-              <span id="media-coproducao-dp" style="font-size: 28px; font-weight: bold; color: var(--docente-color);">0.0</span>
-              <span style="font-size: 12px; color: var(--gray);" id="media-coproducao-desc">0 coprods / 0 DPs</span>
+        </div>
+
+        <!-- Régua da Trajetória Discente -->
+        <div class="card">
+          <div class="card-title">Régua da Trajetória Discente</div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              text-align: center;
+              font-size: 12px;
+              margin-top: 10px;
+            "
+          >
+            <div style="flex: 1">
+              <div
+                style="
+                  font-size: 20px;
+                  font-weight: bold;
+                  color: var(--primary);
+                "
+                id="fase-creditos"
+              >
+                0
+              </div>
+              <div style="color: #667; margin-top: 4px">Em Créditos</div>
+            </div>
+            <div style="flex: 1; border-left: 1px solid var(--border)">
+              <div
+                style="
+                  font-size: 20px;
+                  font-weight: bold;
+                  color: var(--primary);
+                "
+                id="fase-projeto"
+              >
+                0
+              </div>
+              <div style="color: #667; margin-top: 4px">Projeto Aprovado</div>
+            </div>
+            <div style="flex: 1; border-left: 1px solid var(--border)">
+              <div
+                style="
+                  font-size: 20px;
+                  font-weight: bold;
+                  color: var(--primary);
+                "
+                id="fase-qualificados"
+              >
+                0
+              </div>
+              <div style="color: #667; margin-top: 4px">Qualificados</div>
+            </div>
+            <div style="flex: 1; border-left: 1px solid var(--border)">
+              <div
+                style="font-size: 20px; font-weight: bold; color: var(--accent)"
+                id="fase-defesa"
+              >
+                0
+              </div>
+              <div style="color: #667; margin-top: 4px">Defesa Agendada</div>
+            </div>
+            <div style="flex: 1; border-left: 1px solid var(--border)">
+              <div
+                style="
+                  font-size: 20px;
+                  font-weight: bold;
+                  color: var(--secondary);
+                "
+                id="fase-titulados"
+              >
+                0
+              </div>
+              <div style="color: #667; margin-top: 4px">Titulados</div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Régua da Trajetória Discente -->
-      <div class="card">
-        <div class="card-title">Régua da Trajetória Discente</div>
-        <div style="display: flex; justify-content: space-between; text-align: center; font-size: 12px; margin-top: 10px;">
-          <div style="flex: 1;">
-            <div style="font-size: 20px; font-weight: bold; color: var(--primary);" id="fase-creditos">0</div>
-            <div style="color: #667; margin-top: 4px;">Em Créditos</div>
-          </div>
-          <div style="flex: 1; border-left: 1px solid var(--border);">
-            <div style="font-size: 20px; font-weight: bold; color: var(--primary);" id="fase-projeto">0</div>
-            <div style="color: #667; margin-top: 4px;">Projeto Aprovado</div>
-          </div>
-          <div style="flex: 1; border-left: 1px solid var(--border);">
-            <div style="font-size: 20px; font-weight: bold; color: var(--primary);" id="fase-qualificados">0</div>
-            <div style="color: #667; margin-top: 4px;">Qualificados</div>
-          </div>
-          <div style="flex: 1; border-left: 1px solid var(--border);">
-            <div style="font-size: 20px; font-weight: bold; color: var(--accent);" id="fase-defesa">0</div>
-            <div style="color: #667; margin-top: 4px;">Defesa Agendada</div>
-          </div>
-          <div style="flex: 1; border-left: 1px solid var(--border);">
-            <div style="font-size: 20px; font-weight: bold; color: var(--secondary);" id="fase-titulados">0</div>
-            <div style="color: #667; margin-top: 4px;">Titulados</div>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
-  <script>
-    let productionsData = [];
-    let discentesData = [];
+    <script>
+      let productionsData = [];
+      let discentesData = [];
 
-    async function loadData() {
-      try {
-        const localProd = localStorage.getItem('gpa_productions');
-        if (localProd) {
-          productionsData = JSON.parse(localProd);
-        } else {
-          const resProd = await fetch('data/producoes.json');
-          if (resProd.ok) productionsData = await resProd.json();
-        }
-
-        const localDiscentes = localStorage.getItem('gpa_discentes');
-        if (localDiscentes) {
-          discentesData = JSON.parse(localDiscentes);
-        } else {
-                    const resEstrutura = await fetch('data/estrutura_gpa.json');
-          if (resEstrutura.ok) {
-            window.estruturaData = await resEstrutura.json();
-            discentesData = window.estruturaData.discentes || [];
+      async function loadData() {
+        try {
+          const localProd = localStorage.getItem("gpa_productions");
+          if (localProd) {
+            productionsData = JSON.parse(localProd);
+          } else {
+            const resProd = await fetch("data/producoes.json");
+            if (resProd.ok) productionsData = await resProd.json();
           }
+
+          let estrutura = { turmas: [], docentes: [], discentes: [] };
+          const localStruct = localStorage.getItem("gpa_structure");
+          if (localStruct) {
+            estrutura = JSON.parse(localStruct);
+          } else {
+            const resStruct = await fetch("data/estrutura_gpa.json");
+            if (resStruct.ok) estrutura = await resStruct.json();
+          }
+          window.estruturaData = estrutura;
+          discentesData = estrutura.discentes || [];
+
+          populateTurmas();
+          updateDashboard();
+        } catch (e) {
+          console.error(e);
         }
-        updateDashboard();
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-        function updateDashboard() {
-      const turmaId = document.getElementById('turma-selector').value;
-      const meusOrientandos = document.getElementById('meus-orientandos').checked;
-      const loggedInDocente = 'DOC_FLAVIO';
-
-      let filteredDiscentes = discentesData;
-      if (turmaId) {
-        filteredDiscentes = filteredDiscentes.filter(d => d.turma_id === turmaId);
-      }
-      if (meusOrientandos) {
-        filteredDiscentes = filteredDiscentes.filter(d => d.orientador_id === loggedInDocente);
       }
 
-      const validDiscenteIds = new Set(filteredDiscentes.map(d => d.id));
-
-      let filteredProductions = productionsData;
-      if (turmaId || meusOrientandos) {
-        filteredProductions = productionsData.filter(p => {
-          return (p.autores || []).some(a => validDiscenteIds.has(a.id));
+      function populateTurmas() {
+        const select = document.getElementById("turma-selector");
+        select.innerHTML = '<option value="">Todas as Turmas</option>';
+        (window.estruturaData.turmas || []).forEach((t) => {
+          const opt = document.createElement("option");
+          opt.value = t.nome || t.id;
+          opt.textContent = t.nome;
+          select.appendChild(opt);
         });
       }
 
-      document.getElementById('stat-total').textContent = filteredProductions.length;
-      document.getElementById('stat-periodicos').textContent = filteredProductions.filter(p => (p.tipo||'').toLowerCase().includes('periódico')).length;
-      document.getElementById('stat-eventos').textContent = filteredProductions.filter(p => (p.tipo||'').toLowerCase().includes('evento')).length;
-      document.getElementById('stat-livros').textContent = filteredProductions.filter(p => (p.tipo||'').toLowerCase().includes('livro')).length;
-      document.getElementById('stat-ptts').textContent = filteredProductions.filter(p => (p.tipo||'').toLowerCase().includes('ptt') || (p.tipo||'').toLowerCase().includes('técnico')).length;
+      function updateDashboard() {
+        const turmaId = document.getElementById("turma-selector").value;
+        const meusOrientandos =
+          document.getElementById("meus-orientandos").checked;
+        const loggedInDocente = "DOC_FLAVIO";
 
-      // Balanço de Produção Técnica (PTT)
-      const totalProds = filteredProductions.length;
-      const totalPtts = filteredProductions.filter(p => (p.tipo||'').toLowerCase().includes('ptt') || (p.tipo||'').toLowerCase().includes('técnico')).length;
-      const pttScore = totalProds > 0 ? Math.round((totalPtts / totalProds) * 100) : 0;
+        let filteredDiscentes = discentesData;
+        if (turmaId) {
+          filteredDiscentes = filteredDiscentes.filter(
+            (d) => d.turma === turmaId || d.turma_id === turmaId,
+          );
+        }
+        if (meusOrientandos) {
+          filteredDiscentes = filteredDiscentes.filter(
+            (d) =>
+              d.orientador_id === loggedInDocente ||
+              d.orientador === loggedInDocente,
+          );
+        }
 
-      const pttBar = document.getElementById('ptt-bar');
-      pttBar.style.width = pttScore + '%';
+        const validDiscenteIds = new Set(filteredDiscentes.map((d) => d.id));
 
-      const pttAlert = document.getElementById('ptt-alert');
-      if (totalProds === 0) {
-        pttBar.style.backgroundColor = 'var(--gray)';
-        pttAlert.textContent = "Sem produções";
-        pttAlert.style.color = 'var(--gray)';
-      } else if (pttScore < 25) {
-        pttBar.style.backgroundColor = '#ef4444'; // Red
-        pttAlert.textContent = "Abaixo do piso mínimo de 25%";
-        pttAlert.style.color = '#ef4444';
-      } else if (pttScore > 50) {
-        pttBar.style.backgroundColor = '#eab308'; // Yellow
-        pttAlert.textContent = "Acima do teto de 50% - risco de glosa";
-        pttAlert.style.color = '#eab308';
-      } else {
-        pttBar.style.backgroundColor = 'var(--secondary)'; // Green
-        pttAlert.textContent = "Faixa Ideal (25% - 50%)";
-        pttAlert.style.color = 'var(--secondary)';
+        let filteredProductions = productionsData;
+        if (turmaId || meusOrientandos) {
+          filteredProductions = productionsData.filter((p) => {
+            return (p.autores || []).some((a) => validDiscenteIds.has(a.id));
+          });
+        }
+
+        document.getElementById("stat-total").textContent =
+          filteredProductions.length;
+        document.getElementById("stat-periodicos").textContent =
+          filteredProductions.filter((p) =>
+            (p.tipo || "").toLowerCase().includes("periódico"),
+          ).length;
+        document.getElementById("stat-eventos").textContent =
+          filteredProductions.filter((p) =>
+            (p.tipo || "").toLowerCase().includes("evento"),
+          ).length;
+        document.getElementById("stat-livros").textContent =
+          filteredProductions.filter((p) =>
+            (p.tipo || "").toLowerCase().includes("livro"),
+          ).length;
+        document.getElementById("stat-ptts").textContent =
+          filteredProductions.filter(
+            (p) =>
+              (p.tipo || "").toLowerCase().includes("ptt") ||
+              (p.tipo || "").toLowerCase().includes("técnico"),
+          ).length;
+
+        // Balanço de Produção Técnica (PTT)
+        const totalProds = filteredProductions.length;
+        const totalPtts = filteredProductions.filter(
+          (p) =>
+            (p.tipo || "").toLowerCase().includes("ptt") ||
+            (p.tipo || "").toLowerCase().includes("técnico"),
+        ).length;
+        const pttScore =
+          totalProds > 0 ? Math.round((totalPtts / totalProds) * 100) : 0;
+
+        const pttBar = document.getElementById("ptt-bar");
+        pttBar.style.width = pttScore + "%";
+
+        const pttAlert = document.getElementById("ptt-alert");
+        if (totalProds === 0) {
+          pttBar.style.backgroundColor = "var(--gray)";
+          pttAlert.textContent = "Sem produções";
+          pttAlert.style.color = "var(--gray)";
+        } else if (pttScore < 25) {
+          pttBar.style.backgroundColor = "#ef4444"; // Red
+          pttAlert.textContent = "Abaixo do piso mínimo de 25%";
+          pttAlert.style.color = "#ef4444";
+        } else if (pttScore > 50) {
+          pttBar.style.backgroundColor = "#eab308"; // Yellow
+          pttAlert.textContent = "Acima do teto de 50% - risco de glosa";
+          pttAlert.style.color = "#eab308";
+        } else {
+          pttBar.style.backgroundColor = "var(--secondary)"; // Green
+          pttAlert.textContent = "Faixa Ideal (25% - 50%)";
+          pttAlert.style.color = "var(--secondary)";
+        }
+        document.getElementById("ptt-text").textContent = pttScore + "%";
+
+        // Indicadores de Coprodução
+        const currentYear = new Date().getFullYear();
+
+        let discentesEgressosAtivos = discentesData.filter((d) => {
+          if (!d.data_titulacao) return true;
+          const year = parseInt(d.data_titulacao.split("-")[0]);
+          return currentYear - year <= 5;
+        });
+
+        let discentesComPub = 0;
+        discentesEgressosAtivos.forEach((d) => {
+          const hasPub = filteredProductions.some((p) =>
+            (p.autores || []).some((a) => a.id === d.id),
+          );
+          if (hasPub) discentesComPub++;
+        });
+        const taxaAutoria =
+          discentesEgressosAtivos.length > 0
+            ? Math.round(
+                (discentesComPub / discentesEgressosAtivos.length) * 100,
+              )
+            : 0;
+
+        document.getElementById("taxa-autoria-discente").textContent =
+          taxaAutoria + "%";
+        document.getElementById("taxa-autoria-desc").textContent =
+          `${discentesComPub} de ${discentesEgressosAtivos.length} com publicação`;
+
+        let dps = 0;
+        if (
+          typeof window.estruturaData !== "undefined" &&
+          window.estruturaData.docentes
+        ) {
+          dps = window.estruturaData.docentes.filter(
+            (d) => d.categoria === "permanente",
+          ).length;
+        } else {
+          dps = 8;
+        }
+
+        let coproducoes = 0;
+        filteredProductions.forEach((p) => {
+          const hasDocente = (p.autores || []).some(
+            (a) => a.categoria === "docente",
+          );
+          const hasDiscente = (p.autores || []).some(
+            (a) => a.categoria === "discente",
+          );
+          if (hasDocente && hasDiscente) coproducoes++;
+        });
+
+        const mediaCopro = dps > 0 ? (coproducoes / dps).toFixed(1) : 0;
+        document.getElementById("media-coproducao-dp").textContent = mediaCopro;
+        document.getElementById("media-coproducao-desc").textContent =
+          `${coproducoes} coprods / ${dps} DPs`;
+
+        let fases = {
+          creditos: 0,
+          projeto: 0,
+          qualificados: 0,
+          defesa: 0,
+          titulados: 0,
+        };
+
+        filteredDiscentes.forEach((d, i) => {
+          const fase = d.fase || i % 5;
+          if (fase === 0) fases.creditos++;
+          else if (fase === 1) fases.projeto++;
+          else if (fase === 2) fases.qualificados++;
+          else if (fase === 3) fases.defesa++;
+          else if (fase === 4) fases.titulados++;
+        });
+
+        document.getElementById("fase-creditos").textContent = fases.creditos;
+        document.getElementById("fase-projeto").textContent = fases.projeto;
+        document.getElementById("fase-qualificados").textContent =
+          fases.qualificados;
+        document.getElementById("fase-defesa").textContent = fases.defesa;
+        document.getElementById("fase-titulados").textContent = fases.titulados;
       }
-      document.getElementById('ptt-text').textContent = pttScore + '%';
 
-      // Indicadores de Coprodução
-      const currentYear = new Date().getFullYear();
-
-      let discentesEgressosAtivos = discentesData.filter(d => {
-        if (!d.data_titulacao) return true;
-        const year = parseInt(d.data_titulacao.split('-')[0]);
-        return (currentYear - year) <= 5;
-      });
-
-      let discentesComPub = 0;
-      discentesEgressosAtivos.forEach(d => {
-        const hasPub = filteredProductions.some(p => (p.autores || []).some(a => a.id === d.id));
-        if (hasPub) discentesComPub++;
-      });
-      const taxaAutoria = discentesEgressosAtivos.length > 0 ? Math.round((discentesComPub / discentesEgressosAtivos.length) * 100) : 0;
-
-      document.getElementById('taxa-autoria-discente').textContent = taxaAutoria + '%';
-      document.getElementById('taxa-autoria-desc').textContent = `${discentesComPub} de ${discentesEgressosAtivos.length} com publicação`;
-
-      let dps = 0;
-      if (typeof window.estruturaData !== 'undefined' && window.estruturaData.docentes) {
-        dps = window.estruturaData.docentes.filter(d => d.categoria === 'permanente').length;
-      } else {
-        dps = 8;
-      }
-
-      let coproducoes = 0;
-      filteredProductions.forEach(p => {
-        const hasDocente = (p.autores || []).some(a => a.categoria === 'docente');
-        const hasDiscente = (p.autores || []).some(a => a.categoria === 'discente');
-        if (hasDocente && hasDiscente) coproducoes++;
-      });
-
-      const mediaCopro = dps > 0 ? (coproducoes / dps).toFixed(1) : 0;
-      document.getElementById('media-coproducao-dp').textContent = mediaCopro;
-      document.getElementById('media-coproducao-desc').textContent = `${coproducoes} coprods / ${dps} DPs`;
-
-      let fases = { creditos: 0, projeto: 0, qualificados: 0, defesa: 0, titulados: 0 };
-
-      filteredDiscentes.forEach((d, i) => {
-        const fase = d.fase || (i % 5);
-        if (fase === 0) fases.creditos++;
-        else if (fase === 1) fases.projeto++;
-        else if (fase === 2) fases.qualificados++;
-        else if (fase === 3) fases.defesa++;
-        else if (fase === 4) fases.titulados++;
-      });
-
-      document.getElementById('fase-creditos').textContent = fases.creditos;
-      document.getElementById('fase-projeto').textContent = fases.projeto;
-      document.getElementById('fase-qualificados').textContent = fases.qualificados;
-      document.getElementById('fase-defesa').textContent = fases.defesa;
-      document.getElementById('fase-titulados').textContent = fases.titulados;
-    }
-
-
-    document.addEventListener('DOMContentLoaded', loadData);
-  </script>
-</body>
+      document.addEventListener("DOMContentLoaded", loadData);
+    </script>
+  </body>
 </html>
